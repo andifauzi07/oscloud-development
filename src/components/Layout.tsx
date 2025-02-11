@@ -1,11 +1,13 @@
 import { Outlet } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
-const Layout = () => {
-	return (
-		<div className="bg-slate-50 h-full">
-			<Outlet />
-		</div>
-	);
+const RootLayout = () => {
+  return (
+    <>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  );
 };
 
-export default Layout;
+export default RootLayout;

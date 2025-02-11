@@ -4,8 +4,8 @@ import { privateRoutes } from "./privateRoutes";
 import { rootRoute } from "./rootRoutes";
 
 export const routeTree = rootRoute.addChildren([
-	...authRoutes,
-	...privateRoutes,
+  ...authRoutes,
+  ...privateRoutes,
 ]);
 
 export const router = new Router({ routeTree });

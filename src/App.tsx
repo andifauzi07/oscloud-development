@@ -5,11 +5,11 @@ const router = createRouter({ routeTree: routeTree });
 
 // Register the router type globally
 declare module "@tanstack/react-router" {
-	interface Register {
-		router: typeof router;
-	}
+  interface Register {
+    router: typeof router;
+  }
 }
 
 export default function App() {
-	return <RouterProvider router={router} />;
+  return <RouterProvider router={router} />;
 }

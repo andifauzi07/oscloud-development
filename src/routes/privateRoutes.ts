@@ -1,20 +1,23 @@
-import { createRoute, redirect } from "@tanstack/react-router";
+import { createRoute } from "@tanstack/react-router";
 import DashboardLayout from "../components/DashboardLayout";
-import { getSession } from "../backend/auth/auth";
+// import { getSession } from "../backend/auth/auth";
+import { EmployeeRoute } from "./_dashboardRoute";
 import { rootRoute } from "./rootRoutes";
 
 // Parent route for all dashboard-related pages
 export const dashboardParentRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/dashboard",
-	component: DashboardLayout,
-	beforeLoad: async () => {
-		const session = await getSession(); // Fetch session
-		if (!session) {
-			throw redirect({ to: "/signin" }); // Redirect if no session
-		}
-	},
+  getParentRoute: () => rootRoute,
+  path: "/dashboard",
+  component: DashboardLayout,
+  // beforeLoad: async () => {
+  // 	const session = await getSession(); // Fetch session
+  // 	if (!session) {
+  // 		throw redirect({ to: "/signin" }); // Redirect if no session
+  // 	}
+  // },
 });
 
 // Export all private routes
-export const privateRoutes = [dashboardParentRoute.addChildren([])];
+export const privateRoutes = [
+  dashboardParentRoute.addChildren([EmployeeRoute]),
+];
