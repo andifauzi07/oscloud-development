@@ -1,7 +1,16 @@
 import { createRoute } from "@tanstack/react-router";
 import DashboardLayout from "../components/DashboardLayout";
 // import { getSession } from "../backend/auth/auth";
-import { EmployeeRoute } from "./_dashboardRoute";
+
+import {
+  EmployeeProfile,
+  EmployeeRoute,
+  EmployeeRoute_setting,
+  EmployeeRoute_table,
+  SettingCategoryRoute,
+  SettingDepartmentRoute,
+  shiftScheduleRoute,
+} from "./employee_routes/employee.route";
 import { rootRoute } from "./rootRoutes";
 
 // Parent route for all dashboard-related pages
@@ -19,5 +28,13 @@ export const dashboardParentRoute = createRoute({
 
 // Export all private routes
 export const privateRoutes = [
-  dashboardParentRoute.addChildren([EmployeeRoute]),
+  dashboardParentRoute.addChildren([
+    EmployeeRoute,
+    EmployeeProfile,
+    EmployeeRoute_setting,
+    EmployeeRoute_table,
+    shiftScheduleRoute,
+    SettingCategoryRoute,
+    SettingDepartmentRoute,
+  ]),
 ];

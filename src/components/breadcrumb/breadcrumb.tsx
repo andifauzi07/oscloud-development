@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import {
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -10,20 +9,16 @@ import {
 
 export function Breadcrumb() {
   return (
-    <div className="w-full bg-white h-[var(--breadcrumb-height)] flex flex-col justify-center">
+    <div className="w-full flex-none bg-white sticky top-0 h-[var(--breadcrumb-height)] flex flex-col justify-center">
       <div className="container">
         <ShadcnBreadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink>
-                <Link to="/">Dashboard</Link>
-              </BreadcrumbLink>
+              <Link to="/dashboard/employee">Employee</Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink>
-                <Link to="/dashboard/employee">Employee</Link>
-              </BreadcrumbLink>
+              <Link to="/dashboard/employee">Employee</Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

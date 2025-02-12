@@ -26,7 +26,7 @@ const DashboardNavbar = () => {
   };
 
   return (
-    <nav className="border-b border-black h-[var(--top-navbar-height)] flex flex-col justify-center  z-50 sticky top-0 w-full bg-white">
+    <nav className="border-b border-black h-[var(--top-navbar-height)] flex flex-col justify-center  z-50 sticky top-0 w-full bg-white flex-none">
       <ul className="flex justify-between">
         <div className="flex">
           {links.map(({ name, path }) => (

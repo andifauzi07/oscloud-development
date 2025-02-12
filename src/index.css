@@ -32,6 +32,7 @@
     --top-navbar-height: 1.9rem;
     --sidebar-width: 18.75rem;
     --breadcrumb-height: 2.525rem;
+    --header-height: 4rem;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -71,6 +72,6 @@
 
 @layer utilities {
   .container {
-    @apply w-full px-10;
+    @apply w-full px-6 mx-auto;
   }
 }

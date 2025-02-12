@@ -35,6 +35,12 @@ const Sidebar = () => {
         <div className="flex justify-between">
           <span className="text-xs text-slate-400 mb-2">Category</span>
         </div>
+        <Link
+          to="/dashboard/employee"
+          className="flex gap-2 hover:bg-slate-50 rounded-sm p-2"
+        >
+          <span className="text-sm text-black">Employee</span>
+        </Link>
         <a href="#" className="flex gap-2 hover:bg-slate-50 rounded-sm p-2">
           <MessageCircle size={16} className="self-center" />
           <span className="text-sm text-black">Chatbot</span>

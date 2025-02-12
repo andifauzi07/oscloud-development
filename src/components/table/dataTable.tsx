@@ -10,7 +10,8 @@ import { cn } from "../../lib/utils";
 export interface DataTableProps<TData extends RowData> {
   wrapperClasses?: string;
   tableClasses?: string;
-  columns: ColumnDef<TData>[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnDef<TData, any>[];
   rows: TData[];
 }
 
@@ -29,19 +30,22 @@ const DataTable = <TData extends RowData>({
   return (
     <div
       className={cn(
-        "w-full h-full overflow-auto min-w-full bg-white  border-collapse ",
+        "w-full relative overflow-auto h-full  mb-1 bg-white  border-collapse ",
         wrapperClasses
       )}
     >
       <table
         className={cn(
-          "table-auto  min-w-full overflow-auto bg-white",
+          "table-auto  min-w-full  max-h-full overflow-auto top-0 left-0 border-collapse bg-white",
           tableClasses
         )}
       >
         <thead className="border-t text-nowrap">
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="text-nowrap">
+            <tr
+              key={headerGroup.id}
+              className="text-nowrap sticky top-[-2px] transition-all duration-500 bg-white"
+            >
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}

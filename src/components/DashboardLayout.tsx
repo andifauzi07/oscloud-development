@@ -1,18 +1,20 @@
 import { Outlet } from "@tanstack/react-router";
-import DashboardNavbar from "./DashboardNavbar";
-import Sidebar from "./Sidebar";
 import { Breadcrumb } from "./breadcrumb/breadcrumb";
+import DashboardNavbar from "./DashboardNavbar";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 const DashboardLayout = () => {
   return (
-    <div className="min-h-[calc(100vh)]">
+    <div className=" w-full h-full ">
       <DashboardNavbar />
-      <section className="bg-slate-50  h-[calc(100vh-var(--top-navbar-height))] w-full flex">
-        <aside className="flex-shrink-0 h-full w-[var(--sidebar-width)]">
+      <section className="bg-slate-50  w-full flex h-[calc(100vh-var(--top-navbar-height))] ">
+        <aside className="flex-shrink-0 overflow-hidden sticky top-0 h-full w-[var(--sidebar-width)]">
           <Sidebar />
         </aside>
 
-        <main className="h-full flex-1">
+        <main className=" flex-1 min-h-0 h-full flex flex-col overflow-auto">
+          <Header />
           <Breadcrumb />
           <Outlet />
         </main>
