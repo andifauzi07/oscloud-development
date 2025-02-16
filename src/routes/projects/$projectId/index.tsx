@@ -263,50 +263,50 @@ function ProjectView() {
                 {/* Description Tab */}
                 <TabsContent className="m-0" value="description">
                     <div className="flex flex-col border">
-                        <div className="flex justify-between p-4 border border-t-0 px-8">
+                        <div className="flex justify-between p-4 px-8 border border-t-0">
                             <h1>Description</h1>
                             <h1>PRINT</h1>
                         </div>
-                        <div className="flex items-center justify-between p-2 bg-gray-100 border px-8">
+                        <div className="flex items-center justify-between p-2 px-8 bg-gray-100 border">
                             <h1>General Information</h1>
                             <Button className="border">Edit</Button>
                         </div>
-                        <div className="flex flex-col border [&>*]:p-4 [&>*]:px-8">
-                            <Input className="border-none" placeholder="Project Name"></Input>
-                            <div className="grid grid-cols-2 border">
+                        <div className="flex flex-col">
+                            <Input className="p-4 border-none" placeholder="Project Name"></Input>
+                            <div className="grid grid-cols-2 p-4 border">
                                 <h1>Client</h1>
                                 <h1>Company Name</h1>
                             </div>
-                            <div className="grid grid-cols-2 border">
+                            <div className="grid grid-cols-2 p-4 border">
                                 <h1>Personnel</h1>
                                 <h1>John Brown</h1>
                             </div>
-                            <div className="grid grid-cols-2 border">
+                            <div className="grid grid-cols-2 p-4 border">
                                 <h1>Category</h1>
                                 <h1>Category A</h1>
                             </div>
-                            <div className="grid grid-cols-2 border">
+                            <div className="grid grid-cols-2 p-4 border">
                                 <h1>Manager</h1>
                                 <div className="flex flex-row gap-2">
                                     <img src="/public/vite.svg" />
                                     <h1>John Brown</h1>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 border">
+                            <div className="grid grid-cols-2 p-4 border">
                                 <h1>Required staff number</h1>
                                 <h1>13</h1>
                             </div>
-                            <div className="flex justify-between bg-gray-100 border">
+                            <div className="flex justify-between p-4 bg-gray-100 border">
                                 <h1>Description</h1>
                                 <Button className="w-20 text-black bg-transparent border">
                                     Edit
                                 </Button>
                             </div>
                             <Input
-                                className="border"
+                                className="p-4 border rounded-none"
                                 placeholder="Bla bla bla bla"
                             ></Input>
-                            <div className="flex items-center justify-between bg-gray-100 border">
+                            <div className="flex items-center justify-between p-4 bg-gray-100 border">
                                 <h1>Assigned staffs</h1>
                                 <div className="flex flex-row items-center gap-2">
                                     <h1>2/13</h1>
@@ -315,7 +315,7 @@ function ProjectView() {
                                     </Button>
                                 </div>
                             </div>
-                            <div className="px-0 p-0 m-0">
+                            <div className="p-0 px-0 m-0">
                             <DataTable
                                 columns={assignedStaffColumns}
                                 data={mockAssignedStaff}
@@ -371,7 +371,7 @@ function ProjectView() {
                                 <h1>Members</h1>
                             </div>
 
-                            <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center">
+                            <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
                                 <div className="flex flex-col space-y-2 bg-white md:w-auto">
                                     <Label htmlFor="keyword">Keyword</Label>
                                     <Input
@@ -391,14 +391,14 @@ function ProjectView() {
                                         <div className="flex">
                                             <Button
                                                 size="default"
-                                                className="bg-black rounded-none w-20"
+                                                className="w-20 bg-black rounded-none"
                                             >
                                                 Active
                                             </Button>
                                             <Button
                                                 size="default"
                                                 variant="outline"
-                                                className="rounded-none w-20"
+                                                className="w-20 rounded-none"
                                             >
                                                 All
                                             </Button>

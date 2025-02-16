@@ -14,7 +14,7 @@ type NavItemProps = {
 const NavItem = ({ icon: Icon, label, to, isMinimized, onClick }: NavItemProps) => {
   const content = (
     <div
-      className="flex gap-2 p-2 rounded-sm hover:bg-slate-50 cursor-pointer"
+      className="flex gap-2 p-2 rounded-sm cursor-pointer hover:bg-slate-50"
       onClick={onClick}
     >
       <Icon size={16} className="self-center" />
@@ -98,6 +98,7 @@ const Sidebar = () => {
     { id: 'performance', icon: Package, label: 'Performance', to: '/performance' },
     { id: 'crm', icon: Package, label: 'CRM', to: '/company' },
     { id: 'project', icon: Package, label: 'Project', to: '/projects' },
+    { id: 'payroll', icon: Package, label: 'Payroll', to: '/payroll' },
   ];
 
   const categories = ['All employees', 'Employee Category A', ...(showMoreCategory ? ['UI Designer', 'Full Time', 'Temporary'] : [])];
@@ -111,7 +112,7 @@ const Sidebar = () => {
         </div>
         <button
           onClick={() => setIsMinimized(!isMinimized)}
-          className="absolute top-4 left-2 p-1 hover:bg-slate-100 rounded"
+          className="absolute p-1 rounded top-4 left-2 hover:bg-slate-100"
         >
           {isMinimized ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>

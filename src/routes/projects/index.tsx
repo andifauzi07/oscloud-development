@@ -27,7 +27,7 @@ function RouteComponent() {
             <div className="flex-none min-h-0 border-b">
                 <div className="flex flex-row items-center justify-between px-4 py-4 bg-white">
                     <h2 className="text-base font-semibold">Project List</h2>
-                    <Link to="/">Settings</Link>
+                    <Link to="/projects/setting">Settings</Link>
                 </div>
             </div>
 
@@ -59,7 +59,7 @@ function RouteComponent() {
 
                 {/* List View Tab */}
                 <TabsContent className="m-0" value="list">
-                    <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center">
+                    <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
                         <div className="flex flex-col space-y-2 bg-white md:w-auto">
                             <Label htmlFor="keyword">Keyword</Label>
                             <Input

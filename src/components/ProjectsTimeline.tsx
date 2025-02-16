@@ -1,19 +1,18 @@
-import { Timeline } from "vis-timeline";
-import { DataSet } from "vis-data"; 
-import "vis-timeline/styles/vis-timeline-graph2d.css"; 
-import moment from "moment"; 
-import { ProjectType } from "../config/mockData/companies";
-import { useEffect, useRef } from "react";
+import { Timeline } from 'vis-timeline';
+import { DataSet } from 'vis-data';
+import 'vis-timeline/styles/vis-timeline-graph2d.css';
+import moment from 'moment';
+import { ProjectType } from '../config/mockData/companies';
+import { useEffect, useRef } from 'react';
+import { TimeLine } from './timeline/TimeLine';
 
 interface ProjectsTimelineProps {
     projects: ProjectType[];
 }
 
-export const ProjectsTimeline: React.FC<ProjectsTimelineProps> = ({
-    projects,
-}) => {
+export const ProjectsTimeline: React.FC<ProjectsTimelineProps> = ({ projects }) => {
     const timelineRef = useRef<HTMLDivElement | null>(null);
-    const timelineInstance = useRef(null);
+    const timelineInstance = useRef<Timeline | null>(null);
 
     useEffect(() => {
         if (timelineRef.current) {
@@ -24,16 +23,12 @@ export const ProjectsTimeline: React.FC<ProjectsTimelineProps> = ({
                     content: project.projectName,
                     start: moment(project.startDate).toDate(), // Convert to JavaScript Date
                     end: moment(project.endDate).toDate(), // Convert to JavaScript Date
-                    className: "custom-item", // Optional: Add custom class for styling
+                    className: 'custom-item', // Optional: Add custom class for styling
                 }))
             );
 
             // Initialize the timeline
-            timelineInstance.current = new Timeline(
-                timelineRef.current,
-                items,
-                {}
-            );
+            timelineInstance.current = new Timeline(timelineRef.current, items, {});
         }
 
         return () => {
@@ -46,8 +41,11 @@ export const ProjectsTimeline: React.FC<ProjectsTimelineProps> = ({
     }, [projects]);
 
     return (
-        <div className="p-4 bg-white rounded-lg shadow-sm">
-            <div ref={timelineRef} style={{ height: "500px", width: "100%" }} />
+        <div className="bg-white rounded-none">
+            <TimeLine
+                currentDate={new Date()}
+                events="week"
+            />
         </div>
     );
 };
