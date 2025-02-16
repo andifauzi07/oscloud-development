@@ -71,11 +71,15 @@ export const projectsColumns = [
 	{
 		header: 'Actions',
 		accessorKey: 'id', // Use 'id' as the accessorKey for actions
-		cell: () => {
+		cell: (props: any) => {
 			return (
 				<Button variant="outline">
 					{/* Use the project ID from row.id */}
-					<Link to={`/project/$projectId`}>View</Link>
+					<Link
+						to={`/projects/$projectId`}
+						params={{ projectId: props.row.original.id }}>
+						View
+					</Link>
 				</Button>
 			);
 		},
