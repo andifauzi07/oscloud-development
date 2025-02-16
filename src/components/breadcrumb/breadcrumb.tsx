@@ -20,7 +20,7 @@ export function Breadcrumb() {
   };
 
   return (
-    <div className="w-full flex-none bg-white sticky top-0 h-[var(--breadcrumb-height)] flex flex-col justify-center p-4 px-6">
+    <div className="w-full flex-none sticky top-0 h-[var(--breadcrumb-height)] flex flex-col justify-center p-4 px-6 border-t-0 border-b bg-gray-100">
       <div className="container">
         <ShadcnBreadcrumb>
           <BreadcrumbList>

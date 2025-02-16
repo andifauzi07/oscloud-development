@@ -76,11 +76,13 @@ function RouteComponent() {
                                 <Input
                                     type="date"
                                     className="w-[150px] border rounded-none"
+                                    enableEmoji={false}
                                 />
                                 <span className="text-gray-500">-</span>
                                 <Input
                                     type="date"
                                     className="w-[150px] border rounded-none"
+                                    enableEmoji={false}
                                 />
                             </div>
                         </div>

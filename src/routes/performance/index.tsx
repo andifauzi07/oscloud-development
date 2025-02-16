@@ -163,10 +163,12 @@ function RouteComponent() {
                     <div className="flex items-center gap-2">
                         <Input
                             type="date"
+                            enableEmoji={false}
                             className="w-[150px] border rounded-none"
                         />
                         <span className="text-gray-500">-</span>
                         <Input
+                            enableEmoji={false}
                             type="date"
                             className="w-[150px] border rounded-none"
                         />

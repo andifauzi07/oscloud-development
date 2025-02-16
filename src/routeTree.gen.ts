@@ -20,6 +20,7 @@ import { Route as CompanyIndexImport } from './routes/company/index'
 import { Route as AuthIndexImport } from './routes/auth/index'
 import { Route as PerformanceSettingIndexImport } from './routes/performance/setting/index'
 import { Route as PerformanceEmployeeIdIndexImport } from './routes/performance/$employeeId/index'
+import { Route as FeaturesProfitLossIndexImport } from './routes/features/ProfitLoss/index'
 import { Route as FeaturesPersonnelListIndexImport } from './routes/features/PersonnelList/index'
 import { Route as FeaturesCompanyListIndexImport } from './routes/features/CompanyList/index'
 import { Route as EmployeeShiftscheduleIndexImport } from './routes/employee/shiftschedule/index'
@@ -102,6 +103,12 @@ const PerformanceEmployeeIdIndexRoute = PerformanceEmployeeIdIndexImport.update(
     getParentRoute: () => rootRoute,
   } as any,
 )
+
+const FeaturesProfitLossIndexRoute = FeaturesProfitLossIndexImport.update({
+  id: '/features/ProfitLoss/',
+  path: '/features/ProfitLoss/',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const FeaturesPersonnelListIndexRoute = FeaturesPersonnelListIndexImport.update(
   {
@@ -390,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeaturesPersonnelListIndexImport
       parentRoute: typeof rootRoute
     }
+    '/features/ProfitLoss/': {
+      id: '/features/ProfitLoss/'
+      path: '/features/ProfitLoss'
+      fullPath: '/features/ProfitLoss'
+      preLoaderRoute: typeof FeaturesProfitLossIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/performance/$employeeId/': {
       id: '/performance/$employeeId/'
       path: '/performance/$employeeId'
@@ -525,6 +539,7 @@ export interface FileRoutesByFullPath {
   '/employee/shiftschedule': typeof EmployeeShiftscheduleIndexRoute
   '/features/CompanyList': typeof FeaturesCompanyListIndexRoute
   '/features/PersonnelList': typeof FeaturesPersonnelListIndexRoute
+  '/features/ProfitLoss': typeof FeaturesProfitLossIndexRoute
   '/performance/$employeeId': typeof PerformanceEmployeeIdIndexRoute
   '/performance/setting': typeof PerformanceSettingIndexRoute
   '/company/$companyId/companyPersonnel': typeof CompanyCompanyIdCompanyPersonnelIndexRoute
@@ -561,6 +576,7 @@ export interface FileRoutesByTo {
   '/employee/shiftschedule': typeof EmployeeShiftscheduleIndexRoute
   '/features/CompanyList': typeof FeaturesCompanyListIndexRoute
   '/features/PersonnelList': typeof FeaturesPersonnelListIndexRoute
+  '/features/ProfitLoss': typeof FeaturesProfitLossIndexRoute
   '/performance/$employeeId': typeof PerformanceEmployeeIdIndexRoute
   '/performance/setting': typeof PerformanceSettingIndexRoute
   '/company/$companyId/companyPersonnel': typeof CompanyCompanyIdCompanyPersonnelIndexRoute
@@ -598,6 +614,7 @@ export interface FileRoutesById {
   '/employee/shiftschedule/': typeof EmployeeShiftscheduleIndexRoute
   '/features/CompanyList/': typeof FeaturesCompanyListIndexRoute
   '/features/PersonnelList/': typeof FeaturesPersonnelListIndexRoute
+  '/features/ProfitLoss/': typeof FeaturesProfitLossIndexRoute
   '/performance/$employeeId/': typeof PerformanceEmployeeIdIndexRoute
   '/performance/setting/': typeof PerformanceSettingIndexRoute
   '/company/$companyId/companyPersonnel/': typeof CompanyCompanyIdCompanyPersonnelIndexRoute
@@ -636,6 +653,7 @@ export interface FileRouteTypes {
     | '/employee/shiftschedule'
     | '/features/CompanyList'
     | '/features/PersonnelList'
+    | '/features/ProfitLoss'
     | '/performance/$employeeId'
     | '/performance/setting'
     | '/company/$companyId/companyPersonnel'
@@ -671,6 +689,7 @@ export interface FileRouteTypes {
     | '/employee/shiftschedule'
     | '/features/CompanyList'
     | '/features/PersonnelList'
+    | '/features/ProfitLoss'
     | '/performance/$employeeId'
     | '/performance/setting'
     | '/company/$companyId/companyPersonnel'
@@ -706,6 +725,7 @@ export interface FileRouteTypes {
     | '/employee/shiftschedule/'
     | '/features/CompanyList/'
     | '/features/PersonnelList/'
+    | '/features/ProfitLoss/'
     | '/performance/$employeeId/'
     | '/performance/setting/'
     | '/company/$companyId/companyPersonnel/'
@@ -743,6 +763,7 @@ export interface RootRouteChildren {
   EmployeeShiftscheduleIndexRoute: typeof EmployeeShiftscheduleIndexRoute
   FeaturesCompanyListIndexRoute: typeof FeaturesCompanyListIndexRoute
   FeaturesPersonnelListIndexRoute: typeof FeaturesPersonnelListIndexRoute
+  FeaturesProfitLossIndexRoute: typeof FeaturesProfitLossIndexRoute
   PerformanceEmployeeIdIndexRoute: typeof PerformanceEmployeeIdIndexRoute
   PerformanceSettingIndexRoute: typeof PerformanceSettingIndexRoute
   CompanyCompanyIdCompanyPersonnelIndexRoute: typeof CompanyCompanyIdCompanyPersonnelIndexRoute
@@ -779,6 +800,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmployeeShiftscheduleIndexRoute: EmployeeShiftscheduleIndexRoute,
   FeaturesCompanyListIndexRoute: FeaturesCompanyListIndexRoute,
   FeaturesPersonnelListIndexRoute: FeaturesPersonnelListIndexRoute,
+  FeaturesProfitLossIndexRoute: FeaturesProfitLossIndexRoute,
   PerformanceEmployeeIdIndexRoute: PerformanceEmployeeIdIndexRoute,
   PerformanceSettingIndexRoute: PerformanceSettingIndexRoute,
   CompanyCompanyIdCompanyPersonnelIndexRoute:
@@ -832,6 +854,7 @@ export const routeTree = rootRoute
         "/employee/shiftschedule/",
         "/features/CompanyList/",
         "/features/PersonnelList/",
+        "/features/ProfitLoss/",
         "/performance/$employeeId/",
         "/performance/setting/",
         "/company/$companyId/companyPersonnel/",
@@ -900,6 +923,9 @@ export const routeTree = rootRoute
     },
     "/features/PersonnelList/": {
       "filePath": "features/PersonnelList/index.tsx"
+    },
+    "/features/ProfitLoss/": {
+      "filePath": "features/ProfitLoss/index.tsx"
     },
     "/performance/$employeeId/": {
       "filePath": "performance/$employeeId/index.tsx"

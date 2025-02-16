@@ -13,6 +13,7 @@ import { mockEmployees, EmployeeTypes } from "../../config/mockData/employees";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import AdvancedFilterPopover from "../../components/search/advanced-search";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const columnHelper = createColumnHelper<EmployeeTypes>();
 
@@ -188,8 +189,8 @@ function RouteComponent() {
                 </div>
             </div>
 
-            <div className="flex flex-row justify-between w-full gap-4 px-4 pt-4 bg-white border md:flex-row md:px-8 md:gap-16">
-                <div className="flex flex-row gap-4">
+            <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center">
+                <div className="flex flex-row gap-4 flex-wrap">
                     <div className="flex flex-col w-full space-y-2 md:w-auto">
                         <Label htmlFor="keyword">Keyword</Label>
                         <Input
@@ -220,7 +221,8 @@ function RouteComponent() {
                     </div>
                 </div>
 
-                <div className="flex flex-col space-y-2 md:p-5 md:m-0">
+                <div className="">
+                    <Label>‎ </Label>
                     <AdvancedFilterPopover />
                 </div>
             </div>
@@ -237,52 +239,48 @@ function RouteComponent() {
 
             {/* Responsive table container */}
             <div className="flex-1 overflow-x-auto">
-                <div className="min-w-[1000px]">
-                    <table className="w-full bg-white border-t border-b border-gray-200 rounded-md shadow-sm">
-                        <thead className="bg-[#f3f4f6]">
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <tr key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <th
-                                            key={header.id}
-                                            className="p-4 font-bold text-left text-[#0a0a30] cursor-move"
-                                            draggable
-                                            onDragStart={(e) =>
-                                                handleDragStart(
-                                                    e,
-                                                    header.column.id
-                                                )
-                                            }
-                                            onDragOver={handleDragOver}
-                                            onDrop={(e) =>
-                                                handleDrop(e, header.column.id)
-                                            }
-                                        >
-                                            {flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                            )}
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {table.getRowModel().rows.map((row) => (
-                                <tr key={row.id}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <td key={cell.id} className="p-4">
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <div className="min-w-[1200px]">
+      <Table>
+          <TableHeader className="bg-gray-100 border">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead className="py-4 text-[#0a0a30] text-base font-bold" key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center">
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
             </div>
         </div>
     );
