@@ -1,0 +1,50 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  Breadcrumb as ShadcnBreadcrumb,
+} from "../ui/breadcrumb";
+
+export function Breadcrumb() {
+  const router = useRouterState();
+  const path = router.location.pathname;
+  const segments = path.split('/').filter(Boolean);
+
+  const breadcrumbMap: Record<string, string> = {
+    employee: 'Employee List',
+    setting: 'Setting',
+    category: 'Category',
+    department: 'Department'
+  };
+
+  return (
+    <div className="w-full flex-none bg-white sticky top-0 h-[var(--breadcrumb-height)] flex flex-col justify-center p-4 px-6">
+      <div className="container">
+        <ShadcnBreadcrumb>
+          <BreadcrumbList>
+            {segments.map((segment, index) => {
+              const isLast = index === segments.length - 1;
+              const label = breadcrumbMap[segment] || segment;
+              const href = `/${segments.slice(0, index + 1).join('/')}`;
+
+              return (
+                <>
+                  <BreadcrumbItem key={segment}>
+                    {isLast ? (
+                      <BreadcrumbPage>{label}</BreadcrumbPage>
+                    ) : (
+                      <Link to={href}>{label}</Link>
+                    )}
+                  </BreadcrumbItem>
+                  {!isLast && <BreadcrumbSeparator />}
+                </>
+              );
+            })}
+          </BreadcrumbList>
+        </ShadcnBreadcrumb>
+      </div>
+    </div>
+  );
+}
