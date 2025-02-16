@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectTrigger, SelectContent, SelectItem } from '../ui/select';
 import { Label } from '../ui/label';
+import { ChevronDown } from 'lucide-react';
 
 export default function AdvancedFilterPopover() {
 	const options: string[] = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'];
@@ -15,7 +16,7 @@ export default function AdvancedFilterPopover() {
 				<Button
 					variant="outline"
 					className="w-full">
-					Advanced Search
+					Advanced Search <ChevronDown/>
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="flex flex-row w-[750px] p-4">

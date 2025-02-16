@@ -31,6 +31,7 @@ import {
     DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import AdvancedFilterPopover from "@/components/search/advanced-search";
 
 export const Route = createFileRoute("/performance/")({
     component: RouteComponent,
@@ -147,15 +148,17 @@ function RouteComponent() {
                 </div>
             </div>
 
-            <div className="flex flex-row gap-4 px-4 pt-4 border md:flex-row md:px-8 md:gap-16">
-                <div className="flex flex-col space-y-2 w-[400px] md:w-auto">
-                    <Label htmlFor="keyword">Keyword</Label>
-                    <Input
-                        type="keyword"
-                        id="keyword"
-                        placeholder=""
-                        className="border rounded-none"
-                    />
+            <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center gap-4">
+                <div className="flex flex-row gap-4 flex-wrap">
+                    <div className="flex flex-col w-full space-y-2 md:w-auto">
+                        <Label htmlFor="keyword">Keyword</Label>
+                        <Input
+                            type="keyword"
+                            id="keyword"
+                            placeholder=""
+                            className="border rounded-none w-[400px]"
+                        />
+                    </div>
                 </div>
 
                 <div className="flex flex-col space-y-2">
@@ -175,27 +178,9 @@ function RouteComponent() {
                     </div>
                 </div>
 
-                <div className="flex flex-col space-y-2 md:p-5 md:m-0">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className="w-full md:w-auto"
-                            >
-                                Advanced search
-                                <ChevronDown className="w-4 h-4 ml-2" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>
-                                Advanced Search
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Filter by Name</DropdownMenuItem>
-                            <DropdownMenuItem>Filter by Date</DropdownMenuItem>
-                            <DropdownMenuItem>Clear Filters</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="">
+                    <Label>‎</Label>
+                    <AdvancedFilterPopover />
                 </div>
             </div>
 

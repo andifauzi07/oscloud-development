@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import MenuList from "@/components/menuList";
 
 export const Route = createFileRoute("/employee/$userId/")({
     component: RouteComponent,
@@ -34,28 +35,15 @@ const InfoSection = ({
 function RouteComponent() {
     const { userId } = useParams({ strict: false });
     const location = useLocation();
-    const isCurrentPath =
-        location.pathname === `/employee/${userId}`;
-    // console.log(isCurrentPath);
+    const isCurrentPath = location.pathname === `/employee/${userId}`;
 
-    const tabs = [
+    // Menu items for the MenuList
+    const menuItems = [
         { label: "Profile", path: `/employee/${userId}` },
-        {
-            label: "Shift schedule",
-            path: `/employee/${userId}/shift-schedule`,
-        },
-        {
-            label: "Performance",
-            path: `/employee/${userId}/performance`,
-        },
-        {
-            label: "Projects",
-            path: `/employee/${userId}/project`,
-        },
-        {
-            label: "Payroll",
-            path: `/employee/${userId}/payroll`,
-        },
+        { label: "Shift schedule", path: `/employee/${userId}/shift-schedule` },
+        { label: "Performance", path: `/employee/${userId}/performance` },
+        { label: "Projects", path: `/employee/${userId}/project` },
+        { label: "Payroll", path: `/employee/${userId}/payroll` },
     ];
 
     const basicInfo = [
@@ -77,23 +65,14 @@ function RouteComponent() {
     ];
 
     return (
-        <div className="flex flex-col flex-1">
-            {/* Fixed header section */}
-
-            <nav className="border-b flex-none  sticky top-[var(--breadcrumb-height)]  bg-gray-50 px-4 h-12 items-center">
-                <ul className="flex items-center h-full gap-12 list-none">
-                    {tabs.map((tab) => (
-                        <li key={tab.label}>
-                            <Link
-                                to={tab.path}
-                                className="block py-2 px-3 text-sm font-medium border-b-2 transition-colors aria-[current=page]:border-blue-500 aria-[current=page]:font-semibold border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            >
-                                {tab.label}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
+        <div className="flex-1 h-full">
+            <div className="items-center flex-none min-h-0 border-b">
+                <div className="container flex items-center justify-between px-4">
+                    <MenuList
+                        items={menuItems}
+                    />
+                </div>
+            </div>
 
             {isCurrentPath && (
                 <>
@@ -111,24 +90,23 @@ function RouteComponent() {
                             </div>
                         </div>
                     </div>
+
                     {/* Scrollable content section */}
                     <div className="flex-1 min-h-0">
                         {/* Image and list container */}
-                        <div className="flex ">
+                        <div className="flex">
                             {/* Left side - Image section */}
                             <div className="w-[30%] flex flex-col">
                                 <figure className="w-full h-[65%] relative overflow-hidden">
                                     <img
-                                        className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%] "
+                                        className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%]"
                                         src="https://plus.unsplash.com/premium_photo-1671656349322-41de944d259b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                                         alt="Profile"
                                     />
                                 </figure>
-                                <div className="flex flex-col items-center ">
+                                <div className="flex flex-col items-center">
                                     <h4 className="py-3">Edit profile image</h4>
-                                    <p className="pb-3 text-gray-500">
-                                        PNG, JPEG, (3MG)
-                                    </p>
+                                    <p className="pb-3 text-gray-500">PNG, JPEG, (3MG)</p>
                                     <div>
                                         <label
                                             htmlFor="profile_upload"
@@ -140,6 +118,7 @@ function RouteComponent() {
                                             id="profile_upload"
                                             type="file"
                                             className="hidden"
+                                            enableEmoji={false}
                                         />
                                     </div>
                                 </div>
@@ -147,14 +126,8 @@ function RouteComponent() {
 
                             {/* Right side - Info sections */}
                             <div className="w-[70%] overflow-y-auto">
-                                <InfoSection
-                                    items={basicInfo}
-                                    title="Basic Information"
-                                />
-                                <InfoSection
-                                    items={contractInfo}
-                                    title="Contact"
-                                />
+                                <InfoSection items={basicInfo} title="Basic Information" />
+                                <InfoSection items={contractInfo} title="Contact" />
                             </div>
                         </div>
                     </div>

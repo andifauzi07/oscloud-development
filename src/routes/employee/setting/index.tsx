@@ -104,8 +104,8 @@ function RouteComponent() {
     return (
         <div className="flex-1 h-full">
             {/* Top Navigation */}
-            <div className="flex-none min-h-0 border-b">
-                <div className="container">
+            <div className="flex-none min-h-0 border-b flex">
+                <div>
                     <MenuList
                         items={[
                             {

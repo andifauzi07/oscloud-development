@@ -59,7 +59,7 @@ function RouteComponent() {
 
                 {/* List View Tab */}
                 <TabsContent className="m-0" value="list">
-                    <div className="flex flex-row gap-4 p-4 m-0 bg-white border md:flex-row md:px-8 md:gap-16">
+                    <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center">
                         <div className="flex flex-col space-y-2 bg-white md:w-auto">
                             <Label htmlFor="keyword">Keyword</Label>
                             <Input
@@ -106,7 +106,8 @@ function RouteComponent() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col space-y-2 md:p-5 md:m-0">
+                        <div className="flex flex-col space-y-2">
+                            <Label>‎</Label>
                             <AdvancedFilterPopover />
                         </div>
                     </div>

@@ -135,7 +135,7 @@ function RouteComponent() {
         <div className="flex-1 h-full">
             {/* Menus */}
             <div className="flex-none min-h-0 border-b">
-                <div className="container flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <MenuList
                         items={tabs.map((tab) => ({
                             label: tab.label,

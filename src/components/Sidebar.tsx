@@ -50,19 +50,19 @@ type FeatureItem = {
 };
 
 const featuresMap: Record<string, FeatureItem[]> = {
-  crm: [
-    { icon: Users, label: 'CRM Contacts', to: '/features/crm-contacts' },
-    { icon: FileText, label: 'CRM Analytics', to: '/features/crm-analytics' },
-  ],
-  project: [
-    { icon: Package, label: 'Project Dashboard', to: '/features/project-dashboard' },
-    { icon: Settings, label: 'Project Settings', to: '/features/project-settings' },
-  ],
-  default: [
-    { icon: Package, label: 'Company List', to: '/features/companylist' },
-    { icon: Users, label: 'Personnel List', to: '/features/personnellist' },
-  ],
-};
+    crm: [
+      { icon: Package, label: 'Company List', to: '/features/CompanyList' },
+      { icon: Users, label: 'Personnel List', to: '/features/PersonnelList' },
+    ],
+    project: [
+      { icon: Plus, label: 'Add Project', to: '/features/ProjectList' },
+      { icon: FileText, label: 'Profit & Loss', to: '/features/ProfitLoss' },
+    ],
+    default: [
+      { icon: Package, label: 'Company List', to: '/features/companyList' },
+      { icon: Users, label: 'Personnel List', to: '/features/personnelList' },
+    ],
+  };
 
 const Sidebar = () => {
   const [isMinimized, setIsMinimized] = useState(false);

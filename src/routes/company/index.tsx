@@ -21,6 +21,7 @@ import {
 import { ChevronDown, Users, Target } from "lucide-react";
 import { CompanyTypes, mockCompanies } from "../../config/mockData/companies";
 import { mockEmployees } from "../../config/mockData/employees";
+import AdvancedFilterPopover from "@/components/search/advanced-search";
 
 // Utility functions
 const getCompanyPersonnelCount = (companyId: number): number => {
@@ -267,80 +268,43 @@ function RouteComponent() {
                 </div>
             </div>
 
-            <div className="flex flex-row gap-4 px-4 pt-4 bg-white border border-t-0 md:flex-row md:px-8 md:gap-16">
-                <div className="flex flex-col space-y-2 md:w-auto">
-                    <Label htmlFor="keyword">Keyword</Label>
-                    <Input
-                        type="text"
-                        id="keyword"
-                        placeholder="Search companies..."
-                        className="border rounded-none w-[400px]"
-                        value={searchKeyword}
-                        onChange={(e) => setSearchKeyword(e.target.value)}
-                    />
-                </div>
+            <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center">
+                <div className="flex flex-row gap-4 flex-wrap">
+                    <div className="flex flex-col space-y-2 md:w-auto">
+                        <Label htmlFor="keyword">Keyword</Label>
+                        <Input
+                            type="text"
+                            id="keyword"
+                            placeholder="Search companies..."
+                            className="border rounded-none w-[400px]"
+                            value={searchKeyword}
+                            onChange={(e) => setSearchKeyword(e.target.value)}
+                        />
+                    </div>
 
-                <div className="flex flex-col space-y-2">
-                    <Label>Status</Label>
-                    <div className="flex">
-                        <Button
-                            size="default"
-                            className="w-20 bg-black rounded-none md:w-20"
-                        >
-                            Active
-                        </Button>
-                        <Button
-                            size="default"
-                            variant="outline"
-                            className="w-20 rounded-none md:w-20"
-                        >
-                            All
-                        </Button>
+                    <div className="flex flex-col space-y-2">
+                        <Label>Status</Label>
+                        <div className="flex">
+                            <Button
+                                size="default"
+                                className="w-20 bg-black rounded-none md:w-20"
+                            >
+                                Active
+                            </Button>
+                            <Button
+                                size="default"
+                                variant="outline"
+                                className="w-20 rounded-none md:w-20"
+                            >
+                                All
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex flex-col space-y-2 md:p-5 md:m-0">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className="w-full md:w-auto"
-                            >
-                                Advanced search{" "}
-                                {advancedSearchFilter &&
-                                    `(${advancedSearchFilter})`}
-                                <ChevronDown className="w-4 h-4 ml-2" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>
-                                Advanced Search
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    setAdvancedSearchFilter("Filter by Name")
-                                }
-                            >
-                                Filter by Name
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    setAdvancedSearchFilter("Filter by Date")
-                                }
-                            >
-                                Filter by Date
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    setAdvancedSearchFilter("");
-                                    setSearchKeyword("");
-                                }}
-                            >
-                                Clear Filters
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="py-4">
+                    <Label>‎</Label>
+                    <AdvancedFilterPopover />
                 </div>
             </div>
 

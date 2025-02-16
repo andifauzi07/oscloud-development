@@ -81,7 +81,7 @@ function RouteComponent() {
                     </Link>
                 </div>
             </div>
-            <div className="flex items-center justify-start px-4 bg-white border border-l-0 min-h-14">
+            <div className="flex items-center justify-start px-8 bg-white border border-l-0 min-h-14">
                 <h2 className="text-base">Company Personnel of {companyId}</h2>
             </div>
             <div className="flex justify-end flex-none w-full bg-white">

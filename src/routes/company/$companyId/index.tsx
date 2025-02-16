@@ -75,7 +75,7 @@ function RouteComponent() {
         <div className="flex-1 h-full ">
             {/* menus  */}
             <div className="flex-none min-h-0 border-b">
-                <div className="container flex items-center justify-between px-4">
+                <div className="flex items-center justify-between px-4">
                     <MenuList
                         items={tabs.map((tab) => ({
                             label: tab.label,
@@ -94,16 +94,15 @@ function RouteComponent() {
 
             {isCurrentPath && (
                 <>
-                    <div className="flex-none">
-                        <div className="px-4 bg-white border-b">
-                            <h2 className="container py-3">{company.name}</h2>
-                        </div>
-                        <div className="border-b">
-                            <div className="flex justify-end flex-none w-full bg-white border-t">
-                                <Button className="w-20 text-black bg-transparent border h-15 link">
-                                    EDIT
-                                </Button>
-                            </div>
+                    <div className="px-8 bg-white border-b">
+                        <h2 className="container py-3">{company.name}</h2>
+                    </div>
+
+                    <div className="border-b">
+                        <div className="flex justify-end flex-none w-full bg-white border-t">
+                            <Button className="w-20 text-black bg-transparent border h-15 link">
+                                EDIT
+                            </Button>
                         </div>
                     </div>
 
