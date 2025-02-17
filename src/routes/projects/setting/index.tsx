@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 
-type statusType = 'Hidden' | 'Active' | 'disabled';
+type statusType = 'Hidden' | 'Active' | 'Disabled';
 
 // Define the data row type
 type DataFieldRow = {
@@ -39,7 +39,7 @@ const rowDataField: DataFieldRow[] = [
 		category: 'Contact Information',
 		dataCreated: '2024.09.21',
 		dateCreated: '2024.11.25',
-		status: 'disabled',
+		status: 'Disabled',
 	},
 	{
 		dataField: 'Address',
@@ -63,7 +63,7 @@ const rowDataField: DataFieldRow[] = [
 		category: 'Banking Information',
 		dataCreated: '2024.06.30',
 		dateCreated: '2024.08.22',
-		status: 'disabled',
+		status: 'Disabled',
 	},
 	{
 		dataField: 'Social Security',
@@ -87,7 +87,7 @@ const rowDataField: DataFieldRow[] = [
 		category: 'Account Information',
 		dataCreated: '2024.03.14',
 		dateCreated: '2024.05.08',
-		status: 'disabled',
+		status: 'Disabled',
 	},
 	{
 		dataField: 'Medical Records',
