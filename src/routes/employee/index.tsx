@@ -182,15 +182,15 @@ function RouteComponent() {
 
     return (
         <div className="flex flex-col flex-1 h-full">
-            <div className="flex-none min-h-0 py-4 border-b">
-                <div className="container flex justify-between px-4 md:px-6">
+            <div className="flex-none min-h-0 px-4 py-4 bg-white border-b">
+                <div className="container flex justify-between md:px-6">
                     <h1>List View</h1>
                     <Link to="/employee/setting">Settings</Link>
                 </div>
             </div>
 
-            <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center">
-                <div className="flex flex-row gap-4 flex-wrap">
+            <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
+                <div className="flex flex-row flex-wrap gap-4">
                     <div className="flex flex-col w-full space-y-2 md:w-auto">
                         <Label htmlFor="keyword">Keyword</Label>
                         <Input

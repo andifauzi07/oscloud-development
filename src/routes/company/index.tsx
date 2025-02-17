@@ -268,8 +268,8 @@ function RouteComponent() {
                 </div>
             </div>
 
-            <div className="flex flex-row justify-between w-full pt-4 bg-white border md:flex-row p-8 flex-wrap items-center">
-                <div className="flex flex-row gap-4 flex-wrap">
+            <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
+                <div className="flex flex-row flex-wrap gap-4">
                     <div className="flex flex-col space-y-2 md:w-auto">
                         <Label htmlFor="keyword">Keyword</Label>
                         <Input

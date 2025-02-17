@@ -16,6 +16,7 @@ import { mockEmployees } from "../../../config/mockData/employees";
 import AdvancedFilterPopover from "../../../components/search/advanced-search";
 import { DataTable } from "../../../components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
+import { GraphicChart } from "@/components/graphicChart";
 
 // Define mock data for AssignedStaff
 export const mockAssignedStaff: AssignedStaff[] = [
@@ -316,10 +317,10 @@ function ProjectView() {
                                 </div>
                             </div>
                             <div className="p-0 px-0 m-0">
-                            <DataTable
-                                columns={assignedStaffColumns}
-                                data={mockAssignedStaff}
-                            />
+                                <DataTable
+                                    columns={assignedStaffColumns}
+                                    data={mockAssignedStaff}
+                                />
 
                             </div>
                         </div>
@@ -327,21 +328,21 @@ function ProjectView() {
                 </TabsContent>
 
                 {/* Members Tab */}
-                <TabsContent value="members">
+                <TabsContent className="m-0" value="members">
                     <div className="flex items-center p-4 bg-white border">
                         <h1>Member adjustment</h1>
                     </div>
                     <div className="flex flex-row bg-white border">
-                        <div className="p-4 border min-w-64">
+                        <div className="w-1/3 p-4 border">
                             <div className="flex items-center justify-between">
                                 <h3>Added</h3>
                                 <div className="flex items-center gap-2">
                                     <span>2 / 13</span>
-                                    <Button className="border">EDIT</Button>
+                                    <Button className="w-20 py-2 border rounded-none">EDIT</Button>
                                 </div>
                             </div>
                             {/* Added Members List */}
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 my-4">
                                 {["John Brown", "Sarah White"].map(
                                     (name, index) => (
                                         <div
@@ -351,6 +352,7 @@ function ProjectView() {
                                             <span>{name}</span>
                                             <Button
                                                 variant="outline"
+                                                className="w-20 py-2 border rounded-none"
                                                 size="sm"
                                                 onClick={() =>
                                                     console.log(
@@ -421,7 +423,7 @@ function ProjectView() {
                 </TabsContent>
 
                 {/* Payment Tab */}
-                <TabsContent value="payment">
+                <TabsContent className="m-0" value="payment">
                     <div className="flex items-center p-4 bg-white border">
                         <h1>Member adjustment</h1>
                     </div>
@@ -466,6 +468,93 @@ function ProjectView() {
                                 columns={paymentStaffColumns}
                                 data={mockPaymentStaff}
                             />
+                        </div>
+                    </div>
+                </TabsContent>
+                <TabsContent className="m-0" value="P/L">
+                    <div className="flex items-center p-4 bg-white border">
+                        <h1>Member adjustment</h1>
+                    </div>
+                    <div className="flex flex-row p-4 bg-white border">
+                        <h1>Profit & Loss</h1>
+                    </div>
+
+                    <div className="flex w-full h-full">
+                        {/* Left Side */}
+                        <div className="w-1/3 h-full border-r">
+                            <div className="flex items-center justify-center w-full p-4 bg-gray-100">
+                                <h2>Profit</h2>
+                            </div>
+                            <div className="flex w-full h-[250px] justify-center items-center border p-4">
+                                <h2 className="text-2xl">280,000 USD</h2>
+                            </div>
+                            <div className="flex items-center justify-center w-full p-4 bg-gray-100">
+                                <h2>Profitability</h2>
+                            </div>
+                            <div className="flex w-full justify-center h-[250px] items-center border p-4">
+                                <h2 className="text-2xl ">15 %</h2>
+                            </div>
+                            <div className="min-h-[600px]">
+                                <div className="flex items-center justify-center w-full p-4 bg-gray-100 border">
+                                    <h2>Cost Breakdown</h2>
+                                </div>
+                                <GraphicChart />
+                            </div>
+                        </div>
+
+                        {/* Righ Side */}
+                        <div className="w-2/3">
+                            <div className="flex items-center justify-between w-full p-4 bg-gray-100 border">
+                                <h2>Sales Revenue</h2>
+                                <Button
+                                    variant={'link'}
+                                    className="hover:cursor-pointer">
+                                    EDIT
+                                </Button>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Revenue Cost</h2>
+                                <h2>1,000,000 USD</h2>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Other Cost</h2>
+                                <h2>0 USD</h2>
+                            </div>
+                            <div className="flex items-center justify-between w-full p-4 bg-gray-100 border">
+                                <h2>Expenditures</h2>
+                                <Button
+                                    variant={'link'}
+                                    className="hover:cursor-pointer">
+                                    EDIT
+                                </Button>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Labour Cost</h2>
+                                <h2>10,000 USD</h2>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Transport Cost</h2>
+                                <h2>10,000 USD</h2>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Costume Cost</h2>
+                                <h2>10,000 USD</h2>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Manager Fee</h2>
+                                <h2>10,000 USD</h2>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Other Cost</h2>
+                                <h2>10,000 USD</h2>
+                            </div>
+                            <div className="flex items-center justify-start w-full p-4 bg-gray-100 border">
+                                <h2>Profit</h2>
+                            </div>
+                            <div className="flex w-full gap-2 p-4 border-b">
+                                <h2>Sales Profit</h2>
+                                <h2>10,000 USD</h2>
+                            </div>
                         </div>
                     </div>
                 </TabsContent>

@@ -38,8 +38,6 @@ import { Route as PerformanceSettingTemplateIdIndexImport } from './routes/perfo
 import { Route as PerformanceEmployeeIdAccesscontrolIndexImport } from './routes/performance/$employeeId/accesscontrol/index'
 import { Route as PerformanceEmployeeIdSheetIdIndexImport } from './routes/performance/$employeeId/$sheetId/index'
 import { Route as FeaturesProfitLossProjectNameIndexImport } from './routes/features/ProfitLoss/$projectName/index'
-import { Route as EmployeeSettingDepartmentIndexImport } from './routes/employee/setting/department/index'
-import { Route as EmployeeSettingCategoryIndexImport } from './routes/employee/setting/category/index'
 import { Route as EmployeeUserIdProfileIndexImport } from './routes/employee/$userId/profile/index'
 import { Route as EmployeeUserIdPerformanceIndexImport } from './routes/employee/$userId/performance/index'
 import { Route as EmployeeUserIdPayrollIndexImport } from './routes/employee/$userId/payroll/index'
@@ -221,20 +219,6 @@ const FeaturesProfitLossProjectNameIndexRoute =
   FeaturesProfitLossProjectNameIndexImport.update({
     id: '/features/ProfitLoss/$projectName/',
     path: '/features/ProfitLoss/$projectName/',
-    getParentRoute: () => rootRoute,
-  } as any)
-
-const EmployeeSettingDepartmentIndexRoute =
-  EmployeeSettingDepartmentIndexImport.update({
-    id: '/employee/setting/department/',
-    path: '/employee/setting/department/',
-    getParentRoute: () => rootRoute,
-  } as any)
-
-const EmployeeSettingCategoryIndexRoute =
-  EmployeeSettingCategoryIndexImport.update({
-    id: '/employee/setting/category/',
-    path: '/employee/setting/category/',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -503,20 +487,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmployeeUserIdProfileIndexImport
       parentRoute: typeof rootRoute
     }
-    '/employee/setting/category/': {
-      id: '/employee/setting/category/'
-      path: '/employee/setting/category'
-      fullPath: '/employee/setting/category'
-      preLoaderRoute: typeof EmployeeSettingCategoryIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/employee/setting/department/': {
-      id: '/employee/setting/department/'
-      path: '/employee/setting/department'
-      fullPath: '/employee/setting/department'
-      preLoaderRoute: typeof EmployeeSettingDepartmentIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/features/ProfitLoss/$projectName/': {
       id: '/features/ProfitLoss/$projectName/'
       path: '/features/ProfitLoss/$projectName'
@@ -607,8 +577,6 @@ export interface FileRoutesByFullPath {
   '/employee/$userId/payroll': typeof EmployeeUserIdPayrollIndexRoute
   '/employee/$userId/performance': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
-  '/employee/setting/category': typeof EmployeeSettingCategoryIndexRoute
-  '/employee/setting/department': typeof EmployeeSettingDepartmentIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
   '/performance/$employeeId/$sheetId': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
@@ -648,8 +616,6 @@ export interface FileRoutesByTo {
   '/employee/$userId/payroll': typeof EmployeeUserIdPayrollIndexRoute
   '/employee/$userId/performance': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
-  '/employee/setting/category': typeof EmployeeSettingCategoryIndexRoute
-  '/employee/setting/department': typeof EmployeeSettingDepartmentIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
   '/performance/$employeeId/$sheetId': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
@@ -690,8 +656,6 @@ export interface FileRoutesById {
   '/employee/$userId/payroll/': typeof EmployeeUserIdPayrollIndexRoute
   '/employee/$userId/performance/': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile/': typeof EmployeeUserIdProfileIndexRoute
-  '/employee/setting/category/': typeof EmployeeSettingCategoryIndexRoute
-  '/employee/setting/department/': typeof EmployeeSettingDepartmentIndexRoute
   '/features/ProfitLoss/$projectName/': typeof FeaturesProfitLossProjectNameIndexRoute
   '/performance/$employeeId/$sheetId/': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol/': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
@@ -733,8 +697,6 @@ export interface FileRouteTypes {
     | '/employee/$userId/payroll'
     | '/employee/$userId/performance'
     | '/employee/$userId/profile'
-    | '/employee/setting/category'
-    | '/employee/setting/department'
     | '/features/ProfitLoss/$projectName'
     | '/performance/$employeeId/$sheetId'
     | '/performance/$employeeId/accesscontrol'
@@ -773,8 +735,6 @@ export interface FileRouteTypes {
     | '/employee/$userId/payroll'
     | '/employee/$userId/performance'
     | '/employee/$userId/profile'
-    | '/employee/setting/category'
-    | '/employee/setting/department'
     | '/features/ProfitLoss/$projectName'
     | '/performance/$employeeId/$sheetId'
     | '/performance/$employeeId/accesscontrol'
@@ -813,8 +773,6 @@ export interface FileRouteTypes {
     | '/employee/$userId/payroll/'
     | '/employee/$userId/performance/'
     | '/employee/$userId/profile/'
-    | '/employee/setting/category/'
-    | '/employee/setting/department/'
     | '/features/ProfitLoss/$projectName/'
     | '/performance/$employeeId/$sheetId/'
     | '/performance/$employeeId/accesscontrol/'
@@ -855,8 +813,6 @@ export interface RootRouteChildren {
   EmployeeUserIdPayrollIndexRoute: typeof EmployeeUserIdPayrollIndexRoute
   EmployeeUserIdPerformanceIndexRoute: typeof EmployeeUserIdPerformanceIndexRoute
   EmployeeUserIdProfileIndexRoute: typeof EmployeeUserIdProfileIndexRoute
-  EmployeeSettingCategoryIndexRoute: typeof EmployeeSettingCategoryIndexRoute
-  EmployeeSettingDepartmentIndexRoute: typeof EmployeeSettingDepartmentIndexRoute
   FeaturesProfitLossProjectNameIndexRoute: typeof FeaturesProfitLossProjectNameIndexRoute
   PerformanceEmployeeIdSheetIdIndexRoute: typeof PerformanceEmployeeIdSheetIdIndexRoute
   PerformanceEmployeeIdAccesscontrolIndexRoute: typeof PerformanceEmployeeIdAccesscontrolIndexRoute
@@ -897,8 +853,6 @@ const rootRouteChildren: RootRouteChildren = {
   EmployeeUserIdPayrollIndexRoute: EmployeeUserIdPayrollIndexRoute,
   EmployeeUserIdPerformanceIndexRoute: EmployeeUserIdPerformanceIndexRoute,
   EmployeeUserIdProfileIndexRoute: EmployeeUserIdProfileIndexRoute,
-  EmployeeSettingCategoryIndexRoute: EmployeeSettingCategoryIndexRoute,
-  EmployeeSettingDepartmentIndexRoute: EmployeeSettingDepartmentIndexRoute,
   FeaturesProfitLossProjectNameIndexRoute:
     FeaturesProfitLossProjectNameIndexRoute,
   PerformanceEmployeeIdSheetIdIndexRoute:
@@ -955,8 +909,6 @@ export const routeTree = rootRoute
         "/employee/$userId/payroll/",
         "/employee/$userId/performance/",
         "/employee/$userId/profile/",
-        "/employee/setting/category/",
-        "/employee/setting/department/",
         "/features/ProfitLoss/$projectName/",
         "/performance/$employeeId/$sheetId/",
         "/performance/$employeeId/accesscontrol/",
@@ -1050,12 +1002,6 @@ export const routeTree = rootRoute
     },
     "/employee/$userId/profile/": {
       "filePath": "employee/$userId/profile/index.tsx"
-    },
-    "/employee/setting/category/": {
-      "filePath": "employee/setting/category/index.tsx"
-    },
-    "/employee/setting/department/": {
-      "filePath": "employee/setting/department/index.tsx"
     },
     "/features/ProfitLoss/$projectName/": {
       "filePath": "features/ProfitLoss/$projectName/index.tsx"

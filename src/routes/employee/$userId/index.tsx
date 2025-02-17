@@ -67,7 +67,7 @@ function RouteComponent() {
     return (
         <div className="flex-1 h-full">
             <div className="items-center flex-none min-h-0 border-b">
-                <div className="container flex items-center justify-between px-4">
+                <div className="container flex items-center justify-between px-4 bg-white">
                     <MenuList
                         items={menuItems}
                     />
@@ -78,7 +78,7 @@ function RouteComponent() {
                 <>
                     <div className="flex flex-col">
                         <div className="border-b">
-                            <h2 className="container px-4 py-3 bg-white">
+                            <h2 className="container px-4 py-3 ">
                                 John Brown {userId}
                             </h2>
                         </div>

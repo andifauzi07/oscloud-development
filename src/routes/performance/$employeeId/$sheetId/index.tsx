@@ -37,7 +37,7 @@ function RouteComponent() {
                     typeof value === "number" ? value : 0,
                 ])
             )
-        :   {};
+            : {};
 
     const [scores, setScores] = useState<Record<string, number>>(initialScores);
 
@@ -88,7 +88,7 @@ function RouteComponent() {
             name,
             {
                 label: name,
-                color: `hsl(var(--chart-${index + 1}))`,
+                color: `hsl(var(--chart-${index + 1}))`
             },
         ])
     );
@@ -141,105 +141,107 @@ function RouteComponent() {
                 </div>
             </div>
 
-            <div className="flex-1">
-                <div className="grid h-full grid-cols-2">
-                    {/* Left side - Chart */}
-                    <Card className="flex flex-col h-full border">
-                        <CardContent className="flex-1">
-                            <ChartContainer
-                                config={chartConfig}
-                                className="w-full h-full min-h-[500px]"
-                            >
-                                <>
-                                    <CardTitle className="pt-4">
-                                        Total Score
-                                    </CardTitle>
-                                    <PieChart width={500} height={500}>
-                                        <ChartTooltip
-                                            cursor={false}
-                                            content={<ChartTooltipContent />}
-                                        />
-                                        <Pie
-                                            data={chartData}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={100}
-                                            outerRadius={200}
-                                            labelLine={false}
-                                            label={renderCustomizedLabel}
-                                        >
-                                            {chartData.map((entry, index) => (
-                                                <Cell
-                                                    key={index}
-                                                    fill={entry.fill}
-                                                />
-                                            ))}
-                                        </Pie>
-                                    </PieChart>
-                                </>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
+            <div className="grid h-full grid-cols-2">
+                {/* Left side - Chart */}
+                <Card className="flex flex-col h-full border rounded-none">
+                    <CardContent className="flex-1">
+                        <ChartContainer
+                            config={chartConfig}
+                            className="w-full h-full min-h-[500px]"
+                        >
+                            <div className="">
+                                <CardTitle className="pt-4">
+                                    Total Score
+                                </CardTitle>
+                                <div className="flex items-center justify-center"  >
 
-                    {/* Right side - Score inputs */}
-                    <div className="flex flex-col h-full p-6 bg-white border border-l-none">
-                        <h2 className="mb-6 text-lg font-medium">
-                            Performance Details
-                        </h2>
-                        <div className="grid gap-4">
-                            {template.categories.map((category, index) => {
-                                const isDark = index === 5 || index === 6;
-                                const fill = `hsl(var(--chart-${index + 1}))`;
-                                const textColor =
-                                    isDark ? "#FFFFFF" : "#000000";
-
-                                return (
-                                    <div
-                                        key={category.id}
-                                        className="flex items-center justify-between p-4 border"
-                                        style={{
-                                            backgroundColor: fill,
-                                            borderColor: fill,
-                                        }}
+                                <PieChart width={500} height={500}>
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={<ChartTooltipContent />}
+                                    />
+                                    <Pie
+                                        data={chartData}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={100}
+                                        outerRadius={200}
+                                        labelLine={false}
+                                        label={renderCustomizedLabel}
                                     >
+                                        {chartData.map((entry, index) => (
+                                            <Cell
+                                                key={index}
+                                                fill={entry.fill}
+                                            />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+                                </div>
+                            </div>
+                        </ChartContainer>
+
+                    </CardContent>
+                </Card>
+
+                {/* Right side - Score inputs */}
+                <div className="flex flex-col h-full p-6 bg-white border border-l-none">
+                    <h2 className="mb-6 text-lg font-medium">
+                        Performance Details
+                    </h2>
+                    <div className="grid gap-4">
+                        {template.categories.map((category, index) => {
+                            const isDark = index === 5 || index === 6;
+                            const fill = `hsl(var(--chart-${index + 1}))`;
+                            const textColor =
+                                isDark ? "#FFFFFF" : "#000000";
+
+                            return (
+                                <div
+                                    key={category.id}
+                                    className="flex items-center justify-between p-4 border"
+                                    style={{
+                                        backgroundColor: fill,
+                                        borderColor: fill,
+                                    }}
+                                >
+                                    <span
+                                        className="font-medium"
+                                        style={{ color: textColor }}
+                                    >
+                                        {category.name}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={scores[category.id] || 0}
+                                            onChange={(e) =>
+                                                handleScoreChange(
+                                                    category.id,
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-20 text-right rounded-none"
+                                            style={{
+                                                backgroundColor: fill,
+                                                borderColor: textColor,
+                                                color: textColor,
+                                            }}
+                                        />
                                         <span
-                                            className="font-medium"
+                                            className="text-lg font-semibold"
                                             style={{ color: textColor }}
                                         >
-                                            {category.name}
+                                            %
                                         </span>
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                value={scores[category.id] || 0}
-                                                onChange={(e) =>
-                                                    handleScoreChange(
-                                                        category.id,
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-20 text-right rounded-none"
-                                                style={{
-                                                    backgroundColor: fill,
-                                                    borderColor: textColor,
-                                                    color: textColor,
-                                                }}
-                                            />
-                                            <span
-                                                className="text-lg font-semibold"
-                                                style={{ color: textColor }}
-                                            >
-                                                %
-                                            </span>
-                                        </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
