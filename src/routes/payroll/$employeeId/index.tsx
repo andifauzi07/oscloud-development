@@ -11,21 +11,7 @@ export const Route = createFileRoute('/payroll/$employeeId/')({
 	component: RouteComponent,
 });
 
-type PayrollRow = {
-	image: string;
-	id: string;
-	name: string;
-	employeeCategory: string;
-	totalPayment: string;
-	totalHours: string;
-	hourlyRateA: string;
-	hourlyRateB: string;
-	transportFee: string;
-	costA: string;
-	costB: string;
-	other: string;
-};
-
+// Joined Projects (breakdown) mockData
 type BreakdownRow = {
 	project: string;
 	start: string;
@@ -143,6 +129,23 @@ const columBreakdown: ColumnDef<BreakdownRow>[] = [
 		),
 	},
 ];
+//End line
+
+//Joined Projects mockData
+type PayrollRow = {
+	image: string;
+	id: string;
+	name: string;
+	employeeCategory: string;
+	totalPayment: string;
+	totalHours: string;
+	hourlyRateA: string;
+	hourlyRateB: string;
+	transportFee: string;
+	costA: string;
+	costB: string;
+	other: string;
+};
 
 const dataEmployee: PayrollRow[] = [
 	{
@@ -161,7 +164,6 @@ const dataEmployee: PayrollRow[] = [
 	},
 ];
 
-// Define columns
 const columnsEmployee: ColumnDef<PayrollRow>[] = [
 	{
 		accessorKey: 'image',
@@ -223,6 +225,124 @@ const columnsEmployee: ColumnDef<PayrollRow>[] = [
 	{
 		accessorKey: 'other',
 		header: 'Other',
+	},
+];
+//End line
+
+//Payment mockData
+
+type Status = 'Paid' | 'Review' | 'Pending';
+
+type PaymentTab = {
+	id: string;
+	name: string;
+	staffName: string;
+	createdBy: string;
+	dueDate: string;
+	totalHour: string;
+	amount: string;
+	status: Status;
+};
+
+const paymentDataEmployeeRow: PaymentTab[] = [
+	{
+		id: '12',
+		name: 'Dec. Payment',
+		staffName: 'Jhon Brown',
+		createdBy: 'Sarah White',
+		dueDate: '2024.11.01',
+		totalHour: '23',
+		amount: '230,000円',
+		status: 'Paid',
+	},
+	{
+		id: '17',
+		name: 'Nov Payment',
+		staffName: 'Jhon Brown',
+		createdBy: 'Sarah White',
+		dueDate: '2024.11.01',
+		totalHour: '23',
+		amount: '230,000円',
+		status: 'Review',
+	},
+	{
+		id: '45',
+		name: 'Urgent Payment',
+		staffName: 'Jhon Brown',
+		createdBy: 'Sarah White',
+		dueDate: '2024.11.01',
+		totalHour: '23',
+		amount: '230,000円',
+		status: 'Paid',
+	},
+	{
+		id: '254',
+		name: 'Oct Payment',
+		staffName: 'Jhon Brown',
+		createdBy: 'Sarah White',
+		dueDate: '2024.11.01',
+		totalHour: '23',
+		amount: '230,000円',
+		status: 'Pending',
+	},
+];
+
+const paymentDataEmployeeColumn: ColumnDef<PaymentTab>[] = [
+	{
+		accessorKey: 'id',
+		header: 'ID',
+		cell: ({ row }) => (
+			<Input
+				enableEmoji={false}
+				defaultValue={row.original.id}
+				className="w-20 border-0 rounded-none"
+				onChange={(e) => {
+					// Handle ID change logic here
+					console.log('ID changed:', e.target.value);
+				}}
+			/>
+		),
+	},
+	{
+		accessorKey: 'name',
+		header: 'Name',
+	},
+	{
+		accessorKey: 'staffName',
+		header: 'Staff name',
+	},
+	{
+		accessorKey: 'createdBy',
+		header: 'Created by',
+	},
+	{
+		accessorKey: 'dueDate',
+		header: 'Due date',
+	},
+	{
+		accessorKey: 'totalHour',
+		header: 'Total Hour',
+	},
+	{
+		accessorKey: 'amount',
+		header: 'Amount',
+	},
+	{
+		accessorKey: 'status',
+		header: 'Status',
+	},
+	{
+		header: '',
+		accessorKey: 'id',
+		cell: () => {
+			return (
+				<Button
+					variant="outline"
+					className="w-20 h-full">
+					VIEW
+				</Button>
+			);
+		},
 	},
 ];
 
@@ -424,7 +544,80 @@ function RouteComponent() {
 					/>
 				</TabsContent>
 
-				<TabsContent value="payment"></TabsContent>
+				<TabsContent
+					className="m-0"
+					value="payment">
+					<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 bg-white border md:flex-row">
+						<div className="flex flex-col space-y-2 bg-white md:w-auto">
+							<Label htmlFor="keyword">Keyword</Label>
+							<Input
+								type="keyword"
+								id="keyword"
+								placeholder=""
+								className="border rounded-none w-[400px]"
+							/>
+						</div>
+
+						<div className="flex flex-col space-y-2">
+							<Label>Status</Label>
+							<div className="flex">
+								<Button
+									size="default"
+									className="w-full bg-black rounded-none md:w-20">
+									Active
+								</Button>
+								<Button
+									size="default"
+									variant="outline"
+									className="w-full rounded-none md:w-20">
+									All
+								</Button>
+							</div>
+						</div>
+
+						<div className="flex flex-col space-y-2">
+							<Label>Duration</Label>
+							<div className="flex items-center gap-2">
+								<Input
+									type="date"
+									className="w-[150px] border rounded-none"
+									enableEmoji={false}
+								/>
+								<span className="text-gray-500">-</span>
+								<Input
+									type="date"
+									className="w-[150px] border rounded-none"
+									enableEmoji={false}
+								/>
+							</div>
+						</div>
+
+						<div className="flex flex-col space-y-2">
+							<Label>‎</Label>
+							<AdvancedFilterPopover />
+						</div>
+					</div>
+					<div className="flex justify-between w-full bg-white px-6 py-4">
+						<h2 className="text-xl">Payment</h2>
+						<div className="flex gap-2">
+							<Button
+								variant="outline"
+								className="w-20 h-full">
+								EDIT
+							</Button>
+							<Button
+								variant="outline"
+								className="w-20 h-full">
+								CREATE +
+							</Button>
+						</div>
+					</div>
+
+					<DataTable
+						columns={paymentDataEmployeeColumn}
+						data={paymentDataEmployeeRow}
+					/>
+				</TabsContent>
 			</Tabs>
 		</div>
 	);
