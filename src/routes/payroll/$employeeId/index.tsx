@@ -529,11 +529,15 @@ function RouteComponent() {
 						</div>
 					</div>
 					<div className="flex w-full bg-white p-2 justify-end">
-						<Button
-							variant="outline"
-							className="w-20 h-full">
-							CREATE
-						</Button>
+						<Link
+							to="/payroll/$employeeId/joined-projects"
+							params={{ employeeId: employeeId }}>
+							<Button
+								variant="outline"
+								className="w-20 h-full">
+								CREATE
+							</Button>
+						</Link>
 					</div>
 					<DataTable
 						columns={columnsEmployee}

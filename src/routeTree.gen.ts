@@ -37,6 +37,7 @@ import { Route as AuthSigninIndexImport } from './routes/auth/signin/index'
 import { Route as PerformanceSettingTemplateIdIndexImport } from './routes/performance/setting/$templateId/index'
 import { Route as PerformanceEmployeeIdAccesscontrolIndexImport } from './routes/performance/$employeeId/accesscontrol/index'
 import { Route as PerformanceEmployeeIdSheetIdIndexImport } from './routes/performance/$employeeId/$sheetId/index'
+import { Route as PayrollEmployeeIdJoinedProjectsIndexImport } from './routes/payroll/$employeeId/joined-projects/index'
 import { Route as PayrollEmployeeIdPaymentIdIndexImport } from './routes/payroll/$employeeId/$paymentId/index'
 import { Route as FeaturesProfitLossProjectNameIndexImport } from './routes/features/ProfitLoss/$projectName/index'
 import { Route as EmployeeUserIdProfileIndexImport } from './routes/employee/$userId/profile/index'
@@ -213,6 +214,13 @@ const PerformanceEmployeeIdSheetIdIndexRoute =
   PerformanceEmployeeIdSheetIdIndexImport.update({
     id: '/performance/$employeeId/$sheetId/',
     path: '/performance/$employeeId/$sheetId/',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const PayrollEmployeeIdJoinedProjectsIndexRoute =
+  PayrollEmployeeIdJoinedProjectsIndexImport.update({
+    id: '/payroll/$employeeId/joined-projects/',
+    path: '/payroll/$employeeId/joined-projects/',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -509,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PayrollEmployeeIdPaymentIdIndexImport
       parentRoute: typeof rootRoute
     }
+    '/payroll/$employeeId/joined-projects/': {
+      id: '/payroll/$employeeId/joined-projects/'
+      path: '/payroll/$employeeId/joined-projects'
+      fullPath: '/payroll/$employeeId/joined-projects'
+      preLoaderRoute: typeof PayrollEmployeeIdJoinedProjectsIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/performance/$employeeId/$sheetId/': {
       id: '/performance/$employeeId/$sheetId/'
       path: '/performance/$employeeId/$sheetId'
@@ -594,6 +609,7 @@ export interface FileRoutesByFullPath {
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
   '/payroll/$employeeId/$paymentId': typeof PayrollEmployeeIdPaymentIdIndexRoute
+  '/payroll/$employeeId/joined-projects': typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   '/performance/$employeeId/$sheetId': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   '/performance/setting/$templateId': typeof PerformanceSettingTemplateIdIndexRoute
@@ -634,6 +650,7 @@ export interface FileRoutesByTo {
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
   '/payroll/$employeeId/$paymentId': typeof PayrollEmployeeIdPaymentIdIndexRoute
+  '/payroll/$employeeId/joined-projects': typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   '/performance/$employeeId/$sheetId': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   '/performance/setting/$templateId': typeof PerformanceSettingTemplateIdIndexRoute
@@ -675,6 +692,7 @@ export interface FileRoutesById {
   '/employee/$userId/profile/': typeof EmployeeUserIdProfileIndexRoute
   '/features/ProfitLoss/$projectName/': typeof FeaturesProfitLossProjectNameIndexRoute
   '/payroll/$employeeId/$paymentId/': typeof PayrollEmployeeIdPaymentIdIndexRoute
+  '/payroll/$employeeId/joined-projects/': typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   '/performance/$employeeId/$sheetId/': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol/': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   '/performance/setting/$templateId/': typeof PerformanceSettingTemplateIdIndexRoute
@@ -717,6 +735,7 @@ export interface FileRouteTypes {
     | '/employee/$userId/profile'
     | '/features/ProfitLoss/$projectName'
     | '/payroll/$employeeId/$paymentId'
+    | '/payroll/$employeeId/joined-projects'
     | '/performance/$employeeId/$sheetId'
     | '/performance/$employeeId/accesscontrol'
     | '/performance/setting/$templateId'
@@ -756,6 +775,7 @@ export interface FileRouteTypes {
     | '/employee/$userId/profile'
     | '/features/ProfitLoss/$projectName'
     | '/payroll/$employeeId/$paymentId'
+    | '/payroll/$employeeId/joined-projects'
     | '/performance/$employeeId/$sheetId'
     | '/performance/$employeeId/accesscontrol'
     | '/performance/setting/$templateId'
@@ -795,6 +815,7 @@ export interface FileRouteTypes {
     | '/employee/$userId/profile/'
     | '/features/ProfitLoss/$projectName/'
     | '/payroll/$employeeId/$paymentId/'
+    | '/payroll/$employeeId/joined-projects/'
     | '/performance/$employeeId/$sheetId/'
     | '/performance/$employeeId/accesscontrol/'
     | '/performance/setting/$templateId/'
@@ -836,6 +857,7 @@ export interface RootRouteChildren {
   EmployeeUserIdProfileIndexRoute: typeof EmployeeUserIdProfileIndexRoute
   FeaturesProfitLossProjectNameIndexRoute: typeof FeaturesProfitLossProjectNameIndexRoute
   PayrollEmployeeIdPaymentIdIndexRoute: typeof PayrollEmployeeIdPaymentIdIndexRoute
+  PayrollEmployeeIdJoinedProjectsIndexRoute: typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   PerformanceEmployeeIdSheetIdIndexRoute: typeof PerformanceEmployeeIdSheetIdIndexRoute
   PerformanceEmployeeIdAccesscontrolIndexRoute: typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   PerformanceSettingTemplateIdIndexRoute: typeof PerformanceSettingTemplateIdIndexRoute
@@ -878,6 +900,8 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesProfitLossProjectNameIndexRoute:
     FeaturesProfitLossProjectNameIndexRoute,
   PayrollEmployeeIdPaymentIdIndexRoute: PayrollEmployeeIdPaymentIdIndexRoute,
+  PayrollEmployeeIdJoinedProjectsIndexRoute:
+    PayrollEmployeeIdJoinedProjectsIndexRoute,
   PerformanceEmployeeIdSheetIdIndexRoute:
     PerformanceEmployeeIdSheetIdIndexRoute,
   PerformanceEmployeeIdAccesscontrolIndexRoute:
@@ -934,6 +958,7 @@ export const routeTree = rootRoute
         "/employee/$userId/profile/",
         "/features/ProfitLoss/$projectName/",
         "/payroll/$employeeId/$paymentId/",
+        "/payroll/$employeeId/joined-projects/",
         "/performance/$employeeId/$sheetId/",
         "/performance/$employeeId/accesscontrol/",
         "/performance/setting/$templateId/",
@@ -1032,6 +1057,9 @@ export const routeTree = rootRoute
     },
     "/payroll/$employeeId/$paymentId/": {
       "filePath": "payroll/$employeeId/$paymentId/index.tsx"
+    },
+    "/payroll/$employeeId/joined-projects/": {
+      "filePath": "payroll/$employeeId/joined-projects/index.tsx"
     },
     "/performance/$employeeId/$sheetId/": {
       "filePath": "performance/$employeeId/$sheetId/index.tsx"
