@@ -4,8 +4,9 @@ import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useParams } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
+import { formatUrlString, revertUrlString } from '@/lib/utils';
 
 export const Route = createFileRoute('/payroll/$employeeId/')({
 	component: RouteComponent,
@@ -334,19 +335,22 @@ const paymentDataEmployeeColumn: ColumnDef<PaymentTab>[] = [
 	{
 		header: '',
 		accessorKey: 'id',
-		cell: () => {
+		cell: (prev) => {
 			return (
-				<Button
-					variant="outline"
+				<Link
+					to="/payroll/$employeeId/$paymentId"
+					params={{ paymentId: formatUrlString(prev.row.original.name) }}
 					className="w-20 h-full">
 					VIEW
-				</Button>
+				</Link>
 			);
 		},
 	},
 ];
 
 function RouteComponent() {
+	const { employeeId } = Route.useParams();
+
 	const InfoSection = ({ title, items }: { title: React.ReactNode; items: { label: string; value: string }[] }) => (
 		<div className="flex flex-col">
 			<h2 className="px-4 py-4 text-sm font-medium bg-gray-100">{title}</h2>
@@ -413,7 +417,7 @@ function RouteComponent() {
 					<>
 						<div className="flex flex-col">
 							<div className="bg-white border-b">
-								<h2 className="container px-4 py-3 ">John Brown</h2>
+								<h2 className="container px-4 py-3 ">{revertUrlString(employeeId)}</h2>
 							</div>
 							<div className="border-b">
 								<div className="flex justify-end flex-none w-full bg-white border-t">

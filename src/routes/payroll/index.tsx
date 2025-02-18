@@ -6,6 +6,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { Label } from '@/components/ui/label';
+import { formatUrlString, revertUrlString } from '@/lib/utils';
 
 // Define the data row type
 type PayrollRow = {
@@ -129,7 +130,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 		cell: ({ row }) => (
 			<Link
 				to={'/payroll/$employeeId'}
-				params={{ employeeId: row.original.id.toString() }}
+				params={{ employeeId: formatUrlString(row.original.name.toString()) }}
 				className="w-full h-full">
 				<Button
 					variant="outline"
@@ -160,14 +161,9 @@ function RouteComponent() {
 						<TabsTrigger
 							value="paymentList"
 							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
-							Payment List
+							Settings
 						</TabsTrigger>
 					</TabsList>
-					<Link
-						to="/payroll"
-						className="">
-						Setting
-					</Link>
 				</div>
 				<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
 					<div className="flex gap-8">
