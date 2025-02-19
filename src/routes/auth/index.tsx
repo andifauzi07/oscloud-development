@@ -1,9 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/auth/')({
-  component: RouteComponent,
-})
+    component: AuthLayout,
+});
 
-function RouteComponent() {
-  return <div>TODO: Redirect to signin/signup screen</div>
+function AuthLayout() {
+    return <Outlet />;
 }
