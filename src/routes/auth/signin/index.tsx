@@ -47,7 +47,7 @@ function RouteComponent() {
 		if (error) {
 			alert(error.message);
 		} else {
-			navigate({ to: "/dashboard" });
+			navigate({ to: "/" });
 		}
 		setLoading(false);
 	};
@@ -76,7 +76,7 @@ function RouteComponent() {
 										/>
 									</div>
 									{errors.email && (
-										<p className="text-red-500 text-xs">
+										<p className="text-xs text-red-500">
 											{errors.email.message}
 										</p>
 									)}
@@ -96,7 +96,7 @@ function RouteComponent() {
 										/>
 									</div>
 									{errors.password && (
-										<p className="text-red-500 text-xs">
+										<p className="text-xs text-red-500">
 											{errors.password.message}
 										</p>
 									)}
@@ -117,7 +117,7 @@ function RouteComponent() {
 							</div>
 
 							{/* Social Login */}
-							<div className="text-center font-bold text-sm">
+							<div className="text-sm font-bold text-center">
 								or Login Using
 							</div>
 							<div className="grid gap-2 mt-2">

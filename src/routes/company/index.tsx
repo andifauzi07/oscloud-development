@@ -256,9 +256,9 @@ function RouteComponent() {
     return (
         <div className="flex flex-col flex-1 h-full">
             <div className="flex-none min-h-0 border-b">
-                <div className="flex justify-between px-4 py-4 border md:px-6">
+                {/* <div className="flex justify-between px-4 py-4 border md:px-6">
                     <h1 className="text-base">Companies</h1>
-                </div>
+                </div> */}
 
                 <div className="flex items-center justify-between px-4 py-4 bg-white border md:px-6">
                     <h1 className="text-base">List View</h1>

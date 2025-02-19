@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useParams } from "@tanstack/react-router";
-import { Label, Pie, PieChart, Cell } from "recharts";
+import { Label, Pie, PieChart, Cell, Text } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import {
     ChartContainer,
@@ -22,6 +22,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Plus, X } from "lucide-react";
+import EmojiPicker from 'emoji-picker-react';
 import {
     mockTemplates,
     TemplateType,
@@ -99,7 +100,7 @@ function RouteComponent() {
             categories: template.categories.map((cat) =>
                 cat.id === categoryId ?
                     { ...cat, items: [...cat.items, newItem] }
-                :   cat
+                    : cat
             ),
         });
         setNewItemName("");
@@ -112,7 +113,7 @@ function RouteComponent() {
             categories: template.categories.map((cat) =>
                 cat.id === categoryId ?
                     { ...cat, weight: Math.max(0, Math.min(100, weight)) }
-                :   cat
+                    : cat
             ),
         });
     };
@@ -137,7 +138,7 @@ function RouteComponent() {
                         ...cat,
                         items: cat.items.filter((item) => item.id !== itemId),
                     }
-                :   cat
+                    : cat
             ),
         });
     };
@@ -157,10 +158,10 @@ function RouteComponent() {
                         items: cat.items.map((item) =>
                             item.id === itemId ?
                                 { ...item, name: newName }
-                            :   item
+                                : item
                         ),
                     }
-                :   cat
+                    : cat
             ),
         });
     };
@@ -192,6 +193,7 @@ function RouteComponent() {
         value: category.score,
         fill: category.color || `hsl(var(--chart-${index + 1}))`,
     }));
+    const totalScore = chartData.reduce((sum, item) => sum + item.value, 0);
 
     const chartConfig = Object.fromEntries(
         template.categories.map(({ name, color }, index) => [
@@ -230,16 +232,17 @@ function RouteComponent() {
 
     return (
         <div className="flex flex-col h-full overflow-x-hidden">
-            <div className="min-h-0 border-b containerflex-none">
-                <div className="container flex flex-row items-center justify-between bg-white border h-14">
+            <div className="min-h-0 border-b ">
+                <div className="flex flex-row items-center justify-between w-full px-8 bg-white border h-14">
                     <h1>Setting</h1>
                 </div>
-                <div className="container flex flex-row items-center justify-between bg-white border h-14">
+                <div className="flex flex-row items-center justify-between px-8 bg-white border h-14">
                     <Input
                         value={templateName}
                         onChange={(e) => handleNameChange(e.target.value)}
-                        className="w-64 p-2 border rounded-none"
+                        className="w-64 p-2 border-0 rounded-none"
                         placeholder="Template name"
+                        enableEmoji={false}
                     />
                 </div>
                 <div className="flex flex-row items-center justify-between bg-white h-14 ">
@@ -279,7 +282,7 @@ function RouteComponent() {
                         </Popover>
                         <Button
                             onClick={handleSave}
-                            className="w-20 text-black border rounded-none py-7 bg-transpa"
+                            className="w-20 text-black bg-transparent border-t border-r rounded-none py-7"
                             variant="default"
                         >
                             SAVE
@@ -294,18 +297,19 @@ function RouteComponent() {
                         <CardContent className="flex-1">
                             <ChartContainer
                                 config={chartConfig}
-                                className="w-full h-64"
+                                className="w-full h-full min-h-[500px] flex items-center justify-center"
                             >
-                                <PieChart width={400} height={400}>
+                                <PieChart width={500} height={500}>
                                     <Pie
                                         data={chartData}
                                         cx="50%"
                                         cy="50%"
                                         labelLine={false}
                                         label={renderCustomizedLabel}
-                                        outerRadius={80}
                                         fill="#8884d8"
                                         dataKey="value"
+                                        innerRadius={100}
+                                        outerRadius={200}
                                     >
                                         {chartData.map((entry, index) => (
                                             <Cell
@@ -314,6 +318,16 @@ function RouteComponent() {
                                             />
                                         ))}
                                     </Pie>
+                                    <Text
+                                        x={250}
+                                        y={250}
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        fontSize={24}
+                                        fontWeight="bold"
+                                    >
+                                        {totalScore}
+                                    </Text>
                                     <ChartTooltip
                                         content={<ChartTooltipContent />}
                                     />
@@ -330,97 +344,101 @@ function RouteComponent() {
                                     value={category.id}
                                     className="border-0"
                                 >
-                                    <AccordionTrigger
-                                        className="hover:no-underline p-0 m-0 [&[data-state=open]>div]:bg-opacity-90"
-                                        style={{
-                                            backgroundColor:
-                                                category.color ||
-                                                `hsl(var(--chart-${index + 1}))`,
-                                        }}
-                                    >
-                                        <div className="flex items-center justify-between w-full px-4 py-2">
-                                            <Input
-                                                value={category.name}
-                                                onChange={(e) =>
-                                                    handleUpdateCategoryName(
-                                                        category.id,
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-48 bg-transparent border-0 focus:bg-white/90"
-                                            />
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex flex-col gap-1">
-                                                    <Label className="text-xs text-white">
-                                                        Weight %
-                                                    </Label>
+                                    <div className="flex w-full">
+                                        <div
+                                            className="flex-1"
+                                            style={{
+                                                backgroundColor: category.color || `hsl(var(--chart-${index + 1}))`,
+                                            }}
+                                        >
+                                            <AccordionTrigger className="w-full p-0 m-0 hover:no-underline">
+                                                <div className="flex items-center justify-between w-full px-4 py-2">
                                                     <Input
-                                                        type="number"
-                                                        className="w-24 bg-transparent border-0 focus:bg-white/90"
-                                                        value={
-                                                            category.weight || 0
-                                                        }
+                                                        enableEmoji={false}
+                                                        value={category.name}
                                                         onChange={(e) =>
-                                                            handleWeightChange(
+                                                            handleUpdateCategoryName(
                                                                 category.id,
-                                                                Number(
-                                                                    e.target
-                                                                        .value
-                                                                )
+                                                                e.target.value
                                                             )
                                                         }
+                                                        className="w-48 bg-transparent border-0 focus:bg-white/90"
                                                     />
-                                                </div>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            className="w-8 h-8 p-0 border-2 border-white/50"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    category.color ||
-                                                                    `hsl(var(--chart-${index + 1}))`,
-                                                            }}
-                                                        />
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-80">
-                                                        <div className="flex flex-col gap-4">
-                                                            <Label>
-                                                                Pick a color
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex flex-col gap-1">
+                                                            <Label className="text-xs text-white">
+                                                                Weight %
                                                             </Label>
                                                             <Input
-                                                                type="color"
+                                                                type="number"
+                                                                className="w-24 bg-transparent border-0 focus:bg-white/90"
                                                                 value={
-                                                                    category.color ||
-                                                                    `hsl(var(--chart-${index + 1}))`
+                                                                    category.weight || 0
                                                                 }
+
+                                                                enableEmoji={false}
                                                                 onChange={(e) =>
-                                                                    handleColorChange(
+                                                                    handleWeightChange(
                                                                         category.id,
-                                                                        e.target
-                                                                            .value
+                                                                        Number(
+                                                                            e.target
+                                                                                .value
+                                                                        )
                                                                     )
                                                                 }
                                                             />
                                                         </div>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleDeleteCategory(
-                                                            category.id
-                                                        );
-                                                    }}
-                                                    className="text-white hover:text-red-200 hover:bg-transparent"
-                                                >
-                                                    <X />
-                                                </Button>
-                                            </div>
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-8 h-8 p-0 border-2 border-white/50"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            category.color ||
+                                                                            `hsl(var(--chart-${index + 1}))`,
+                                                                    }}
+                                                                />
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-80">
+                                                                <div className="flex flex-col gap-4">
+                                                                    <Label>
+                                                                        Pick a color
+                                                                    </Label>
+                                                                    <Input
+                                                                        type="color"
+                                                                        value={
+                                                                            category.color ||
+                                                                            `hsl(var(--chart-${index + 1}))`
+                                                                        }
+                                                                        onChange={(e) =>
+                                                                            handleColorChange(
+                                                                                category.id,
+                                                                                e.target
+                                                                                    .value
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+                                                </div>
+                                            </AccordionTrigger>
                                         </div>
-                                    </AccordionTrigger>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleDeleteCategory(
+                                                    category.id
+                                                );
+                                            }}
+                                            className="w-20 border rounded-none hover:text-red-200 hover:bg-transparent py-7"
+                                        >
+                                            DELETE
+                                        </Button>
+                                    </div>
                                     <AccordionContent className="border-b">
                                         <div className="">
                                             {category.items.map((item) => (
@@ -437,7 +455,7 @@ function RouteComponent() {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className="w-full mr-2"
+                                                        className="w-full mr-2 border-none rounded-none"
                                                     />
                                                     <Button
                                                         variant="ghost"
@@ -448,9 +466,9 @@ function RouteComponent() {
                                                                 item.id
                                                             )
                                                         }
-                                                        className="w-20 text-red-500 border rounded-none py-7 hover:text-red-700"
+                                                        className="w-20 border-l rounded-none py-7 hover:text-red-700"
                                                     >
-                                                        Delete
+                                                        DELETE
                                                     </Button>
                                                 </div>
                                             ))}

@@ -94,7 +94,7 @@ function RouteComponent() {
 
             {isCurrentPath && (
                 <>
-                    <div className="px-8 bg-white border-b">
+                    <div className="px-8 bg-gray-100 border-b">
                         <h2 className="container py-3">{company.name}</h2>
                     </div>
 

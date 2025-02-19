@@ -41,7 +41,7 @@ export type CompanyTypes = {
 export const mockCompanies: CompanyTypes[] = [
     {
         id: 1001,
-        image: "../../../public/vite.svg",
+        image: "@/assets/person.jpg",
         name: "TechCorp Japan",
         personnelCount: 0,
         categoryGroup: "Technology",
@@ -94,7 +94,7 @@ export const mockCompanies: CompanyTypes[] = [
     },
     {
         id: 1002,
-        image: "../../../public/vite.svg",
+        image: "@/assets/person.jpg",
         name: "Creative Solutions",
         personnelCount: 0,
         categoryGroup: "Design",

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useParams } from "@tanstack/react-router";
 import { mockEmployees } from "@/config/mockData/employees";
 import {
@@ -6,7 +6,7 @@ import {
     mockPerformanceSheets,
 } from "@/config/mockData/templates";
 import { Pie, PieChart, Cell } from "recharts";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
     ChartContainer,
     ChartTooltip,
@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 export const Route = createFileRoute("/performance/$employeeId/$sheetId/")({
     component: RouteComponent,
 });
@@ -29,17 +30,30 @@ function RouteComponent() {
         (t) => t.id === performanceSheet?.templateId
     );
 
-    const initialScores =
-        performanceSheet?.scores ?
+    const initialScores: Record<string, Record<string, number>> =
+        (
+            performanceSheet?.scores &&
+            typeof performanceSheet.scores === "object"
+        ) ?
             Object.fromEntries(
-                Object.entries(performanceSheet.scores).map(([key, value]) => [
-                    key,
-                    typeof value === "number" ? value : 0,
-                ])
+                Object.entries(performanceSheet.scores).map(
+                    ([categoryId, items]) => [
+                        categoryId,
+                        Object.fromEntries(
+                            Object.entries(
+                                (items as Record<string, number>) || {}
+                            ).map(([itemId, value]) => [
+                                itemId,
+                                typeof value === "number" ? value : 0,
+                            ])
+                        ),
+                    ]
+                )
             )
-            : {};
+            : {}; // Fallback to an empty object if scores are missing
 
-    const [scores, setScores] = useState<Record<string, number>>(initialScores);
+    const [scores, setScores] = useState(initialScores);
+    const [isEditing, setIsEditing] = useState(false);
 
     if (!employee || !performanceSheet || !template) {
         return (
@@ -53,197 +67,228 @@ function RouteComponent() {
                     {!template && "Template not found. "}
                 </p>
                 <pre className="mt-4 text-sm text-gray-500">
-                    Debug info: Employee ID: {employeeId}
-                    Sheet ID: {sheetId}
+                    Debug info: Employee ID: {employeeId} | Sheet ID: {sheetId}
                 </pre>
             </div>
         );
     }
 
-    const handleScoreChange = (categoryId: string, value: string) => {
+    const handleScoreChange = (
+        categoryId: string,
+        itemId: string,
+        value: string
+    ) => {
         const numValue = Math.min(100, Math.max(0, Number(value) || 0));
         setScores((prev) => ({
             ...prev,
-            [categoryId]: numValue,
+            [categoryId]: {
+                ...prev[categoryId],
+                [itemId]: numValue,
+            },
         }));
     };
 
-    const handleSave = () => {
-        // Here you would implement saving to mockPerformanceSheets
-        console.log("Saving scores:", {
-            employeeId: employee.id,
-            sheetId: performanceSheet.id,
-            scores,
-        });
+    const handleEditSave = () => {
+        if (isEditing) {
+            console.log("Saving scores:", {
+                employeeId: employee.id,
+                sheetId: performanceSheet.id,
+                scores,
+            });
+        }
+        setIsEditing(!isEditing);
     };
 
-    const chartData = template.categories.map((category, index) => ({
-        name: category.name,
-        value: scores[category.id] || 0,
-        fill: `hsl(var(--chart-${index + 1}))`,
-    }));
-
-    const chartConfig = Object.fromEntries(
-        template.categories.map(({ name }, index) => [
-            name,
-            {
-                label: name,
-                color: `hsl(var(--chart-${index + 1}))`
-            },
-        ])
-    );
-
-    const RADIAN = Math.PI / 180;
-    const renderCustomizedLabel = ({
-        cx,
-        cy,
-        midAngle,
-        innerRadius,
-        outerRadius,
-        percent,
-    }: any) => {
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-        return (
-            <text
-                x={x}
-                y={y}
-                fill="white"
-                textAnchor={x > cx ? "start" : "end"}
-                dominantBaseline="central"
-            >
-                {`${(percent * 100).toFixed(0)}%`}
-            </text>
-        );
-    };
+    const chartConfig =
+        template?.categories ?
+            Object.fromEntries(
+                template.categories.map(({ name, color }, index) => [
+                    name,
+                    {
+                        label: name,
+                        color: color || `hsl(var(--chart-${index + 1}))`,
+                    },
+                ])
+            )
+            : {}; // Fallback to an empty object if template.categories is missing
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex-none min-h-0 border-b">
-                <div className="container flex flex-row items-center justify-between">
-                    <div className="flex gap-8">
-                        <h1 className="py-4 text-xl font-semibold">
-                            {performanceSheet.name}
-                        </h1>
-                        <h1 className="py-4 text-xl font-semibold">
-                            {template.name}
-                        </h1>
-                    </div>
-                    <Button
-                        onClick={handleSave}
-                        className="h-10 px-8 border rounded-none"
-                        variant="outline"
-                    >
-                        Save
-                    </Button>
+            
+            <div className="flex-none min-h-0 px-2 py-4 bg-white border-b">
+                <div className="container flex justify-between gap-8 md:px-6">
+                    {performanceSheet.name}
+                    <Link to="/performance/setting/$templateId" params={{templateId: performanceSheet.id.toString()}}>Setting</Link>
                 </div>
             </div>
 
+            <div className="flex-none min-h-0 px-2 py-4 bg-gray-100 border-b">
+                <div className="container flex gap-8 md:px-6">
+                    <h1>Sheet name</h1>
+                    {performanceSheet.name}
+                </div>
+            </div>
+
+            <div className="flex-none min-h-0 px-8 py-4 border-b">
+                <h1 className="py-4 text-base">
+                    {template.name}
+                </h1>
+            </div>
+
+
+
+            {/* Edit/Save Button Section */}
+            <div className="flex justify-end flex-none bg-white">
+                <Button
+                    onClick={handleEditSave}
+                    className="w-20 text-black bg-transparent border cursor-pointer h-15"
+                    variant="outline"
+                >
+                    {isEditing ? "SAVE" : "EDIT"}
+                </Button>
+            </div>
+
             <div className="grid h-full grid-cols-2">
-                {/* Left side - Chart */}
+                {/* Score Chart Section */}
                 <Card className="flex flex-col h-full border rounded-none">
                     <CardContent className="flex-1">
+                        <p className="pt-4">Total Score</p>
                         <ChartContainer
                             config={chartConfig}
-                            className="w-full h-full min-h-[500px]"
+                            className="w-full h-full min-h-[500px] flex items-center justify-center"
                         >
-                            <div className="">
-                                <CardTitle className="pt-4">
-                                    Total Score
-                                </CardTitle>
-                                <div className="flex items-center justify-center"  >
-
-                                <PieChart width={500} height={500}>
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent />}
-                                    />
-                                    <Pie
-                                        data={chartData}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={100}
-                                        outerRadius={200}
-                                        labelLine={false}
-                                        label={renderCustomizedLabel}
-                                    >
-                                        {chartData.map((entry, index) => (
+                            <PieChart width={500} height={500}>
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent />}
+                                />
+                                <Pie
+                                    data={template.categories.map(
+                                        (category) => ({
+                                            name: category.name,
+                                            value: Object.values(
+                                                scores[category.id] || {}
+                                            ).reduce(
+                                                (sum, val) => sum + val,
+                                                0
+                                            ),
+                                        })
+                                    )}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={100}
+                                    outerRadius={200}
+                                    labelLine={false}
+                                >
+                                    {template.categories.map(
+                                        (category, index) => (
                                             <Cell
                                                 key={index}
-                                                fill={entry.fill}
+                                                fill={category.color}
                                             />
-                                        ))}
-                                    </Pie>
-                                </PieChart>
-                                </div>
-                            </div>
+                                        )
+                                    )}
+                                </Pie>
+                            </PieChart>
                         </ChartContainer>
-
                     </CardContent>
                 </Card>
 
-                {/* Right side - Score inputs */}
-                <div className="flex flex-col h-full p-6 bg-white border border-l-none">
-                    <h2 className="mb-6 text-lg font-medium">
-                        Performance Details
-                    </h2>
-                    <div className="grid gap-4">
-                        {template.categories.map((category, index) => {
-                            const isDark = index === 5 || index === 6;
-                            const fill = `hsl(var(--chart-${index + 1}))`;
-                            const textColor =
-                                isDark ? "#FFFFFF" : "#000000";
-
-                            return (
-                                <div
-                                    key={category.id}
-                                    className="flex items-center justify-between p-4 border"
-                                    style={{
-                                        backgroundColor: fill,
-                                        borderColor: fill,
-                                    }}
-                                >
-                                    <span
-                                        className="font-medium"
-                                        style={{ color: textColor }}
-                                    >
+                {/* Performance Details Section */}
+                {/* Performance Details Section */}
+                <div className="flex flex-col h-full bg-white border">
+                    {template.categories.map((category) => (
+                        <div key={category.id} className="mb-4 border">
+                            {/* Category Header */}
+                            <div
+                                className="flex items-center gap-4"
+                                style={{ backgroundColor: category.color }}
+                            >
+                                {/* Column 1: Category Name */}
+                                <div className="flex-1 p-4">
+                                    <span className="font-medium text-white">
                                         {category.name}
                                     </span>
-                                    <div className="flex items-center gap-2">
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={scores[category.id] || 0}
-                                            onChange={(e) =>
-                                                handleScoreChange(
-                                                    category.id,
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="w-20 text-right rounded-none"
-                                            style={{
-                                                backgroundColor: fill,
-                                                borderColor: textColor,
-                                                color: textColor,
-                                            }}
-                                        />
-                                        <span
-                                            className="text-lg font-semibold"
-                                            style={{ color: textColor }}
-                                        >
-                                            %
-                                        </span>
+                                </div>
+                                {/* Column 2 & 3: Headers */}
+                                <div className="flex">
+                                    <div className="w-20 p-4 text-center text-white">Score</div>
+                                    <div className="w-20 p-4 text-center text-black bg-white"></div>
+                                </div>
+                            </div>
+
+                            {/* Category Items */}
+                            {category.items.map((item) => (
+                                <div key={item.id} className="flex items-center border-t">
+                                    {/* Column 1: Item Name */}
+                                    <div className="flex-1 p-4">
+                                        <span>{item.name}</span>
+                                    </div>
+                                    {/* Column 2 & 3: Input Fields */}
+                                    <div className="flex items-center">
+                                        <div className="w-20 border-l">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                value={scores[category.id]?.[item.id] || 0}
+                                                onChange={(e) =>
+                                                    handleScoreChange(
+                                                        category.id,
+                                                        item.id,
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="h-full text-center border-none"
+                                                disabled={!isEditing}
+                                                enableEmoji={false}
+                                            />
+                                        </div>
+                                        <div className="w-20 border border-b-0 p-7">
+                                            {/* Weight column - empty for now */}
+                                        </div>
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
+                            ))}
+                        </div>
+                    ))}
                 </div>
+
+                {/* Assigned Category Items Section */}
+                {/* <div className="flex flex-col h-full p-6 border bg-gray-50">
+                    {template.categories.map((category) => (
+                        <div key={category.id} className="p-4 mb-4 border">
+                            {category.items.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-center justify-between p-2"
+                                >
+                                    <span>{item.name}</span>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={
+                                            scores[category.id]?.[item.id] || 0
+                                        }
+                                        onChange={(e) =>
+                                            handleScoreChange(
+                                                category.id,
+                                                item.id,
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-20 text-right"
+                                        disabled={!isEditing}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div> */}
+
             </div>
         </div>
     );
