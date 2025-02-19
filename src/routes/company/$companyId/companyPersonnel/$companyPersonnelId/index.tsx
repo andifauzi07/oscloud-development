@@ -56,7 +56,7 @@ function RouteComponent() {
     const company =
         personnel ?
             mockCompanies.find((comp) => comp.id === personnel.companyId)
-        :   null;
+            : null;
 
     const tabs = [
         { label: "Profile", path: `/company/${companyId}` },
@@ -107,26 +107,45 @@ function RouteComponent() {
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-        if (active.id !== over?.id) {
-            setBoards((boards) => {
-                const activeIndex = boards.findIndex((board) =>
-                    board.leads.some((lead) => lead.id === active.id)
+        
+        if (!over) return; // Exit if no target
+    
+        if (active.id !== over.id) {
+            setBoards((currentBoards) => {
+                // Find the source and target boards
+                const activeBoard = currentBoards.find(board => 
+                    board.leads?.some(lead => lead.id === active.id)
                 );
-                const overIndex = boards.findIndex((board) =>
-                    board.leads.some((lead) => lead.id === over?.id)
+                const overBoard = currentBoards.find(board => 
+                    board.leads?.some(lead => lead.id === over.id)
                 );
-                const newBoards = [...boards];
-                const activeBoard = newBoards[activeIndex];
-                const overBoard = newBoards[overIndex];
-                const activeLeadIndex = activeBoard.leads.findIndex(
-                    (lead) => lead.id === active.id
-                );
-                const overLeadIndex = overBoard.leads.findIndex(
-                    (lead) => lead.id === over?.id
-                );
-                const [removed] = activeBoard.leads.splice(activeLeadIndex, 1);
-                overBoard.leads.splice(overLeadIndex, 0, removed);
-                return newBoards;
+    
+                // If either board is not found, return current state
+                if (!activeBoard || !overBoard) return currentBoards;
+    
+                // Create new array of boards
+                return currentBoards.map(board => {
+                    // Remove from source board
+                    if (board.id === activeBoard.id) {
+                        return {
+                            ...board,
+                            leads: board.leads.filter(lead => lead.id !== active.id)
+                        };
+                    }
+                    // Add to target board
+                    if (board.id === overBoard.id) {
+                        const draggedLead = activeBoard.leads.find(
+                            lead => lead.id === active.id
+                        );
+                        if (!draggedLead) return board;
+                        
+                        return {
+                            ...board,
+                            leads: [...board.leads, draggedLead]
+                        };
+                    }
+                    return board;
+                });
             });
         }
     };
@@ -165,14 +184,20 @@ function RouteComponent() {
                 defaultValue="profile"
                 className="w-full bg-white border [&>*]:p-0 [&>*]:m-0 rounded-none [&>*]:rounded-none"
             >
-                <TabsList className="justify-start w-full gap-8 bg-white border">
-                    <TabsTrigger value="profile">Profile</TabsTrigger>
-                    <TabsTrigger value="leads">Leads</TabsTrigger>
-                    <TabsTrigger value="projects">Projects</TabsTrigger>
+                <TabsList className=" justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+                    <TabsTrigger
+                        className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2 px-8 bg-gray-100"
+                        value="profile">Profile</TabsTrigger>
+                    <TabsTrigger
+                        className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+                        value="leads">Leads</TabsTrigger>
+                    <TabsTrigger
+                        className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+                        value="projects">Projects</TabsTrigger>
                 </TabsList>
 
                 {/* Profile Tab */}
-                <TabsContent value="profile">
+                <TabsContent className="overflow-x-hidden" value="profile">
                     <div className="grid grid-cols-2">
                         <div className="px-4 py-4 bg-white border">
                             <p className="font-semibold">Company Name:</p>
@@ -198,7 +223,7 @@ function RouteComponent() {
                 </TabsContent>
 
                 {/* Leads Tab */}
-                <TabsContent value="leads">
+                <TabsContent className="m-0 overflow-x-hidden" value="leads">
                     <div>
                         <div className="flex flex-col gap-4 px-4 pt-4 border md:flex-row md:px-8 md:gap-16">
                             <div className="flex flex-col w-full space-y-2 md:w-auto">
@@ -281,11 +306,15 @@ function RouteComponent() {
                         </div>
                         <div>
                             <Tabs defaultValue="kanban">
-                                <TabsList className="justify-start w-full gap-8 bg-white border">
-                                    <TabsTrigger value="kanban">
+                                <TabsList className="justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+                                    <TabsTrigger
+                                        className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+                                        value="kanban">
                                         Kanban
                                     </TabsTrigger>
-                                    <TabsTrigger value="list">List</TabsTrigger>
+                                    <TabsTrigger
+                                        className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+                                        value="list">List</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="kanban">
                                     <DndContext
@@ -370,7 +399,7 @@ function RouteComponent() {
                 </TabsContent>
 
                 {/* Projects Tab */}
-                <TabsContent value="projects">
+                <TabsContent className="m-0 overflow-x-hidden" value="projects">
                     <div>
                         <div className="flex flex-col gap-4 px-4 pt-4 border md:flex-row md:px-8 md:gap-16">
                             <div className="flex flex-col w-full space-y-2 md:w-auto">
@@ -453,11 +482,15 @@ function RouteComponent() {
                         </div>
                         <div>
                             <Tabs defaultValue="list">
-                                <TabsList className="justify-start w-full gap-8 bg-white border">
-                                    <TabsTrigger value="list">
+                                <TabsList className="justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+                                    <TabsTrigger
+                                        className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+                                        value="list">
                                         List View
                                     </TabsTrigger>
-                                    <TabsTrigger value="timeline">
+                                    <TabsTrigger
+                                        className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+                                        value="timeline">
                                         Timeline
                                     </TabsTrigger>
                                 </TabsList>

@@ -48,9 +48,12 @@ function RouteComponent() {
         {
             header: "Actions",
             accessorKey: "id",
-            cell: () => (
+            cell: ({ row }: any) => (
                 <Button variant="outline" className="w-20">
-                    VIEW
+                    <Link params={{ companyId: row.original.companyId, companyPersonnelId: row.original.id }} to="/company/$companyId/companyPersonnel/$companyPersonnelId">
+                        VIEW
+                    </Link>
+
                 </Button>
             ),
         },

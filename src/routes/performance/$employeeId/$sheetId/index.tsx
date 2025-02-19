@@ -255,40 +255,6 @@ function RouteComponent() {
                         </div>
                     ))}
                 </div>
-
-                {/* Assigned Category Items Section */}
-                {/* <div className="flex flex-col h-full p-6 border bg-gray-50">
-                    {template.categories.map((category) => (
-                        <div key={category.id} className="p-4 mb-4 border">
-                            {category.items.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="flex items-center justify-between p-2"
-                                >
-                                    <span>{item.name}</span>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        value={
-                                            scores[category.id]?.[item.id] || 0
-                                        }
-                                        onChange={(e) =>
-                                            handleScoreChange(
-                                                category.id,
-                                                item.id,
-                                                e.target.value
-                                            )
-                                        }
-                                        className="w-20 text-right"
-                                        disabled={!isEditing}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    ))}
-                </div> */}
-
             </div>
         </div>
     );
