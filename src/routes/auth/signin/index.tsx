@@ -1,137 +1,110 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useNavigate } from "@tanstack/react-router";
-import { Lock, Mail } from "lucide-react";
-import { signInWithEmail, signInWithOAuth } from "@/backend/auth/auth";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useDispatch } from "react-redux";
+import { signInWithEmail } from "@/backend/auth/auth";
+import { setSession } from '@/store/slices/authSlice';
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Lock, Mail } from "lucide-react";
 
-// ✅ Validation schema
 const signInSchema = z.object({
     email: z.string().email("Invalid email").min(1, "Email is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-interface signInProps {
+interface SignInProps {
     email: string;
     password: string;
 }
 
-export const Route = createFileRoute('/auth/signin/')({
-    component: RouteComponent,
-})
-
-function RouteComponent() {
+function SignInComponent() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<signInProps>({
+    } = useForm<SignInProps>({
         resolver: zodResolver(signInSchema),
     });
 
-    const onSubmit = async (data: signInProps) => {
-        setLoading(true);
-        const { error } = await signInWithEmail(data.email, data.password); // Use `auth.ts` function
+    const onSubmit = async (data: SignInProps) => {
+        try {
+            setLoading(true);
+            const { data: { session }, error } = await signInWithEmail(data.email, data.password);
 
-        if (error) {
-            alert(error.message);
-        } else {
-            navigate({ to: "/" });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            if (session) {
+                dispatch(setSession(session));
+                navigate({ to: "/" });
+            }
+        } catch (err) {
+            console.error(err);
+            alert('An unexpected error occurred');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
+
     return (
-        <div>
-            <Navbar />
-            <div className="flex items-center justify-center min-h-screen">
+        <div className="min-h-screen bg-slate-50">
+            <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)]">
                 <Card className="w-[400px]">
                     <CardHeader className="text-center">
-                        <CardTitle>Login</CardTitle>
+                        <CardTitle>Login to Your Account</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <div className="grid gap-4">
-                                {/* Email Field */}
                                 <div className="space-y-1.5">
                                     <Label htmlFor="email">Email Address</Label>
-                                    <div className="flex items-center border-b">
-                                        <Mail className="w-5 text-muted-foreground" />
+                                    <div className="flex items-center border rounded-md">
+                                        <Mail className="w-5 h-5 mx-3 text-muted-foreground" />
                                         <Input
+                                            enableEmoji={false}
                                             id="email"
                                             type="email"
-                                            placeholder="Type your email"
-                                            className="ml-2"
+                                            placeholder="Enter your email"
+                                            className="border-0"
                                             {...register("email")}
                                         />
                                     </div>
-                                    {errors.email && (
-                                        <p className="text-xs text-red-500">
-                                            {errors.email.message}
-                                        </p>
-                                    )}
+                                    {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
                                 </div>
-
-                                {/* Password Field */}
                                 <div className="space-y-1.5">
                                     <Label htmlFor="password">Password</Label>
-                                    <div className="flex items-center border-b">
-                                        <Lock className="w-5 text-muted-foreground" />
+                                    <div className="flex items-center border rounded-md">
+                                        <Lock className="w-5 h-5 mx-3 text-muted-foreground" />
                                         <Input
+                                            enableEmoji={false}
                                             id="password"
                                             type="password"
                                             placeholder="Enter your password"
-                                            className="ml-2"
+                                            className="border-0"
                                             {...register("password")}
                                         />
                                     </div>
-                                    {errors.password && (
-                                        <p className="text-xs text-red-500">
-                                            {errors.password.message}
-                                        </p>
-                                    )}
+                                    {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
                                 </div>
                             </div>
-
-                            {/* Forgot Password & Login Button */}
-                            <div className="mt-3 text-right">
-                                <a href="/forgot-password" className="text-xs text-slate-500">
-                                    Forgot your password?
-                                </a>
-                                <Button
-                                    type="submit"
-                                    className="w-full my-4"
-                                    disabled={loading}>
-                                    {loading ? "Logging in..." : "Login"}
-                                </Button>
-                            </div>
-
-                            {/* Social Login */}
-                            <div className="text-sm font-bold text-center">
-                                or Login Using
-                            </div>
-                            <div className="grid gap-2 mt-2">
-                                <Button
-                                    variant="default"
-                                    className="w-full text-xs"
-                                    onClick={() => signInWithOAuth("google")}>
-                                    Login with Google
-                                </Button>
-                                <Button
-                                    variant="default"
-                                    className="w-full text-xs"
-                                    onClick={() => signInWithOAuth("github")}>
-                                    Login with Github
-                                </Button>
-                            </div>
+                            <Button
+                                type="submit"
+                                className="w-full mt-6"
+                                disabled={loading}
+                            >
+                                {loading ? "Logging in..." : "Login"}
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>
@@ -139,3 +112,7 @@ function RouteComponent() {
         </div>
     );
 }
+
+export const Route = createFileRoute('/auth/signin/')({
+    component: SignInComponent
+});

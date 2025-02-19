@@ -1,48 +1,28 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setSession } from "@/store/slices/authSlice";
 import { supabase } from "@/backend/supabase/supabaseClient";
+import { RootState } from "@/store/store";
 
-type AuthContextType = {
-    user: User | null;
-    session: Session | null;
-    loading: boolean;
-};
-
-const AuthContext = createContext<AuthContextType>({
-    user: null,
-    session: null,
-    loading: true,
-});
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
-    const [loading, setLoading] = useState(true);
+export function AuthListener() {
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user || null);
-            setLoading(false);
+            dispatch(setSession(session));
         });
 
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session?.user || null);
-            setLoading(false);
+            dispatch(setSession(session));
         });
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, [dispatch]);
 
-    return (
-        <AuthContext.Provider value={{ user, session, loading }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return null;
 }
 
-export const useAuth = () => useContext(AuthContext);
+// Hook to access auth state in components
+export const useAuth = () => useSelector((state: RootState) => state.auth);

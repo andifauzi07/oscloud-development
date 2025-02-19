@@ -24,6 +24,7 @@ import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projec
 import { Route as PerformanceSettingIndexImport } from './routes/performance/setting/index'
 import { Route as PerformanceEmployeeIdIndexImport } from './routes/performance/$employeeId/index'
 import { Route as PayrollEmployeeIdIndexImport } from './routes/payroll/$employeeId/index'
+import { Route as GuestDashboardIndexImport } from './routes/guest/dashboard/index'
 import { Route as FeaturesPersonnelListIndexImport } from './routes/features/personnel-list/index'
 import { Route as FeaturesCompanyListIndexImport } from './routes/features/company-list/index'
 import { Route as FeaturesProfitLossIndexImport } from './routes/features/ProfitLoss/index'
@@ -129,6 +130,12 @@ const PerformanceEmployeeIdIndexRoute = PerformanceEmployeeIdIndexImport.update(
 const PayrollEmployeeIdIndexRoute = PayrollEmployeeIdIndexImport.update({
   id: '/payroll/$employeeId/',
   path: '/payroll/$employeeId/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const GuestDashboardIndexRoute = GuestDashboardIndexImport.update({
+  id: '/guest/dashboard/',
+  path: '/guest/dashboard/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -433,6 +440,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeaturesPersonnelListIndexImport
       parentRoute: typeof rootRoute
     }
+    '/guest/dashboard/': {
+      id: '/guest/dashboard/'
+      path: '/guest/dashboard'
+      fullPath: '/guest/dashboard'
+      preLoaderRoute: typeof GuestDashboardIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/payroll/$employeeId/': {
       id: '/payroll/$employeeId/'
       path: '/payroll/$employeeId'
@@ -597,6 +611,7 @@ export interface FileRoutesByFullPath {
   '/features/ProfitLoss': typeof FeaturesProfitLossIndexRoute
   '/features/company-list': typeof FeaturesCompanyListIndexRoute
   '/features/personnel-list': typeof FeaturesPersonnelListIndexRoute
+  '/guest/dashboard': typeof GuestDashboardIndexRoute
   '/payroll/$employeeId': typeof PayrollEmployeeIdIndexRoute
   '/performance/$employeeId': typeof PerformanceEmployeeIdIndexRoute
   '/performance/setting': typeof PerformanceSettingIndexRoute
@@ -638,6 +653,7 @@ export interface FileRoutesByTo {
   '/features/ProfitLoss': typeof FeaturesProfitLossIndexRoute
   '/features/company-list': typeof FeaturesCompanyListIndexRoute
   '/features/personnel-list': typeof FeaturesPersonnelListIndexRoute
+  '/guest/dashboard': typeof GuestDashboardIndexRoute
   '/payroll/$employeeId': typeof PayrollEmployeeIdIndexRoute
   '/performance/$employeeId': typeof PerformanceEmployeeIdIndexRoute
   '/performance/setting': typeof PerformanceSettingIndexRoute
@@ -680,6 +696,7 @@ export interface FileRoutesById {
   '/features/ProfitLoss/': typeof FeaturesProfitLossIndexRoute
   '/features/company-list/': typeof FeaturesCompanyListIndexRoute
   '/features/personnel-list/': typeof FeaturesPersonnelListIndexRoute
+  '/guest/dashboard/': typeof GuestDashboardIndexRoute
   '/payroll/$employeeId/': typeof PayrollEmployeeIdIndexRoute
   '/performance/$employeeId/': typeof PerformanceEmployeeIdIndexRoute
   '/performance/setting/': typeof PerformanceSettingIndexRoute
@@ -723,6 +740,7 @@ export interface FileRouteTypes {
     | '/features/ProfitLoss'
     | '/features/company-list'
     | '/features/personnel-list'
+    | '/guest/dashboard'
     | '/payroll/$employeeId'
     | '/performance/$employeeId'
     | '/performance/setting'
@@ -763,6 +781,7 @@ export interface FileRouteTypes {
     | '/features/ProfitLoss'
     | '/features/company-list'
     | '/features/personnel-list'
+    | '/guest/dashboard'
     | '/payroll/$employeeId'
     | '/performance/$employeeId'
     | '/performance/setting'
@@ -803,6 +822,7 @@ export interface FileRouteTypes {
     | '/features/ProfitLoss/'
     | '/features/company-list/'
     | '/features/personnel-list/'
+    | '/guest/dashboard/'
     | '/payroll/$employeeId/'
     | '/performance/$employeeId/'
     | '/performance/setting/'
@@ -845,6 +865,7 @@ export interface RootRouteChildren {
   FeaturesProfitLossIndexRoute: typeof FeaturesProfitLossIndexRoute
   FeaturesCompanyListIndexRoute: typeof FeaturesCompanyListIndexRoute
   FeaturesPersonnelListIndexRoute: typeof FeaturesPersonnelListIndexRoute
+  GuestDashboardIndexRoute: typeof GuestDashboardIndexRoute
   PayrollEmployeeIdIndexRoute: typeof PayrollEmployeeIdIndexRoute
   PerformanceEmployeeIdIndexRoute: typeof PerformanceEmployeeIdIndexRoute
   PerformanceSettingIndexRoute: typeof PerformanceSettingIndexRoute
@@ -886,6 +907,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesProfitLossIndexRoute: FeaturesProfitLossIndexRoute,
   FeaturesCompanyListIndexRoute: FeaturesCompanyListIndexRoute,
   FeaturesPersonnelListIndexRoute: FeaturesPersonnelListIndexRoute,
+  GuestDashboardIndexRoute: GuestDashboardIndexRoute,
   PayrollEmployeeIdIndexRoute: PayrollEmployeeIdIndexRoute,
   PerformanceEmployeeIdIndexRoute: PerformanceEmployeeIdIndexRoute,
   PerformanceSettingIndexRoute: PerformanceSettingIndexRoute,
@@ -946,6 +968,7 @@ export const routeTree = rootRoute
         "/features/ProfitLoss/",
         "/features/company-list/",
         "/features/personnel-list/",
+        "/guest/dashboard/",
         "/payroll/$employeeId/",
         "/performance/$employeeId/",
         "/performance/setting/",
@@ -1021,6 +1044,9 @@ export const routeTree = rootRoute
     },
     "/features/personnel-list/": {
       "filePath": "features/personnel-list/index.tsx"
+    },
+    "/guest/dashboard/": {
+      "filePath": "guest/dashboard/index.tsx"
     },
     "/payroll/$employeeId/": {
       "filePath": "payroll/$employeeId/index.tsx"
