@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import MenuList from '@/components/menuList';
@@ -19,11 +19,9 @@ interface PersonnelData {
 	addedAt: string;
 }
 
-
-
-export const Route = createFileRoute('/features/PersonnelList/')({
-  component: RouteComponent,
-})
+export const Route = createFileRoute('/features/personnel-list/')({
+	component: RouteComponent,
+});
 
 function RouteComponent() {
 	// Map mockEmployees to PersonnelData
@@ -57,11 +55,11 @@ function RouteComponent() {
 			accessorKey: 'id', // Use 'id' as the accessorKey for actions
 			cell: () => (
 				// <Link to={`/company/$companyId/personnel/$companyPersonnelId`}>
-					<Button
-						variant="outline"
-						className="w-20">
-						VIEW
-					</Button>
+				<Button
+					variant="outline"
+					className="w-20">
+					VIEW
+				</Button>
 				// </Link>
 			),
 		},
