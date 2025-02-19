@@ -23,8 +23,6 @@ interface signInProps {
 	password: string;
 }
 
-
-
 export const Route = createFileRoute('/auth/signin/')({
   component: RouteComponent,
 })
