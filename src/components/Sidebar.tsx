@@ -52,18 +52,31 @@ type FeatureItem = {
 };
 
 const featuresMap: Record<string, FeatureItem[]> = {
+    employee: [ 
+        { icon: Package, label: 'Employee List', to: '/employee'},
+        { icon: Package, label: 'Performance', to: '/performance'},
+    ],
+
+
 	crm: [
 		{ icon: Package, label: 'Company List', to: '/company' },
-		{ icon: Users, label: 'Personnel List', to: '/features/personnel-list' },
+		{ icon: Package, label: 'Personnel List', to: '/features/personnel-list' },
 	],
+
 	project: [
-		{ icon: Plus, label: 'Add Project', to: '/features/ProjectList' },
-		{ icon: FileText, label: 'Profit & Loss', to: '/features/ProfitLoss' },
+		{ icon: Package, label: 'Project', to: '/projects' },
+		{ icon: Package, label: 'Profit & Loss', to: '/features/ProfitLoss' },
 	],
-	default: [
-		{ icon: Package, label: 'Employee List', to: '/features/personnel-list' },
-		{ icon: Users, label: 'Payment List', to: '/features/company-list' },
-	],
+
+    payroll : [
+        {icon:Package, label: 'Employee List', to: '/payroll'},
+        {icon: Package, label: 'Payment List', to: '/payroll'},
+    ]
+
+	// default: 
+	// 	{ icon: Package, label: 'Employee List', to: '/features/personnel-list' },
+	// 	{ icon: Users, label: 'Payment List', to: '/features/company-list' },
+	// ],
 };
 
 const Sidebar = () => {
