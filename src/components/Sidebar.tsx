@@ -109,7 +109,13 @@ const Sidebar = () => {
 	return (
 		<div className={`h-full overflow-y-auto bg-white border-r transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
 			<div className="relative flex flex-col pb-10 font-bold text-center border-b pt-14">
-				<div className={`transition-opacity duration-300 ${isMinimized ? 'opacity-0' : 'opacity-100'}`}>OSMERGE - BETA</div>
+				<div className={`flex justify-center transition-opacity duration-300 ${isMinimized ? 'opacity-0' : 'opacity-100'}`}>
+					<img
+						src="/logo/osmerge-beta-logo.png"
+						alt="os-merge"
+						className="w-48"
+					/>
+				</div>
 				<button
 					onClick={() => setIsMinimized(!isMinimized)}
 					className="absolute p-1 rounded top-4 left-2 hover:bg-slate-100">
