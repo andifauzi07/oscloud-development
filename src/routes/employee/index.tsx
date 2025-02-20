@@ -8,6 +8,7 @@ import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
 import AdvancedFilterPopover from '../../components/search/advanced-search';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useEmployees } from '@/hooks/useEmployee';
 
 const columnHelper = createColumnHelper<EmployeeTypes>();
 
@@ -114,6 +115,8 @@ export const Route = createFileRoute('/employee/')({
 });
 
 function RouteComponent() {
+    const { employees } = useEmployees()
+
 	const [orderedColumns, setOrderedColumns] = useState<ColumnDef<EmployeeTypes>[]>(columns);
 	const [draggedKey, setDraggedKey] = useState<string | null>(null);
 

@@ -1,7 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { Plus, Hash, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Select, SelectContent, SelectTrigger, SelectValue } from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useState, useEffect } from 'react';
+import { useWorkspace, useWorkspaces } from '@/hooks/useWorkspace';
+import { useUserData } from '@/hooks/useUserData';
+import { CompanyPersonnelLeadsListDataTable } from './companyPersonnelLeadsListDataTable';
 
 type NavItemProps = {
     icon: React.ElementType;
@@ -75,30 +78,18 @@ const featuresMap: Record<string, FeatureItem[]> = {
         { icon: Logo, label: 'Employee List', to: '/employee' },
         { icon: Logo, label: 'Performance', to: '/performance' },
     ],
-
     crm: [
-        // { icon: LogoBlue, label: 'Company List', to: '/company' },
-        // { icon: LogoBlue, label: 'Personnel List', to: '/features/personnel-list' },
         { icon: Logo, label: 'Company List', to: '/company' },
         { icon: Logo, label: 'Personnel List', to: '/features/personnel-list' },
     ],
-
     project: [
         { icon: Logo, label: 'Project', to: '/projects' },
         { icon: Logo, label: 'Profit & Loss', to: '/features/ProfitLoss' },
-        // { icon: LogoBlue, label: 'Add Project', to: '/features/ProjectList' },
-        // { icon: LogoBlue, label: 'Profit & Loss', to: '/features/ProfitLoss' },
     ],
-
     payroll: [
         { icon: Logo, label: 'Employee List', to: '/payroll' },
         { icon: Logo, label: 'Payment List', to: '/payroll' },
     ],
-
-    // default:
-    // 	{ icon: Package, label: 'Employee List', to: '/features/personnel-list' },
-    // 	{ icon: Users, label: 'Payment List', to: '/features/company-list' },
-    // ],
     default: [
         { icon: Logo, label: 'Employee List', to: '/features/personnel-list' },
         { icon: Logo, label: 'Payment List', to: '/features/company-list' },
@@ -116,7 +107,12 @@ const Sidebar = () => {
     const currentFeatures = featuresMap[selectedPackage] || featuresMap.default;
     const hasMoreFeatures = currentFeatures.length > initialFeatureCount;
 
+    // const { workspace_id } = useUserData()
+    const workspace_id = 1
+    const { selectedWorkspace, loading: workspacesLoading } = useWorkspace(Number(workspace_id));
+
     useEffect(() => {
+        console.log({ selectedWorkspace, workspace_id, })
         setShowMoreFeatures(false);
     }, [selectedPackage]);
 
@@ -171,7 +167,11 @@ const Sidebar = () => {
                     <SelectTrigger>
                         <SelectValue placeholder="Select Workspace" />
                     </SelectTrigger>
-                    <SelectContent></SelectContent>
+                    <SelectContent className='rounded-none'>
+                        <SelectItem value={selectedWorkspace!.name}>
+                            {selectedWorkspace?.name}
+                        </SelectItem>
+                    </SelectContent>
                 </Select>
             </div>
 

@@ -1,62 +1,68 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/backend/supabase/supabaseClient';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/backend/supabase/supabaseClient";
 
 interface UserData {
-  id: string;
-  user_role: string;
-  user_status: string;
-  workspace_id: string;
-  error?: string;
-  loading: boolean;
+    userid: string;
+    role: string;
+    status: string;
+    workspaceid: string;
+    error?: string;
+    loading: boolean;
 }
 
 export const useUserData = () => {
-  const { session } = useAuth();
-  const [userData, setUserData] = useState<UserData>({
-    id: '',
-    user_role: '',
-    user_status: '',
-    workspace_id: '',
-    loading: true
-  });
+    const { session } = useAuth();
+    const [userData, setUserData] = useState<UserData>({
+        userid: "",
+        role: "",
+        status: "",
+        workspaceid: "",
+        loading: true,
+    });
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!session?.user?.id) {
-        setUserData(prev => ({ ...prev, loading: false }));
-        return;
-      }
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (!session?.user?.id) {
+                setUserData((prev) => ({ ...prev, loading: false }));
+                return;
+            }
 
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('id, user_role, user_status, workspace_id')
-          .eq('id', session.user.id)
-          .single();
+            try {
+                console.log(session.user.id)
 
-        if (error) {
-          throw error;
-        }
+                const { data, error } = await supabase
+                    .from("User")
+                    .select("userid, role, status, workspaceid")
+                    .eq("userid", session.user.id)
+                    .single();
 
-        setUserData({
-          id: data.id,
-          user_role: data.user_role,
-          user_status: data.user_status,
-          workspace_id: data.workspace_id,
-          loading: false
-        });
-      } catch (error) {
-        setUserData(prev => ({
-          ...prev,
-          error: error instanceof Error ? error.message : 'Failed to fetch user data',
-          loading: false
-        }));
-      }
-    };
+                    console.log(data)
+                if (error) {
+                    throw error;
+                }
 
-    fetchUserData();
-  }, [session]);
+                setUserData({
+                    userid: data.userid,
+                    role: data.role,
+                    status: data.status,
+                    workspaceid: data.workspaceid,
+                    loading: false,
+                });
+            } catch (error) {
+                setUserData((prev) => ({
+                    ...prev,
+                    error:
+                        error instanceof Error ?
+                            error.message
+                        :   "Failed to fetch user data",
+                    loading: false,
+                }));
+            }
+        };
 
-  return userData;
+        fetchUserData();
+    }, [session]);
+
+    return userData;
 };

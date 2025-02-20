@@ -20,7 +20,7 @@ const authSlice = createSlice({
     reducers: {
         setSession: (state, action: PayloadAction<Session | null>) => {
             state.session = action.payload;
-            state.user = action.payload ? action.payload.user : null; // Extract user from session
+            state.user = action.payload ? action.payload.user : null;
         },
         setUser: (state, action: PayloadAction<User | null>) => {
             state.user = action.payload;
