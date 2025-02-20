@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Users, Plus, Settings, Package, FileText, Hash, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, Hash, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Select, SelectContent, SelectTrigger, SelectValue } from './ui/select';
 import { useState, useEffect } from 'react';
 
@@ -14,7 +14,7 @@ type NavItemProps = {
 const NavItem = ({ icon: Icon, label, to, isMinimized, onClick }: NavItemProps) => {
 	const content = (
 		<div
-			className="flex gap-2 p-2 rounded-sm cursor-pointer hover:bg-slate-50"
+			className="flex items-center gap-2 p-2 rounded-sm cursor-pointer hover:bg-slate-50"
 			onClick={onClick}>
 			<Icon
 				size={16}
@@ -51,18 +51,37 @@ type FeatureItem = {
 	to: string;
 };
 
+const Logo = () => {
+	return (
+		<div>
+			<div className="flex-none p-1 bg-green-700">
+				<div className="p-1 bg-red-950"></div>
+			</div>
+		</div>
+	);
+};
+const LogoBlue = () => {
+	return (
+		<div>
+			<div className="flex-none p-1 bg-blue-900">
+				<div className="p-1 bg-white"></div>
+			</div>
+		</div>
+	);
+};
+
 const featuresMap: Record<string, FeatureItem[]> = {
 	crm: [
-		{ icon: Package, label: 'Company List', to: '/company' },
-		{ icon: Users, label: 'Personnel List', to: '/features/personnel-list' },
+		{ icon: Logo, label: 'Company List', to: '/company' },
+		{ icon: Logo, label: 'Personnel List', to: '/features/personnel-list' },
 	],
 	project: [
-		{ icon: Plus, label: 'Add Project', to: '/features/ProjectList' },
-		{ icon: FileText, label: 'Profit & Loss', to: '/features/ProfitLoss' },
+		{ icon: LogoBlue, label: 'Add Project', to: '/features/ProjectList' },
+		{ icon: LogoBlue, label: 'Profit & Loss', to: '/features/ProfitLoss' },
 	],
 	default: [
-		{ icon: Package, label: 'Employee List', to: '/features/personnel-list' },
-		{ icon: Users, label: 'Payment List', to: '/features/company-list' },
+		{ icon: Logo, label: 'Employee List', to: '/features/personnel-list' },
+		{ icon: LogoBlue, label: 'Payment List', to: '/features/company-list' },
 	],
 };
 
@@ -90,17 +109,17 @@ const Sidebar = () => {
 	const handleAddFeature = () => console.log('Add feature clicked');
 
 	const adminItems = [
-		{ icon: Users, label: 'Employee List', to: '/admin/employee-list' },
-		{ icon: FileText, label: 'Performance', to: '/admin/performance' },
-		{ icon: Settings, label: 'Settings', to: '/admin/settings' },
+		{ icon: Logo, label: 'Employee List', to: '/admin/employee-list' },
+		{ icon: Logo, label: 'Performance', to: '/setting/members' },
+		{ icon: Logo, label: 'Settings', to: '/setting' },
 	];
 
 	const packagedApps = [
-		{ id: 'employee', icon: Package, label: 'Employee', to: '/employee' },
-		{ id: 'performance', icon: Package, label: 'Performance', to: '/performance' },
-		{ id: 'crm', icon: Package, label: 'CRM', to: '/company' },
-		{ id: 'project', icon: Package, label: 'Project', to: '/projects' },
-		{ id: 'payroll', icon: Package, label: 'Payroll', to: '/payroll' },
+		{ id: 'employee', icon: LogoBlue, label: 'Employee', to: '/employee' },
+		{ id: 'performance', icon: LogoBlue, label: 'Performance', to: '/performance' },
+		{ id: 'crm', icon: LogoBlue, label: 'CRM', to: '/company' },
+		{ id: 'project', icon: LogoBlue, label: 'Project', to: '/projects' },
+		{ id: 'payroll', icon: LogoBlue, label: 'Payroll', to: '/payroll' },
 	];
 
 	const categories = ['All employees', 'Employee Category A', ...(showMoreCategory ? ['UI Designer', 'Full Time', 'Temporary'] : [])];
@@ -108,26 +127,25 @@ const Sidebar = () => {
 
 	return (
 		<div className={`h-full overflow-y-auto bg-white border-r transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
-			<div className="relative flex flex-col pb-10 font-bold text-center border-b pt-14">
-				<div className={`flex justify-center transition-opacity duration-300 ${isMinimized ? 'opacity-0' : 'opacity-100'}`}>
+			<div className="relative flex flex-row gap-2.5 font-bold text-center border-b">
+				<div className="mr-4">
+					<div className="flex-none p-3 bg-green-700">
+						<div className="p-3 bg-red-950"></div>
+					</div>
+				</div>
+				<div className={`flex justify-center items-center transition-opacity duration-300 ${isMinimized ? 'opacity-0' : 'opacity-100'}`}>
 					<img
 						src="/logo/osmerge-beta-logo.png"
 						alt="os-merge"
-						className="w-48"
+						className="w-24"
 					/>
 				</div>
-				<button
-					onClick={() => setIsMinimized(!isMinimized)}
-					className="absolute p-1 rounded top-4 left-2 hover:bg-slate-100">
-					{isMinimized ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-				</button>
 			</div>
 
 			{/* Workspace Section */}
 			<div className="flex flex-col p-4 text-sm border-b">
 				<SectionHeader
 					label="Workspace"
-					showAdd
 					onAddClick={handleAddWorkspace}
 				/>
 				<Select>
@@ -139,7 +157,7 @@ const Sidebar = () => {
 			</div>
 
 			{/* Master (Admin) Section */}
-			<div className="flex flex-col p-4 border-b">
+			<div className="flex justify-center flex-col p-4 border-b">
 				<SectionHeader label="Master (Admin)" />
 				{adminItems.map((item) => (
 					<NavItem
@@ -159,15 +177,15 @@ const Sidebar = () => {
 				/>
 				<NavItem
 					to={'/'}
-					icon={Package}
+					icon={LogoBlue}
 					label="Staffing Agency Package"
 				/>
 				<NavItem
 					to={'/'}
-					icon={Package}
+					icon={LogoBlue}
 					label="Other App Name"
 				/>
-				<button className="text-sm text-blue-500 hover:underline">View more</button>
+				{/* <button className="text-sm text-blue-500 hover:underline">View more</button> */}
 			</div>
 
 			{/* Packaged Apps Section */}
@@ -199,13 +217,13 @@ const Sidebar = () => {
 						/>
 					))}
 				</div>
-				{hasMoreFeatures && (
+				{/* {hasMoreFeatures && (
 					<button
 						onClick={() => setShowMoreFeatures(!showMoreFeatures)}
 						className="text-sm text-blue-500 hover:underline">
 						{showMoreFeatures ? 'View less' : 'View more'}
 					</button>
-				)}
+				)} */}
 			</div>
 
 			{/* Category Section */}
@@ -233,13 +251,13 @@ const Sidebar = () => {
 						/>
 					)}
 				</div>
-				{!showMoreCategory && (
+				{/* {!showMoreCategory && (
 					<button
 						onClick={() => setShowMoreCategory(true)}
 						className="text-sm text-blue-500 hover:underline">
 						View more
 					</button>
-				)}
+				)} */}
 			</div>
 
 			{/* Department Section */}
@@ -267,14 +285,19 @@ const Sidebar = () => {
 						/>
 					)}
 				</div>
-				{!showMoreDepartment && (
+				{/* {!showMoreDepartment && (
 					<button
 						onClick={() => setShowMoreDepartment(true)}
 						className="text-sm text-blue-500 hover:underline">
 						View more
 					</button>
-				)}
+				)} */}
 			</div>
+			<button
+				onClick={() => setIsMinimized(!isMinimized)}
+				className="absolute p-1 rounded bottom-0 left-2 hover:bg-slate-100">
+				{isMinimized ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+			</button>
 		</div>
 	);
 };

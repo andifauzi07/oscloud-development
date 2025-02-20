@@ -11,15 +11,16 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 import { Route as WorkspaceIndexImport } from './routes/workspace/index'
+import { Route as SettingIndexImport } from './routes/setting/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
 import { Route as PerformanceIndexImport } from './routes/performance/index'
 import { Route as PayrollIndexImport } from './routes/payroll/index'
 import { Route as EmployeeIndexImport } from './routes/employee/index'
 import { Route as CompanyIndexImport } from './routes/company/index'
 import { Route as AuthIndexImport } from './routes/auth/index'
+import { Route as SettingMembersIndexImport } from './routes/setting/members/index'
 import { Route as ProjectsSettingIndexImport } from './routes/projects/setting/index'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
 import { Route as PerformanceSettingIndexImport } from './routes/performance/setting/index'
@@ -57,12 +58,6 @@ import { Route as CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexImport 
 
 // Create/Update Routes
 
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
@@ -72,6 +67,12 @@ const IndexRoute = IndexImport.update({
 const WorkspaceIndexRoute = WorkspaceIndexImport.update({
   id: '/workspace/',
   path: '/workspace/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SettingIndexRoute = SettingIndexImport.update({
+  id: '/setting/',
+  path: '/setting/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -108,6 +109,12 @@ const CompanyIndexRoute = CompanyIndexImport.update({
 const AuthIndexRoute = AuthIndexImport.update({
   id: '/auth/',
   path: '/auth/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SettingMembersIndexRoute = SettingMembersIndexImport.update({
+  id: '/setting/members/',
+  path: '/setting/members/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -352,13 +359,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
-    }
     '/auth/': {
       id: '/auth/'
       path: '/auth'
@@ -399,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof ProjectsIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/setting/': {
+      id: '/setting/'
+      path: '/setting'
+      fullPath: '/setting'
+      preLoaderRoute: typeof SettingIndexImport
       parentRoute: typeof rootRoute
     }
     '/workspace/': {
@@ -518,6 +525,13 @@ declare module '@tanstack/react-router' {
       path: '/projects/setting'
       fullPath: '/projects/setting'
       preLoaderRoute: typeof ProjectsSettingIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/setting/members/': {
+      id: '/setting/members/'
+      path: '/setting/members'
+      fullPath: '/setting/members'
+      preLoaderRoute: typeof SettingMembersIndexImport
       parentRoute: typeof rootRoute
     }
     '/company/$companyId/companyPersonnel/': {
@@ -653,13 +667,13 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/auth': typeof AuthIndexRoute
   '/company': typeof CompanyIndexRoute
   '/employee': typeof EmployeeIndexRoute
   '/payroll': typeof PayrollIndexRoute
   '/performance': typeof PerformanceIndexRoute
   '/projects': typeof ProjectsIndexRoute
+  '/setting': typeof SettingIndexRoute
   '/workspace': typeof WorkspaceIndexRoute
   '/auth/signin': typeof AuthSigninIndexRoute
   '/auth/signup': typeof AuthSignupIndexRoute
@@ -677,6 +691,7 @@ export interface FileRoutesByFullPath {
   '/performance/setting': typeof PerformanceSettingIndexRoute
   '/projects/$projectId': typeof ProjectsProjectIdIndexRoute
   '/projects/setting': typeof ProjectsSettingIndexRoute
+  '/setting/members': typeof SettingMembersIndexRoute
   '/company/$companyId/companyPersonnel': typeof CompanyCompanyIdCompanyPersonnelIndexRoute
   '/company/setting/datacategory': typeof CompanySettingDatacategoryIndexRoute
   '/employee/$userId/payroll': typeof EmployeeUserIdPayrollIndexRoute
@@ -699,13 +714,13 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/auth': typeof AuthIndexRoute
   '/company': typeof CompanyIndexRoute
   '/employee': typeof EmployeeIndexRoute
   '/payroll': typeof PayrollIndexRoute
   '/performance': typeof PerformanceIndexRoute
   '/projects': typeof ProjectsIndexRoute
+  '/setting': typeof SettingIndexRoute
   '/workspace': typeof WorkspaceIndexRoute
   '/auth/signin': typeof AuthSigninIndexRoute
   '/auth/signup': typeof AuthSignupIndexRoute
@@ -723,6 +738,7 @@ export interface FileRoutesByTo {
   '/performance/setting': typeof PerformanceSettingIndexRoute
   '/projects/$projectId': typeof ProjectsProjectIdIndexRoute
   '/projects/setting': typeof ProjectsSettingIndexRoute
+  '/setting/members': typeof SettingMembersIndexRoute
   '/company/$companyId/companyPersonnel': typeof CompanyCompanyIdCompanyPersonnelIndexRoute
   '/company/setting/datacategory': typeof CompanySettingDatacategoryIndexRoute
   '/employee/$userId/payroll': typeof EmployeeUserIdPayrollIndexRoute
@@ -746,13 +762,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/auth/': typeof AuthIndexRoute
   '/company/': typeof CompanyIndexRoute
   '/employee/': typeof EmployeeIndexRoute
   '/payroll/': typeof PayrollIndexRoute
   '/performance/': typeof PerformanceIndexRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/setting/': typeof SettingIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
@@ -770,6 +786,7 @@ export interface FileRoutesById {
   '/performance/setting/': typeof PerformanceSettingIndexRoute
   '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
   '/projects/setting/': typeof ProjectsSettingIndexRoute
+  '/setting/members/': typeof SettingMembersIndexRoute
   '/company/$companyId/companyPersonnel/': typeof CompanyCompanyIdCompanyPersonnelIndexRoute
   '/company/setting/datacategory/': typeof CompanySettingDatacategoryIndexRoute
   '/employee/$userId/payroll/': typeof EmployeeUserIdPayrollIndexRoute
@@ -794,13 +811,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
     | '/auth'
     | '/company'
     | '/employee'
     | '/payroll'
     | '/performance'
     | '/projects'
+    | '/setting'
     | '/workspace'
     | '/auth/signin'
     | '/auth/signup'
@@ -818,6 +835,7 @@ export interface FileRouteTypes {
     | '/performance/setting'
     | '/projects/$projectId'
     | '/projects/setting'
+    | '/setting/members'
     | '/company/$companyId/companyPersonnel'
     | '/company/setting/datacategory'
     | '/employee/$userId/payroll'
@@ -839,13 +857,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/auth'
     | '/company'
     | '/employee'
     | '/payroll'
     | '/performance'
     | '/projects'
+    | '/setting'
     | '/workspace'
     | '/auth/signin'
     | '/auth/signup'
@@ -863,6 +881,7 @@ export interface FileRouteTypes {
     | '/performance/setting'
     | '/projects/$projectId'
     | '/projects/setting'
+    | '/setting/members'
     | '/company/$companyId/companyPersonnel'
     | '/company/setting/datacategory'
     | '/employee/$userId/payroll'
@@ -884,13 +903,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/about'
     | '/auth/'
     | '/company/'
     | '/employee/'
     | '/payroll/'
     | '/performance/'
     | '/projects/'
+    | '/setting/'
     | '/workspace/'
     | '/auth/signin/'
     | '/auth/signup/'
@@ -908,6 +927,7 @@ export interface FileRouteTypes {
     | '/performance/setting/'
     | '/projects/$projectId/'
     | '/projects/setting/'
+    | '/setting/members/'
     | '/company/$companyId/companyPersonnel/'
     | '/company/setting/datacategory/'
     | '/employee/$userId/payroll/'
@@ -931,13 +951,13 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   AuthIndexRoute: typeof AuthIndexRoute
   CompanyIndexRoute: typeof CompanyIndexRoute
   EmployeeIndexRoute: typeof EmployeeIndexRoute
   PayrollIndexRoute: typeof PayrollIndexRoute
   PerformanceIndexRoute: typeof PerformanceIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  SettingIndexRoute: typeof SettingIndexRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   AuthSigninIndexRoute: typeof AuthSigninIndexRoute
   AuthSignupIndexRoute: typeof AuthSignupIndexRoute
@@ -955,6 +975,7 @@ export interface RootRouteChildren {
   PerformanceSettingIndexRoute: typeof PerformanceSettingIndexRoute
   ProjectsProjectIdIndexRoute: typeof ProjectsProjectIdIndexRoute
   ProjectsSettingIndexRoute: typeof ProjectsSettingIndexRoute
+  SettingMembersIndexRoute: typeof SettingMembersIndexRoute
   CompanyCompanyIdCompanyPersonnelIndexRoute: typeof CompanyCompanyIdCompanyPersonnelIndexRoute
   CompanySettingDatacategoryIndexRoute: typeof CompanySettingDatacategoryIndexRoute
   EmployeeUserIdPayrollIndexRoute: typeof EmployeeUserIdPayrollIndexRoute
@@ -977,13 +998,13 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   AuthIndexRoute: AuthIndexRoute,
   CompanyIndexRoute: CompanyIndexRoute,
   EmployeeIndexRoute: EmployeeIndexRoute,
   PayrollIndexRoute: PayrollIndexRoute,
   PerformanceIndexRoute: PerformanceIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  SettingIndexRoute: SettingIndexRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
   AuthSigninIndexRoute: AuthSigninIndexRoute,
   AuthSignupIndexRoute: AuthSignupIndexRoute,
@@ -1001,6 +1022,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerformanceSettingIndexRoute: PerformanceSettingIndexRoute,
   ProjectsProjectIdIndexRoute: ProjectsProjectIdIndexRoute,
   ProjectsSettingIndexRoute: ProjectsSettingIndexRoute,
+  SettingMembersIndexRoute: SettingMembersIndexRoute,
   CompanyCompanyIdCompanyPersonnelIndexRoute:
     CompanyCompanyIdCompanyPersonnelIndexRoute,
   CompanySettingDatacategoryIndexRoute: CompanySettingDatacategoryIndexRoute,
@@ -1042,13 +1064,13 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about",
         "/auth/",
         "/company/",
         "/employee/",
         "/payroll/",
         "/performance/",
         "/projects/",
+        "/setting/",
         "/workspace/",
         "/auth/signin/",
         "/auth/signup/",
@@ -1066,6 +1088,7 @@ export const routeTree = rootRoute
         "/performance/setting/",
         "/projects/$projectId/",
         "/projects/setting/",
+        "/setting/members/",
         "/company/$companyId/companyPersonnel/",
         "/company/setting/datacategory/",
         "/employee/$userId/payroll/",
@@ -1089,9 +1112,6 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.tsx"
     },
-    "/about": {
-      "filePath": "about.tsx"
-    },
     "/auth/": {
       "filePath": "auth/index.tsx"
     },
@@ -1109,6 +1129,9 @@ export const routeTree = rootRoute
     },
     "/projects/": {
       "filePath": "projects/index.tsx"
+    },
+    "/setting/": {
+      "filePath": "setting/index.tsx"
     },
     "/workspace/": {
       "filePath": "workspace/index.tsx"
@@ -1160,6 +1183,9 @@ export const routeTree = rootRoute
     },
     "/projects/setting/": {
       "filePath": "projects/setting/index.tsx"
+    },
+    "/setting/members/": {
+      "filePath": "setting/members/index.tsx"
     },
     "/company/$companyId/companyPersonnel/": {
       "filePath": "company/$companyId/companyPersonnel/index.tsx"

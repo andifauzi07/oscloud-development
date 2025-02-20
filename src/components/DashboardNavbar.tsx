@@ -21,24 +21,24 @@ const DashboardNavbar = () => {
 	};
 
 	return (
-		<nav className="border-b border-black h-[var(--top-navbar-height)] flex flex-col justify-center  z-50 sticky top-0 w-full bg-white flex-none">
+		<nav className="border-b border-t h-[var(--top-navbar-height)] flex flex-col justify-center  z-50 sticky top-0 w-full bg-white flex-none">
 			<ul className="flex justify-between">
 				<div className="flex">
 					{links.map(({ name, path, image }) => (
 						<li
 							key={name}
-							className="px-4 border-l border-black">
+							className="px-4 border-l">
 							<Link
-								className="py-4 flex items-center text-xs text-black hover:text-gray-700"
+								className="py-2 flex items-center text-xs text-black hover:text-gray-700"
 								to={path}>
 								{image ? (
 									<img
 										src={image}
 										alt={name}
-										className="h-6"
+										className="h-[20px]"
 									/>
 								) : (
-									<h1 className="text-[18px]">{name}</h1>
+									<h1 className="text-[13px]">{name}</h1>
 								)}
 							</Link>
 						</li>
