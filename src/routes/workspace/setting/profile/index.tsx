@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/workspace/setting/profile/')({
-  component: RouteComponent,
+    component: RouteComponent,
 })
 
 function RouteComponent() {
-  return <div>Hello "/workspace/setting/profile/"!</div>
+    const { selectedWorkspace, loading, error, updateWorkspace } = useWorkspace(workspaceId);
+
+    return <div>Hello "/workspace/setting/profile/"!</div>
 }

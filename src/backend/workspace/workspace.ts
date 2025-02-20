@@ -7,7 +7,7 @@ interface Workspace {
 }
 
 // Create a new workspace
-async function createWorkspace(workspace) {
+async function createWorkspace(workspace: any) {
     const { data, error } = await supabase
         .from("workspaces")
         .insert(workspace)
@@ -139,7 +139,7 @@ async function getUsersInWorkspace(
 
 async function addNewUserToWorkspace(
     email: string,
-    membership
+    membership: any
 ) {
     const { data: user, error: userError } = await supabase
         .from("users")
