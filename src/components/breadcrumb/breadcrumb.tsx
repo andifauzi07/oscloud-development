@@ -40,7 +40,7 @@ export function Breadcrumb() {
                     <BreadcrumbList>
                         <BreadcrumbItem key="home">
                             <Link to="/">Home</Link>
-                            <BreadcrumbSeparator />
+                            <span className="mx-2">/</span>
                         </BreadcrumbItem>
                         {segments.map((segment, index) => {
                             const isLast = index === segments.length - 1;
@@ -54,7 +54,7 @@ export function Breadcrumb() {
                                     ) : (
                                         <>
                                             <Link to={href}>{label}</Link>
-                                            <BreadcrumbSeparator />
+                                            <span className="mx-2">/</span>
                                         </>
                                     )}
                                 </BreadcrumbItem>

@@ -140,11 +140,12 @@ const columns: ColumnDef<CompanyTypes>[] = [
         header: "Created Date",
     },
     {
-        accessorKey: "email",
+        id: 'email',
+        accessorKey: 'email',
         header: "Contact Email",
     },
     {
-        accessorKey: "detail",
+        id: 'detail',
         header: "",
         cell: ({ row }: any) => (
             <Link

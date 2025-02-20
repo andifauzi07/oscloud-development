@@ -6,7 +6,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useDispatch } from "react-redux";
 import { signInWithEmail } from "@/backend/auth/auth";
 import { setSession } from '@/store/slices/authSlice';
-import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
