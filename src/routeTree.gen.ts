@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as WorkspaceIndexImport } from './routes/workspace/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
 import { Route as PerformanceIndexImport } from './routes/performance/index'
 import { Route as PayrollIndexImport } from './routes/payroll/index'
@@ -35,11 +36,14 @@ import { Route as CompanySettingIndexImport } from './routes/company/setting/ind
 import { Route as CompanyCompanyIdIndexImport } from './routes/company/$companyId/index'
 import { Route as AuthSignupIndexImport } from './routes/auth/signup/index'
 import { Route as AuthSigninIndexImport } from './routes/auth/signin/index'
+import { Route as WorkspaceSettingSecurityIndexImport } from './routes/workspace/setting/security/index'
+import { Route as WorkspaceSettingProfileIndexImport } from './routes/workspace/setting/profile/index'
 import { Route as PerformanceSettingTemplateIdIndexImport } from './routes/performance/setting/$templateId/index'
 import { Route as PerformanceEmployeeIdAccesscontrolIndexImport } from './routes/performance/$employeeId/accesscontrol/index'
 import { Route as PerformanceEmployeeIdSheetIdIndexImport } from './routes/performance/$employeeId/$sheetId/index'
 import { Route as PayrollEmployeeIdJoinedProjectsIndexImport } from './routes/payroll/$employeeId/joined-projects/index'
 import { Route as PayrollEmployeeIdPaymentIdIndexImport } from './routes/payroll/$employeeId/$paymentId/index'
+import { Route as GuestDashboardProjectIdIndexImport } from './routes/guest/dashboard/$projectId/index'
 import { Route as FeaturesProfitLossProjectNameIndexImport } from './routes/features/ProfitLoss/$projectName/index'
 import { Route as EmployeeUserIdProfileIndexImport } from './routes/employee/$userId/profile/index'
 import { Route as EmployeeUserIdPerformanceIndexImport } from './routes/employee/$userId/performance/index'
@@ -62,6 +66,12 @@ const AboutRoute = AboutImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const WorkspaceIndexRoute = WorkspaceIndexImport.update({
+  id: '/workspace/',
+  path: '/workspace/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -203,6 +213,20 @@ const AuthSigninIndexRoute = AuthSigninIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const WorkspaceSettingSecurityIndexRoute =
+  WorkspaceSettingSecurityIndexImport.update({
+    id: '/workspace/setting/security/',
+    path: '/workspace/setting/security/',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const WorkspaceSettingProfileIndexRoute =
+  WorkspaceSettingProfileIndexImport.update({
+    id: '/workspace/setting/profile/',
+    path: '/workspace/setting/profile/',
+    getParentRoute: () => rootRoute,
+  } as any)
+
 const PerformanceSettingTemplateIdIndexRoute =
   PerformanceSettingTemplateIdIndexImport.update({
     id: '/performance/setting/$templateId/',
@@ -235,6 +259,13 @@ const PayrollEmployeeIdPaymentIdIndexRoute =
   PayrollEmployeeIdPaymentIdIndexImport.update({
     id: '/payroll/$employeeId/$paymentId/',
     path: '/payroll/$employeeId/$paymentId/',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const GuestDashboardProjectIdIndexRoute =
+  GuestDashboardProjectIdIndexImport.update({
+    id: '/guest/dashboard/$projectId/',
+    path: '/guest/dashboard/$projectId/',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -368,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof ProjectsIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/workspace/': {
+      id: '/workspace/'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof WorkspaceIndexImport
       parentRoute: typeof rootRoute
     }
     '/auth/signin/': {
@@ -524,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeaturesProfitLossProjectNameIndexImport
       parentRoute: typeof rootRoute
     }
+    '/guest/dashboard/$projectId/': {
+      id: '/guest/dashboard/$projectId/'
+      path: '/guest/dashboard/$projectId'
+      fullPath: '/guest/dashboard/$projectId'
+      preLoaderRoute: typeof GuestDashboardProjectIdIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/payroll/$employeeId/$paymentId/': {
       id: '/payroll/$employeeId/$paymentId/'
       path: '/payroll/$employeeId/$paymentId'
@@ -557,6 +602,20 @@ declare module '@tanstack/react-router' {
       path: '/performance/setting/$templateId'
       fullPath: '/performance/setting/$templateId'
       preLoaderRoute: typeof PerformanceSettingTemplateIdIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/workspace/setting/profile/': {
+      id: '/workspace/setting/profile/'
+      path: '/workspace/setting/profile'
+      fullPath: '/workspace/setting/profile'
+      preLoaderRoute: typeof WorkspaceSettingProfileIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/workspace/setting/security/': {
+      id: '/workspace/setting/security/'
+      path: '/workspace/setting/security'
+      fullPath: '/workspace/setting/security'
+      preLoaderRoute: typeof WorkspaceSettingSecurityIndexImport
       parentRoute: typeof rootRoute
     }
     '/company/$companyId/companyPersonnel/$companyPersonnelId/': {
@@ -601,6 +660,7 @@ export interface FileRoutesByFullPath {
   '/payroll': typeof PayrollIndexRoute
   '/performance': typeof PerformanceIndexRoute
   '/projects': typeof ProjectsIndexRoute
+  '/workspace': typeof WorkspaceIndexRoute
   '/auth/signin': typeof AuthSigninIndexRoute
   '/auth/signup': typeof AuthSignupIndexRoute
   '/company/$companyId': typeof CompanyCompanyIdIndexRoute
@@ -623,11 +683,14 @@ export interface FileRoutesByFullPath {
   '/employee/$userId/performance': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
+  '/guest/dashboard/$projectId': typeof GuestDashboardProjectIdIndexRoute
   '/payroll/$employeeId/$paymentId': typeof PayrollEmployeeIdPaymentIdIndexRoute
   '/payroll/$employeeId/joined-projects': typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   '/performance/$employeeId/$sheetId': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   '/performance/setting/$templateId': typeof PerformanceSettingTemplateIdIndexRoute
+  '/workspace/setting/profile': typeof WorkspaceSettingProfileIndexRoute
+  '/workspace/setting/security': typeof WorkspaceSettingSecurityIndexRoute
   '/company/$companyId/companyPersonnel/$companyPersonnelId': typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   '/company/setting/datacategory/datacategoryView': typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
   '/employee/setting/category/$categoryName': typeof EmployeeSettingCategoryCategoryNameIndexRoute
@@ -643,6 +706,7 @@ export interface FileRoutesByTo {
   '/payroll': typeof PayrollIndexRoute
   '/performance': typeof PerformanceIndexRoute
   '/projects': typeof ProjectsIndexRoute
+  '/workspace': typeof WorkspaceIndexRoute
   '/auth/signin': typeof AuthSigninIndexRoute
   '/auth/signup': typeof AuthSignupIndexRoute
   '/company/$companyId': typeof CompanyCompanyIdIndexRoute
@@ -665,11 +729,14 @@ export interface FileRoutesByTo {
   '/employee/$userId/performance': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
+  '/guest/dashboard/$projectId': typeof GuestDashboardProjectIdIndexRoute
   '/payroll/$employeeId/$paymentId': typeof PayrollEmployeeIdPaymentIdIndexRoute
   '/payroll/$employeeId/joined-projects': typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   '/performance/$employeeId/$sheetId': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   '/performance/setting/$templateId': typeof PerformanceSettingTemplateIdIndexRoute
+  '/workspace/setting/profile': typeof WorkspaceSettingProfileIndexRoute
+  '/workspace/setting/security': typeof WorkspaceSettingSecurityIndexRoute
   '/company/$companyId/companyPersonnel/$companyPersonnelId': typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   '/company/setting/datacategory/datacategoryView': typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
   '/employee/setting/category/$categoryName': typeof EmployeeSettingCategoryCategoryNameIndexRoute
@@ -686,6 +753,7 @@ export interface FileRoutesById {
   '/payroll/': typeof PayrollIndexRoute
   '/performance/': typeof PerformanceIndexRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/workspace/': typeof WorkspaceIndexRoute
   '/auth/signin/': typeof AuthSigninIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
   '/company/$companyId/': typeof CompanyCompanyIdIndexRoute
@@ -708,11 +776,14 @@ export interface FileRoutesById {
   '/employee/$userId/performance/': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile/': typeof EmployeeUserIdProfileIndexRoute
   '/features/ProfitLoss/$projectName/': typeof FeaturesProfitLossProjectNameIndexRoute
+  '/guest/dashboard/$projectId/': typeof GuestDashboardProjectIdIndexRoute
   '/payroll/$employeeId/$paymentId/': typeof PayrollEmployeeIdPaymentIdIndexRoute
   '/payroll/$employeeId/joined-projects/': typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   '/performance/$employeeId/$sheetId/': typeof PerformanceEmployeeIdSheetIdIndexRoute
   '/performance/$employeeId/accesscontrol/': typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   '/performance/setting/$templateId/': typeof PerformanceSettingTemplateIdIndexRoute
+  '/workspace/setting/profile/': typeof WorkspaceSettingProfileIndexRoute
+  '/workspace/setting/security/': typeof WorkspaceSettingSecurityIndexRoute
   '/company/$companyId/companyPersonnel/$companyPersonnelId/': typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   '/company/setting/datacategory/datacategoryView/': typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
   '/employee/setting/category/$categoryName/': typeof EmployeeSettingCategoryCategoryNameIndexRoute
@@ -730,6 +801,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/performance'
     | '/projects'
+    | '/workspace'
     | '/auth/signin'
     | '/auth/signup'
     | '/company/$companyId'
@@ -752,11 +824,14 @@ export interface FileRouteTypes {
     | '/employee/$userId/performance'
     | '/employee/$userId/profile'
     | '/features/ProfitLoss/$projectName'
+    | '/guest/dashboard/$projectId'
     | '/payroll/$employeeId/$paymentId'
     | '/payroll/$employeeId/joined-projects'
     | '/performance/$employeeId/$sheetId'
     | '/performance/$employeeId/accesscontrol'
     | '/performance/setting/$templateId'
+    | '/workspace/setting/profile'
+    | '/workspace/setting/security'
     | '/company/$companyId/companyPersonnel/$companyPersonnelId'
     | '/company/setting/datacategory/datacategoryView'
     | '/employee/setting/category/$categoryName'
@@ -771,6 +846,7 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/performance'
     | '/projects'
+    | '/workspace'
     | '/auth/signin'
     | '/auth/signup'
     | '/company/$companyId'
@@ -793,11 +869,14 @@ export interface FileRouteTypes {
     | '/employee/$userId/performance'
     | '/employee/$userId/profile'
     | '/features/ProfitLoss/$projectName'
+    | '/guest/dashboard/$projectId'
     | '/payroll/$employeeId/$paymentId'
     | '/payroll/$employeeId/joined-projects'
     | '/performance/$employeeId/$sheetId'
     | '/performance/$employeeId/accesscontrol'
     | '/performance/setting/$templateId'
+    | '/workspace/setting/profile'
+    | '/workspace/setting/security'
     | '/company/$companyId/companyPersonnel/$companyPersonnelId'
     | '/company/setting/datacategory/datacategoryView'
     | '/employee/setting/category/$categoryName'
@@ -812,6 +891,7 @@ export interface FileRouteTypes {
     | '/payroll/'
     | '/performance/'
     | '/projects/'
+    | '/workspace/'
     | '/auth/signin/'
     | '/auth/signup/'
     | '/company/$companyId/'
@@ -834,11 +914,14 @@ export interface FileRouteTypes {
     | '/employee/$userId/performance/'
     | '/employee/$userId/profile/'
     | '/features/ProfitLoss/$projectName/'
+    | '/guest/dashboard/$projectId/'
     | '/payroll/$employeeId/$paymentId/'
     | '/payroll/$employeeId/joined-projects/'
     | '/performance/$employeeId/$sheetId/'
     | '/performance/$employeeId/accesscontrol/'
     | '/performance/setting/$templateId/'
+    | '/workspace/setting/profile/'
+    | '/workspace/setting/security/'
     | '/company/$companyId/companyPersonnel/$companyPersonnelId/'
     | '/company/setting/datacategory/datacategoryView/'
     | '/employee/setting/category/$categoryName/'
@@ -855,6 +938,7 @@ export interface RootRouteChildren {
   PayrollIndexRoute: typeof PayrollIndexRoute
   PerformanceIndexRoute: typeof PerformanceIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   AuthSigninIndexRoute: typeof AuthSigninIndexRoute
   AuthSignupIndexRoute: typeof AuthSignupIndexRoute
   CompanyCompanyIdIndexRoute: typeof CompanyCompanyIdIndexRoute
@@ -877,11 +961,14 @@ export interface RootRouteChildren {
   EmployeeUserIdPerformanceIndexRoute: typeof EmployeeUserIdPerformanceIndexRoute
   EmployeeUserIdProfileIndexRoute: typeof EmployeeUserIdProfileIndexRoute
   FeaturesProfitLossProjectNameIndexRoute: typeof FeaturesProfitLossProjectNameIndexRoute
+  GuestDashboardProjectIdIndexRoute: typeof GuestDashboardProjectIdIndexRoute
   PayrollEmployeeIdPaymentIdIndexRoute: typeof PayrollEmployeeIdPaymentIdIndexRoute
   PayrollEmployeeIdJoinedProjectsIndexRoute: typeof PayrollEmployeeIdJoinedProjectsIndexRoute
   PerformanceEmployeeIdSheetIdIndexRoute: typeof PerformanceEmployeeIdSheetIdIndexRoute
   PerformanceEmployeeIdAccesscontrolIndexRoute: typeof PerformanceEmployeeIdAccesscontrolIndexRoute
   PerformanceSettingTemplateIdIndexRoute: typeof PerformanceSettingTemplateIdIndexRoute
+  WorkspaceSettingProfileIndexRoute: typeof WorkspaceSettingProfileIndexRoute
+  WorkspaceSettingSecurityIndexRoute: typeof WorkspaceSettingSecurityIndexRoute
   CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute: typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   CompanySettingDatacategoryDatacategoryViewIndexRoute: typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
   EmployeeSettingCategoryCategoryNameIndexRoute: typeof EmployeeSettingCategoryCategoryNameIndexRoute
@@ -897,6 +984,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayrollIndexRoute: PayrollIndexRoute,
   PerformanceIndexRoute: PerformanceIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  WorkspaceIndexRoute: WorkspaceIndexRoute,
   AuthSigninIndexRoute: AuthSigninIndexRoute,
   AuthSignupIndexRoute: AuthSignupIndexRoute,
   CompanyCompanyIdIndexRoute: CompanyCompanyIdIndexRoute,
@@ -921,6 +1009,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmployeeUserIdProfileIndexRoute: EmployeeUserIdProfileIndexRoute,
   FeaturesProfitLossProjectNameIndexRoute:
     FeaturesProfitLossProjectNameIndexRoute,
+  GuestDashboardProjectIdIndexRoute: GuestDashboardProjectIdIndexRoute,
   PayrollEmployeeIdPaymentIdIndexRoute: PayrollEmployeeIdPaymentIdIndexRoute,
   PayrollEmployeeIdJoinedProjectsIndexRoute:
     PayrollEmployeeIdJoinedProjectsIndexRoute,
@@ -930,6 +1019,8 @@ const rootRouteChildren: RootRouteChildren = {
     PerformanceEmployeeIdAccesscontrolIndexRoute,
   PerformanceSettingTemplateIdIndexRoute:
     PerformanceSettingTemplateIdIndexRoute,
+  WorkspaceSettingProfileIndexRoute: WorkspaceSettingProfileIndexRoute,
+  WorkspaceSettingSecurityIndexRoute: WorkspaceSettingSecurityIndexRoute,
   CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute:
     CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute,
   CompanySettingDatacategoryDatacategoryViewIndexRoute:
@@ -958,6 +1049,7 @@ export const routeTree = rootRoute
         "/payroll/",
         "/performance/",
         "/projects/",
+        "/workspace/",
         "/auth/signin/",
         "/auth/signup/",
         "/company/$companyId/",
@@ -980,11 +1072,14 @@ export const routeTree = rootRoute
         "/employee/$userId/performance/",
         "/employee/$userId/profile/",
         "/features/ProfitLoss/$projectName/",
+        "/guest/dashboard/$projectId/",
         "/payroll/$employeeId/$paymentId/",
         "/payroll/$employeeId/joined-projects/",
         "/performance/$employeeId/$sheetId/",
         "/performance/$employeeId/accesscontrol/",
         "/performance/setting/$templateId/",
+        "/workspace/setting/profile/",
+        "/workspace/setting/security/",
         "/company/$companyId/companyPersonnel/$companyPersonnelId/",
         "/company/setting/datacategory/datacategoryView/",
         "/employee/setting/category/$categoryName/",
@@ -1014,6 +1109,9 @@ export const routeTree = rootRoute
     },
     "/projects/": {
       "filePath": "projects/index.tsx"
+    },
+    "/workspace/": {
+      "filePath": "workspace/index.tsx"
     },
     "/auth/signin/": {
       "filePath": "auth/signin/index.tsx"
@@ -1081,6 +1179,9 @@ export const routeTree = rootRoute
     "/features/ProfitLoss/$projectName/": {
       "filePath": "features/ProfitLoss/$projectName/index.tsx"
     },
+    "/guest/dashboard/$projectId/": {
+      "filePath": "guest/dashboard/$projectId/index.tsx"
+    },
     "/payroll/$employeeId/$paymentId/": {
       "filePath": "payroll/$employeeId/$paymentId/index.tsx"
     },
@@ -1095,6 +1196,12 @@ export const routeTree = rootRoute
     },
     "/performance/setting/$templateId/": {
       "filePath": "performance/setting/$templateId/index.tsx"
+    },
+    "/workspace/setting/profile/": {
+      "filePath": "workspace/setting/profile/index.tsx"
+    },
+    "/workspace/setting/security/": {
+      "filePath": "workspace/setting/security/index.tsx"
     },
     "/company/$companyId/companyPersonnel/$companyPersonnelId/": {
       "filePath": "company/$companyId/companyPersonnel/$companyPersonnelId/index.tsx"
