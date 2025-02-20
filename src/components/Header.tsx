@@ -16,9 +16,9 @@ function Header() {
 			<div className="container">
 				<div className="flex items-center w-full gap-4">
 					{/* logo  */}
-					<div className="flex-none p-1 bg-green-700">
-						<div className="p-1 bg-red-950"></div>
-					</div>
+                    <div className="flex-none p-1 bg-[#b0bd94]">
+                        <div className="p-1 bg-[#550a00]"></div>
+                    </div>
 					{/* app name  */}
 					<div className="flex-grow">
 						{/* <span className="text-sm text-black">Employee List</span> */}
