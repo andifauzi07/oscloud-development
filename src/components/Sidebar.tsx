@@ -71,14 +71,34 @@ const LogoBlue = () => {
 };
 
 const featuresMap: Record<string, FeatureItem[]> = {
+	employee: [
+		{ icon: Logo, label: 'Employee List', to: '/employee' },
+		{ icon: Logo, label: 'Performance', to: '/performance' },
+	],
+
 	crm: [
+		{ icon: LogoBlue, label: 'Company List', to: '/company' },
+		{ icon: LogoBlue, label: 'Personnel List', to: '/features/personnel-list' },
 		{ icon: Logo, label: 'Company List', to: '/company' },
 		{ icon: Logo, label: 'Personnel List', to: '/features/personnel-list' },
 	],
+
 	project: [
+		{ icon: Logo, label: 'Project', to: '/projects' },
+		{ icon: Logo, label: 'Profit & Loss', to: '/features/ProfitLoss' },
 		{ icon: LogoBlue, label: 'Add Project', to: '/features/ProjectList' },
 		{ icon: LogoBlue, label: 'Profit & Loss', to: '/features/ProfitLoss' },
 	],
+
+	payroll: [
+		{ icon: Logo, label: 'Employee List', to: '/payroll' },
+		{ icon: Logo, label: 'Payment List', to: '/payroll' },
+	],
+
+	// default:
+	// 	{ icon: Package, label: 'Employee List', to: '/features/personnel-list' },
+	// 	{ icon: Users, label: 'Payment List', to: '/features/company-list' },
+	// ],
 	default: [
 		{ icon: Logo, label: 'Employee List', to: '/features/personnel-list' },
 		{ icon: LogoBlue, label: 'Payment List', to: '/features/company-list' },
