@@ -3,12 +3,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { mockCompanies } from '@/config/mockData/companies';
 import { DataTable } from '@/components/ui/data-table';
 import { projectsColumns } from '@/components/companyPersonnelProjectsDataTable';
-import { ProjectsTimeline } from '@/components/ProjectsTimeline';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Link } from '@tanstack/react-router';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
+import ScheduleTable from '@/components/EmployeTimeLine';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
@@ -115,7 +115,7 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0"
 					value="timeline">
-					<ProjectsTimeline projects={validProjects} />
+					<ScheduleTable />
 				</TabsContent>
 			</Tabs>
 		</div>
