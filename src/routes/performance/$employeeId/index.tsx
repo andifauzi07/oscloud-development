@@ -66,8 +66,8 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			{/* Header Section */}
-			<div className="flex-none min-h-0 border-b">
-				<div className="container flex flex-row items-center justify-between pt-4">
+			<div className="flex-none min-h-0 border-b border-r">
+				<div className="container flex px-2 flex-row items-center justify-between">
 					<MenuList
 						items={[
 							{
@@ -81,7 +81,7 @@ function RouteComponent() {
 						]}
 					/>
 					<Link
-						className="relative bottom-2"
+						className="relative pt-2 bottom-2"
 						to="/performance/setting">
 						Setting
 					</Link>
@@ -100,12 +100,12 @@ function RouteComponent() {
 						<DropdownMenuItem>Latest</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<Button className="w-20 text-black bg-transparent border-l border-r link border-r-none min-h-14">ADD+</Button>
-				<Button className="w-20 text-black bg-transparent border-r link min-h-14">EDIT</Button>
+				<Button className="w-20 text-black bg-transparent border-l border-r link border-r-none h-10">ADD+</Button>
+				<Button className="w-20 text-black bg-transparent border-r link h-10">EDIT</Button>
 			</div>
 
 			{/* Data Table */}
-			<div className="border-t">
+			<div className="border-t border-r border-b">
 				<DataTable
 					columns={columns}
 					data={data}

@@ -103,7 +103,7 @@ function RouteComponent() {
 							<AdvancedFilterPopover />
 						</div>
 					</div>
-					<div className="border-r">
+					<div className="border-r border-b">
 						<DataTable
 							columns={projectsColumns}
 							data={validProjects}

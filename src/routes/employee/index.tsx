@@ -130,14 +130,14 @@ function RouteComponent() {
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none min-h-0 px-4 py-2 bg-white border-b">
+			<div className="flex-none min-h-0 px-4 py-2 bg-white border-b border-r">
 				<div className="container flex justify-between md:px-6">
 					<h1>Employee List</h1>
 					<Link to="/employee/setting">Settings</Link>
 				</div>
 			</div>
 
-			<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b md:flex-row">
+			<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 				<div className="flex flex-row flex-wrap gap-4">
 					<div className="flex flex-col space-y-2 md:w-auto">
 						<Label htmlFor="keyword">Keyword</Label>
@@ -168,11 +168,11 @@ function RouteComponent() {
 			</div>
 
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="text-black bg-transparent border-l border-r md:w-20 link min-h-14">ADD+</Button>
-				<Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
+				<Button className="text-black bg-transparent border-l border-r md:w-20 link h-10">ADD+</Button>
+				<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
 			</div>
 
-			<div className="border-r">
+			<div className="border-r border-b border-t">
 				<DataTable
 					columns={columns}
 					data={employees}
