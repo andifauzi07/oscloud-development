@@ -423,7 +423,7 @@ function RouteComponent() {
 							</div>
 							<div className="border-b">
 								<div className="flex justify-end flex-none w-full bg-white border-t">
-									<Button className="w-20 text-black bg-transparent border-r border-l link h-14">EDIT</Button>
+									<Button className="w-20 text-black bg-transparent border-r border-l link h-10">EDIT</Button>
 								</div>
 							</div>
 						</div>

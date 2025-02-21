@@ -151,7 +151,7 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			{/* Tabs Section */}
 			<Tabs defaultValue="employeeList">
-				<div className="flex items-center justify-between px-4 bg-white border-b">
+				<div className="flex items-center justify-between px-4 bg-white border-b border-r">
 					<TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="employeeList"
@@ -165,7 +165,7 @@ function RouteComponent() {
 						</TabsTrigger>
 					</TabsList>
 				</div>
-				<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b border-r md:flex-row">
+				<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 					<div className="flex gap-8">
 						<div className="flex flex-col space-y-2 bg-white md:w-auto">
 							<Label htmlFor="keyword">Keyword</Label>
@@ -201,13 +201,15 @@ function RouteComponent() {
 				</div>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border-l border-b border-r md:w-20 link border-r-none h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border-b border-r md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
 				</div>
 
 				{/* Employee List Tab */}
-				<TabsContent value="employeeList">
-					<div className="border-t">
+				<TabsContent
+					className="m-0"
+					value="employeeList">
+					<div className="border-t border-r">
 						<DataTable
 							columns={columns}
 							data={data}

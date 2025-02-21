@@ -80,12 +80,12 @@ function RouteComponent() {
 					</Link>
 				</div>
 			</div>
-			<div className="flex items-center justify-start px-8 bg-white border-b border-r min-h-14">
+			<div className="flex items-center justify-start px-8 bg-white border-b border-r h-12">
 				<h2 className="text-base">Company Personnel of {companyId}</h2>
 			</div>
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="w-20 text-black bg-transparent border-r md:w-20 link border-l min-h-14">ADD+</Button>
-				<Button className="w-20 text-black bg-transparent border-b-0 border-r border-t-0 md:w-20 link min-h-14">EDIT</Button>
+				<Button className="w-20 text-black bg-transparent border-r md:w-20 link border-l h-10">ADD+</Button>
+				<Button className="w-20 text-black bg-transparent border-b-0 border-r border-t-0 md:w-20 link h-10">EDIT</Button>
 			</div>
 			<div className="border-r border-t">
 				<DataTable

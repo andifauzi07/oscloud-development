@@ -173,7 +173,7 @@ function RouteComponent() {
 				</div>
 			</div>
 
-			<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b border-r md:flex-row">
+			<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 				<div className="flex flex-row flex-wrap gap-4">
 					<div className="flex flex-col w-full space-y-2 md:w-auto">
 						<Label htmlFor="keyword">Keyword</Label>
@@ -184,39 +184,6 @@ function RouteComponent() {
 							className="border rounded-none w-[400px]"
 						/>
 					</div>
-
-					<div className="flex flex-col space-y-2">
-						<Label>Status</Label>
-						<div className="flex">
-							<Button
-								size="default"
-								className="w-20 bg-black rounded-none md:w-20">
-								Active
-							</Button>
-							<Button
-								size="default"
-								variant="outline"
-								className="w-20 rounded-none md:w-20">
-								All
-							</Button>
-						</div>
-					</div>
-					<div className="flex flex-col space-y-2">
-						<Label>‎</Label>
-						<AdvancedFilterPopover />
-					</div>
-				</div>
-			</div>
-
-			{/* <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-t border-r border-b md:flex-row">
-				<div className="flex flex-col space-y-2 bg-white md:w-auto">
-					<Label htmlFor="keyword">Keyword</Label>
-					<Input
-						type="keyword"
-						id="keyword"
-						placeholder=""
-						className="border rounded-none w-[400px]"
-					/>
 				</div>
 
 				<div className="flex flex-col space-y-2">
@@ -224,45 +191,27 @@ function RouteComponent() {
 					<div className="flex items-center gap-2">
 						<Input
 							type="date"
-							className="w-[150px] border rounded-none"
 							enableEmoji={false}
+							className="w-[150px] border rounded-none"
 						/>
 						<span className="text-gray-500">-</span>
 						<Input
+							enableEmoji={false}
 							type="date"
 							className="w-[150px] border rounded-none"
-							enableEmoji={false}
 						/>
 					</div>
 				</div>
 
 				<div className="flex flex-col space-y-2">
-					<Label>Status</Label>
-					<div className="flex">
-						<Button
-							size="default"
-							className="w-full bg-black rounded-none md:w-20">
-							Active
-						</Button>
-						<Button
-							size="default"
-							variant="outline"
-							className="w-full rounded-none md:w-20">
-							All
-						</Button>
-					</div>
-				</div>
-
-				<div className="flex flex-col space-y-2">
-					<Label>‎ </Label>
+					<Label>‎</Label>
 					<AdvancedFilterPopover />
 				</div>
-			</div> */}
-
+			</div>
 			{/* Responsive action buttons */}
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-14">ADD+</Button>
-				<Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
+				<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-10">ADD+</Button>
+				<Button className="text-black bg-transparent border-r md:w-20 link min-h-10">EDIT</Button>
 			</div>
 
 			{/* Responsive table container */}

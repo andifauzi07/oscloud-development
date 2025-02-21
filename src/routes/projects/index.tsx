@@ -22,7 +22,7 @@ function RouteComponent() {
 	return (
 		<div className="">
 			{/* Header Section */}
-			<div className="flex-none min-h-0 border-b px-4 py-2">
+			<div className="flex-none min-h-0 border-b border-r px-4 py-2">
 				<div className="flex flex-row items-center justify-between md:px-6 bg-white">
 					<h2 className="text-base">Project List</h2>
 					<Link to="/projects/setting">Settings</Link>
@@ -45,8 +45,8 @@ function RouteComponent() {
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent  md:w-20 link border-r border-l h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border-r md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent  md:w-20 link border-r border-l h-10">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
 				</div>
 
 				{/* List View Tab */}
