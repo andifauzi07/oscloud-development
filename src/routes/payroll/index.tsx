@@ -165,7 +165,7 @@ function RouteComponent() {
 						</TabsTrigger>
 					</TabsList>
 				</div>
-				<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
+				<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b border-r md:flex-row">
 					<div className="flex gap-8">
 						<div className="flex flex-col space-y-2 bg-white md:w-auto">
 							<Label htmlFor="keyword">Keyword</Label>
@@ -201,16 +201,18 @@ function RouteComponent() {
 				</div>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border md:w-20 link border-r-none h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent border-l border-b border-r md:w-20 link border-r-none h-14">ADD+</Button>
+					<Button className="text-black bg-transparent border-b border-r md:w-20 link h-14">EDIT</Button>
 				</div>
 
 				{/* Employee List Tab */}
 				<TabsContent value="employeeList">
-					<DataTable
-						columns={columns}
-						data={data}
-					/>
+					<div className="border-t">
+						<DataTable
+							columns={columns}
+							data={data}
+						/>
+					</div>
 				</TabsContent>
 
 				{/* Payment List Tab */}

@@ -107,14 +107,14 @@ function RouteComponent() {
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none min-h-0 px-4 py-4 border-b">
+			<div className="flex-none min-h-0 px-4 py-2 border-b border-r">
 				<div className="container flex justify-between md:px-6">
-					<h1>List View</h1>
+					<h1>Performance</h1>
 					<Link to="/performance/setting">Settings</Link>
 				</div>
 			</div>
 
-			<div className="flex flex-row flex-wrap items-center justify-between w-full gap-4 p-8 pt-4 bg-white border md:flex-row">
+			<div className="flex flex-row flex-wrap items-center justify-between w-full gap-4 p-8 pt-4 bg-white border-b border-r md:flex-row">
 				<div className="flex flex-row flex-wrap gap-4">
 					<div className="flex flex-col w-full space-y-2 md:w-auto">
 						<Label htmlFor="keyword">Keyword</Label>
@@ -144,7 +144,7 @@ function RouteComponent() {
 					</div>
 				</div>
 
-				<div className="">
+				<div className="flex flex-col space-y-2">
 					<Label>‎</Label>
 					<AdvancedFilterPopover />
 				</div>
@@ -152,19 +152,19 @@ function RouteComponent() {
 
 			{/* Responsive action buttons */}
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="text-black bg-transparent border md:w-20 link border-r-none min-h-14">ADD+</Button>
-				<Button className="text-black bg-transparent border md:w-20 link min-h-14">EDIT</Button>
+				<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-14">ADD+</Button>
+				<Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
 			</div>
 			{/* Table Section */}
 			<div className="flex-1 overflow-x-auto">
 				<div className="min-w-[1200px]">
 					<Table className="p-0 m-0">
-						<TableHeader className="bg-gray-100 border">
+						<TableHeader className="bg-gray-100 border-r border-t">
 							{table.getHeaderGroups().map((headerGroup) => (
 								<TableRow key={headerGroup.id}>
 									{headerGroup.headers.map((header) => (
 										<TableHead
-											className="py-4 text-[#0a0a30] text-base font-bold"
+											className="py-4 text-[#0a0a30] text-xs font-bold"
 											key={header.id}>
 											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 										</TableHead>
@@ -176,7 +176,7 @@ function RouteComponent() {
 							{table.getRowModel().rows?.length ? (
 								table.getRowModel().rows.map((row) => (
 									<TableRow
-										className="h-20"
+										className="h-20 border-r"
 										key={row.id}
 										data-state={row.getIsSelected() && 'selected'}>
 										{row.getVisibleCells().map((cell) => (

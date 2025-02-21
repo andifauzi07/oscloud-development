@@ -115,7 +115,7 @@ export const Route = createFileRoute('/employee/')({
 });
 
 function RouteComponent() {
-    const { employees } = useEmployees()
+	const { employees } = useEmployees();
 
 	const [orderedColumns, setOrderedColumns] = useState<ColumnDef<EmployeeTypes>[]>(columns);
 	const [draggedKey, setDraggedKey] = useState<string | null>(null);
@@ -166,14 +166,14 @@ function RouteComponent() {
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none min-h-0 px-4 py-4 bg-white border-b">
+			<div className="flex-none min-h-0 px-4 py-2 border-r bg-white border-b">
 				<div className="container flex justify-between md:px-6">
-					<h1>List View</h1>
+					<h1>Employee List</h1>
 					<Link to="/employee/setting">Settings</Link>
 				</div>
 			</div>
 
-			<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
+			<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b border-r md:flex-row">
 				<div className="flex flex-row flex-wrap gap-4">
 					<div className="flex flex-col w-full space-y-2 md:w-auto">
 						<Label htmlFor="keyword">Keyword</Label>
@@ -201,30 +201,80 @@ function RouteComponent() {
 							</Button>
 						</div>
 					</div>
-				</div>
-
-				<div className="flex flex-col space-y-2">
-					<Label>‎</Label>
-					<AdvancedFilterPopover />
+					<div className="flex flex-col space-y-2">
+						<Label>‎</Label>
+						<AdvancedFilterPopover />
+					</div>
 				</div>
 			</div>
 
+			{/* <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-t border-r border-b md:flex-row">
+				<div className="flex flex-col space-y-2 bg-white md:w-auto">
+					<Label htmlFor="keyword">Keyword</Label>
+					<Input
+						type="keyword"
+						id="keyword"
+						placeholder=""
+						className="border rounded-none w-[400px]"
+					/>
+				</div>
+
+				<div className="flex flex-col space-y-2">
+					<Label>Duration</Label>
+					<div className="flex items-center gap-2">
+						<Input
+							type="date"
+							className="w-[150px] border rounded-none"
+							enableEmoji={false}
+						/>
+						<span className="text-gray-500">-</span>
+						<Input
+							type="date"
+							className="w-[150px] border rounded-none"
+							enableEmoji={false}
+						/>
+					</div>
+				</div>
+
+				<div className="flex flex-col space-y-2">
+					<Label>Status</Label>
+					<div className="flex">
+						<Button
+							size="default"
+							className="w-full bg-black rounded-none md:w-20">
+							Active
+						</Button>
+						<Button
+							size="default"
+							variant="outline"
+							className="w-full rounded-none md:w-20">
+							All
+						</Button>
+					</div>
+				</div>
+
+				<div className="flex flex-col space-y-2">
+					<Label>‎ </Label>
+					<AdvancedFilterPopover />
+				</div>
+			</div> */}
+
 			{/* Responsive action buttons */}
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="text-black bg-transparent border md:w-20 link border-r-none min-h-14">ADD+</Button>
-				<Button className="text-black bg-transparent border md:w-20 link min-h-14">EDIT</Button>
+				<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-14">ADD+</Button>
+				<Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
 			</div>
 
 			{/* Responsive table container */}
 			<div className="flex-1 overflow-x-auto">
 				<div className="min-w-[1200px]">
-					<Table>
-						<TableHeader className="bg-gray-100 border">
+					<Table className="p-0 m-0">
+						<TableHeader className="bg-gray-100 border-t">
 							{table.getHeaderGroups().map((headerGroup) => (
 								<TableRow key={headerGroup.id}>
 									{headerGroup.headers.map((header) => (
 										<TableHead
-											className="py-4 text-[#0a0a30] text-base font-bold"
+											className="py-4 text-[#0a0a30] text-xs font-bold"
 											key={header.id}>
 											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 										</TableHead>

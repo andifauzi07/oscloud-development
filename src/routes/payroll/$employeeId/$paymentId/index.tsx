@@ -227,24 +227,28 @@ function RouteComponent() {
 	const { employeeId, paymentId } = Route.useParams();
 
 	return (
-		<div className="flex flex-col">
+		<div className="flex flex-col border-r">
 			<div className="bg-white border-b">
 				<h2 className="container px-4 py-3 ">{revertUrlString(employeeId)}</h2>
 			</div>
-			<div className="bg-white border-b">
+			<div className="bg-white">
 				<h2 className="container px-4 py-3 ">{revertUrlString(paymentId)}</h2>
 			</div>
-			<DataTable
-				columns={columnsEmployee}
-				data={dataEmployee}
-			/>
+			<div className="border-b border-t">
+				<DataTable
+					columns={columnsEmployee}
+					data={dataEmployee}
+				/>
+			</div>
 			<div className="flex w-full bg-white px-6 py-4">
 				<h2 className="text-xl">Breakdown</h2>
 			</div>
-			<DataTable
-				columns={columBreakdown}
-				data={dataBreakdown}
-			/>
+			<div className="border-b border-t">
+				<DataTable
+					columns={columBreakdown}
+					data={dataBreakdown}
+				/>
+			</div>
 		</div>
 	);
 }

@@ -223,12 +223,12 @@ function ProjectView() {
 
 	return (
 		<div className="flex flex-col bg-white">
-			<div className="px-8 py-4 border">
+			<div className="px-8 py-2 border-r">
 				<h1>Project {projectId}</h1>
 			</div>
 
 			<Tabs defaultValue="description">
-				<TabsList className="justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+				<TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
 					<TabsTrigger
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 						value="description">
@@ -256,12 +256,12 @@ function ProjectView() {
 				<TabsContent
 					className="m-0"
 					value="description">
-					<div className="flex flex-col border">
-						<div className="flex justify-between p-4 px-8 border border-t-0">
+					<div className="flex flex-col border-r">
+						<div className="flex justify-between p-4 px-8 border-t">
 							<h1>Description</h1>
 							<h1>PRINT</h1>
 						</div>
-						<div className="flex items-center justify-between p-2 px-8 bg-gray-100 border">
+						<div className="flex items-center justify-between p-2 px-8 bg-gray-100 border-t border-b">
 							<h1>General Information</h1>
 							<Button className="border">Edit</Button>
 						</div>
@@ -269,37 +269,37 @@ function ProjectView() {
 							<Input
 								className="p-4 border-none"
 								placeholder="Project Name"></Input>
-							<div className="grid grid-cols-2 p-4 border">
+							<div className="grid grid-cols-2 p-4 border-t">
 								<h1>Client</h1>
 								<h1>Company Name</h1>
 							</div>
-							<div className="grid grid-cols-2 p-4 border">
+							<div className="grid grid-cols-2 p-4 border-t">
 								<h1>Personnel</h1>
 								<h1>John Brown</h1>
 							</div>
-							<div className="grid grid-cols-2 p-4 border">
+							<div className="grid grid-cols-2 p-4 border-t">
 								<h1>Category</h1>
 								<h1>Category A</h1>
 							</div>
-							<div className="grid grid-cols-2 p-4 border">
+							<div className="grid grid-cols-2 p-4 border-t">
 								<h1>Manager</h1>
 								<div className="flex flex-row gap-2">
 									<img src="/public/vite.svg" />
 									<h1>John Brown</h1>
 								</div>
 							</div>
-							<div className="grid grid-cols-2 p-4 border">
+							<div className="grid grid-cols-2 p-4 border-t">
 								<h1>Required staff number</h1>
 								<h1>13</h1>
 							</div>
-							<div className="flex justify-between p-4 bg-gray-100 border">
+							<div className="flex justify-between p-4 bg-gray-100 border-t border-b">
 								<h1>Description</h1>
 								<Button className="w-20 text-black bg-transparent border">Edit</Button>
 							</div>
 							<Input
-								className="p-4 border rounded-none"
+								className="p-4 rounded-none"
 								placeholder="Bla bla bla bla"></Input>
-							<div className="flex items-center justify-between p-4 bg-gray-100 border">
+							<div className="flex items-center justify-between p-4 bg-gray-100 border-b border-t">
 								<h1>Assigned staffs</h1>
 								<div className="flex flex-row items-center gap-2">
 									<h1>2/13</h1>
@@ -320,11 +320,11 @@ function ProjectView() {
 				<TabsContent
 					className="m-0"
 					value="members">
-					<div className="flex items-center p-4 bg-white border">
+					<div className="flex items-center p-4 bg-white border-t border-r">
 						<h1>Member adjustment</h1>
 					</div>
-					<div className="flex flex-row bg-white border">
-						<div className="w-1/3 p-4 border">
+					<div className="flex flex-row bg-white border-b">
+						<div className="w-1/3 p-4 border-t">
 							<div className="flex items-center justify-between">
 								<h3>Added</h3>
 								<div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ function ProjectView() {
 							</div>
 						</div>
 						<div className="w-full">
-							<div className="flex items-center p-4 border">
+							<div className="flex items-center p-4 border-t border-r border-l">
 								<h1>Members</h1>
 							</div>
 
@@ -391,10 +391,12 @@ function ProjectView() {
 									</div>
 								</div>
 							</div>
-							<DataTable
-								columns={assignedStaffColumns}
-								data={mockAssignedStaff}
-							/>
+							<div className="border-l border-r">
+								<DataTable
+									columns={assignedStaffColumns}
+									data={mockAssignedStaff}
+								/>
+							</div>
 						</div>
 					</div>
 				</TabsContent>
@@ -403,12 +405,12 @@ function ProjectView() {
 				<TabsContent
 					className="m-0"
 					value="payment">
-					<div className="flex items-center p-4 bg-white border">
+					<div className="flex items-center p-4 border-t border-r bg-white ">
 						<h1>Member adjustment</h1>
 					</div>
-					<div className="flex flex-row bg-white border">
+					<div className="flex flex-row bg-white border-r ">
 						<div className="w-full">
-							<div className="flex flex-row items-center gap-4 p-4 border">
+							<div className="flex flex-row items-center gap-4 p-4 border-t">
 								<div className="flex flex-col space-y-2">
 									<Label htmlFor="keyword">Keyword</Label>
 									<Input
@@ -441,40 +443,42 @@ function ProjectView() {
 									<AdvancedFilterPopover />
 								</div>
 							</div>
-							<DataTable
-								columns={paymentStaffColumns}
-								data={mockPaymentStaff}
-							/>
+							<div className="border-t border-b">
+								<DataTable
+									columns={paymentStaffColumns}
+									data={mockPaymentStaff}
+								/>
+							</div>
 						</div>
 					</div>
 				</TabsContent>
 				<TabsContent
 					className="m-0"
 					value="P/L">
-					<div className="flex items-center p-4 bg-white border">
+					<div className="flex items-center px-4 py-2 bg-white border-t border-r">
 						<h1>Member adjustment</h1>
 					</div>
-					<div className="flex flex-row p-4 bg-white border">
+					<div className="flex flex-row px-4 py-2 bg-white border-b border-t border-r">
 						<h1>Profit & Loss</h1>
 					</div>
 
 					<div className="flex w-full h-full">
 						{/* Left Side */}
 						<div className="w-1/3 h-full border-r">
-							<div className="flex items-center justify-center w-full p-4 bg-gray-100">
+							<div className="flex items-center justify-center w-full py-2 px-4 bg-gray-100">
 								<h2>Profit</h2>
 							</div>
-							<div className="flex w-full h-[250px] justify-center items-center border p-4">
+							<div className="flex w-full h-[250px] justify-center items-center border-t border-b p-4">
 								<h2 className="text-2xl">280,000 USD</h2>
 							</div>
 							<div className="flex items-center justify-center w-full p-4 bg-gray-100">
 								<h2>Profitability</h2>
 							</div>
-							<div className="flex w-full justify-center h-[250px] items-center border p-4">
+							<div className="flex w-full justify-center h-[250px] items-center border-t p-4">
 								<h2 className="text-2xl ">15 %</h2>
 							</div>
 							<div className="min-h-[600px]">
-								<div className="flex items-center justify-center w-full p-4 bg-gray-100 border">
+								<div className="flex items-center justify-center w-full p-4 bg-gray-100 border-t border-b">
 									<h2>Cost Breakdown</h2>
 								</div>
 								<GraphicChart />
@@ -483,7 +487,7 @@ function ProjectView() {
 
 						{/* Righ Side */}
 						<div className="w-2/3">
-							<div className="flex items-center justify-between w-full p-4 bg-gray-100 border">
+							<div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
 								<h2>Sales Revenue</h2>
 								<Button
 									variant={'link'}
@@ -491,15 +495,15 @@ function ProjectView() {
 									EDIT
 								</Button>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Revenue Cost</h2>
 								<h2>1,000,000 USD</h2>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Other Cost</h2>
 								<h2>0 USD</h2>
 							</div>
-							<div className="flex items-center justify-between w-full p-4 bg-gray-100 border">
+							<div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
 								<h2>Expenditures</h2>
 								<Button
 									variant={'link'}
@@ -507,30 +511,30 @@ function ProjectView() {
 									EDIT
 								</Button>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Labour Cost</h2>
 								<h2>10,000 USD</h2>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Transport Cost</h2>
 								<h2>10,000 USD</h2>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Costume Cost</h2>
 								<h2>10,000 USD</h2>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Manager Fee</h2>
 								<h2>10,000 USD</h2>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Other Cost</h2>
 								<h2>10,000 USD</h2>
 							</div>
-							<div className="flex items-center justify-start w-full p-4 bg-gray-100 border">
+							<div className="flex items-center justify-start w-full p-4 bg-gray-100 border-b border-r">
 								<h2>Profit</h2>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-b">
+							<div className="flex w-full gap-2 p-4 border-r border-b">
 								<h2>Sales Profit</h2>
 								<h2>10,000 USD</h2>
 							</div>

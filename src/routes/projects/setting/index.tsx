@@ -177,7 +177,7 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			{/* Tabs Section */}
 			<Tabs defaultValue="dataField">
-				<TabsList className="justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
 					<TabsTrigger
 						value="dataField"
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
@@ -191,28 +191,32 @@ function RouteComponent() {
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border md:w-20 link border-r-none h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent border-r border-l md:w-20 link h-14">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-14">EDIT</Button>
 				</div>
 
 				{/* DataField Tab */}
 				<TabsContent
 					className="m-0 rounded-none"
 					value="dataField">
-					<DataTable
-						columns={columnsDataField}
-						data={rowDataField}
-					/>
+					<div className="border-r border-t border-b">
+						<DataTable
+							columns={columnsDataField}
+							data={rowDataField}
+						/>
+					</div>
 				</TabsContent>
 
 				{/* DataCategory Tab */}
 				<TabsContent
 					className="m-0 rounded-none"
 					value="dataCategory">
-					<DataTable
-						columns={columnsDataCategory}
-						data={rowDataCategory}
-					/>
+					<div className="border-r border-t border-b">
+						<DataTable
+							columns={columnsDataCategory}
+							data={rowDataCategory}
+						/>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>

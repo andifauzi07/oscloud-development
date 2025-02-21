@@ -33,7 +33,7 @@ export function Breadcrumb() {
 	};
 
 	return (
-		<div className="w-full flex-none sticky top-0 h-[30px] flex flex-col justify-center p-4 px-8 border-t-0 border-b bg-gray-100">
+		<div className="w-full flex-none sticky top-0 h-[30px] flex flex-col justify-center p-4 px-8 border-r border-b bg-gray-100">
 			<div className="container">
 				<ShadcnBreadcrumb>
 					<BreadcrumbList>

@@ -352,14 +352,14 @@ function RouteComponent() {
 	const { employeeId } = Route.useParams();
 
 	const InfoSection = ({ title, items }: { title: React.ReactNode; items: { label: string; value: string }[] }) => (
-		<div className="flex flex-col">
-			<h2 className="px-4 py-4 text-sm font-medium bg-gray-100">{title}</h2>
-			<div className="divide-y">
+		<div className="flex flex-col border-l border-r">
+			<h2 className="px-4 py-4 text-sm font-medium bg-gray-100 border-b">{title}</h2>
+			<div className="">
 				{items.map((item, index) => (
 					<div
 						key={index}
-						className="flex gap-8 border-gray-200">
-						<div className="w-32 px-4 py-3 text-sm font-medium text-gray-600 bg-gray-50">
+						className="flex gap-8 border-b">
+						<div className="w-32 px-4 py-3 text-sm font-medium text-gray-600">
 							<span>{item?.label}</span>
 						</div>
 						<div className="flex-1 px-4 py-3 text-sm">
@@ -392,7 +392,7 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			{/* Tabs Section */}
 			<Tabs defaultValue="profile">
-				<div className="flex items-center justify-between px-4 bg-white border-b">
+				<div className="flex items-center justify-between px-4 bg-white border-b border-r">
 					<TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="profile"
@@ -413,15 +413,17 @@ function RouteComponent() {
 				</div>
 
 				{/* Employee List Tab */}
-				<TabsContent value="profile">
+				<TabsContent
+					value="profile"
+					className="m-0">
 					<>
 						<div className="flex flex-col">
-							<div className="bg-white border-b">
-								<h2 className="container px-4 py-3 ">{revertUrlString(employeeId)}</h2>
+							<div className="bg-white border-r">
+								<h2 className="container px-4 py-2">{revertUrlString(employeeId)}</h2>
 							</div>
 							<div className="border-b">
 								<div className="flex justify-end flex-none w-full bg-white border-t">
-									<Button className="w-20 text-black bg-transparent border link h-14">EDIT</Button>
+									<Button className="w-20 text-black bg-transparent border-r border-l link h-14">EDIT</Button>
 								</div>
 							</div>
 						</div>
@@ -431,7 +433,7 @@ function RouteComponent() {
 							{/* Image and list container */}
 							<div className="flex">
 								{/* Left side - Image section */}
-								<div className="w-[30%] flex flex-col">
+								<div className="w-[30%] flex flex-col border-b">
 									<figure className="w-full h-[65%] relative overflow-hidden">
 										<img
 											className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%]"
@@ -478,7 +480,7 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0"
 					value="joinedprojects">
-					<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 bg-white border md:flex-row">
+					<div className="flex flex-row flex-wrap items-center justify-between w-full px-6 py-4 bg-white border-b border-r md:flex-row">
 						<div className="flex flex-col space-y-2 bg-white md:w-auto">
 							<Label htmlFor="keyword">Keyword</Label>
 							<Input
@@ -528,7 +530,7 @@ function RouteComponent() {
 							<AdvancedFilterPopover />
 						</div>
 					</div>
-					<div className="flex w-full bg-white p-2 justify-end">
+					<div className="flex w-full bg-white p-2 border-r justify-end">
 						<Link
 							to="/payroll/$employeeId/joined-projects"
 							params={{ employeeId: employeeId }}>
@@ -539,23 +541,27 @@ function RouteComponent() {
 							</Button>
 						</Link>
 					</div>
-					<DataTable
-						columns={columnsEmployee}
-						data={dataEmployee}
-					/>
-					<div className="flex w-full bg-white px-6 py-4">
+					<div className="border-b border-r border-t">
+						<DataTable
+							columns={columnsEmployee}
+							data={dataEmployee}
+						/>
+					</div>
+					<div className="flex w-full border-r bg-white px-6 py-4">
 						<h2 className="text-xl">Breakdown</h2>
 					</div>
-					<DataTable
-						columns={columBreakdown}
-						data={dataBreakdown}
-					/>
+					<div className="border-b border-r border-t">
+						<DataTable
+							columns={columBreakdown}
+							data={dataBreakdown}
+						/>
+					</div>
 				</TabsContent>
 
 				<TabsContent
 					className="m-0"
 					value="payment">
-					<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 bg-white border md:flex-row">
+					<div className="flex flex-row flex-wrap items-center justify-between w-full px-6 py-4 bg-white border-b border-r md:flex-row">
 						<div className="flex flex-col space-y-2 bg-white md:w-auto">
 							<Label htmlFor="keyword">Keyword</Label>
 							<Input
@@ -605,7 +611,7 @@ function RouteComponent() {
 							<AdvancedFilterPopover />
 						</div>
 					</div>
-					<div className="flex justify-between w-full bg-white px-6 py-4">
+					<div className="flex justify-between w-full border-r bg-white px-6 py-4">
 						<h2 className="text-xl">Payment</h2>
 						<div className="flex gap-2">
 							<Button
@@ -620,11 +626,12 @@ function RouteComponent() {
 							</Button>
 						</div>
 					</div>
-
-					<DataTable
-						columns={paymentDataEmployeeColumn}
-						data={paymentDataEmployeeRow}
-					/>
+					<div className="border-b border-r border-t">
+						<DataTable
+							columns={paymentDataEmployeeColumn}
+							data={paymentDataEmployeeRow}
+						/>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>

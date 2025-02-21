@@ -26,7 +26,7 @@ export function TimeLine({ currentDate, events }: WeekViewProps) {
 
 	// }));
 	return (
-		<div className="p-4 border shadow-sm bg-card text-card-foreground">
+		<div className="p-4 border-t shadow-sm bg-card text-card-foreground">
 			<div className="relative z-20 mb-4">
 				<div className="grid grid-cols-8 gap-0">
 					{Array.from({ length: 8 }).map((_, i) => (
@@ -62,12 +62,13 @@ export function TimeLine({ currentDate, events }: WeekViewProps) {
 										<div
 											key={employee.name}
 											className="h-16 text-sm text-center border-r cursor-pointer border-border">
-											<div className="flex items-center justify-start gap-2 py-4">
+											<div className="flex items-center justify-start gap-2 pt-4">
 												<img
-													src="./vite.svg"
+													src={employee.image}
 													alt={employee.name}
+													className="w-12"
 												/>
-												<h2>{employee.name}</h2>
+												<h2 className="text-xs">{employee.name}</h2>
 											</div>
 										</div>
 									))}
