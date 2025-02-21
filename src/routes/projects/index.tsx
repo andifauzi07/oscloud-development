@@ -22,8 +22,13 @@ function RouteComponent() {
 	return (
 		<div className="">
 			{/* Header Section */}
+<<<<<<< HEAD
 			<div className="flex-none min-h-0 border-b border-r px-4 py-2">
 				<div className="flex flex-row items-center justify-between md:px-6 bg-white">
+=======
+			<div className="flex-none min-h-0 px-4 py-2 border-b">
+				<div className="flex flex-row items-center justify-between bg-white md:px-6">
+>>>>>>> 81ca0ace08b83ae48119bc118ed748142bef435a
 					<h2 className="text-base">Project List</h2>
 					<Link to="/projects/setting">Settings</Link>
 				</div>
@@ -45,15 +50,20 @@ function RouteComponent() {
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
+<<<<<<< HEAD
 					<Button className="text-black bg-transparent  md:w-20 link border-r border-l h-10">ADD+</Button>
 					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
+=======
+					<Button className="text-black bg-transparent border-l border-r md:w-20 link h-14">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-14">EDIT</Button>
+>>>>>>> 81ca0ace08b83ae48119bc118ed748142bef435a
 				</div>
 
 				{/* List View Tab */}
 				<TabsContent
 					className="m-0"
 					value="list">
-					<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-t border-r border-b md:flex-row">
+					<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-t border-b border-r md:flex-row">
 						<div className="flex flex-col space-y-2 bg-white md:w-auto">
 							<Label htmlFor="keyword">Keyword</Label>
 							<Input

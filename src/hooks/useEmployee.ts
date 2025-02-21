@@ -1,17 +1,182 @@
-// INCOMPLETE.
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchEmployees } from "@/store/slices/employeeSlice";
-import { RootState, AppDispatch } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
+import { useUserData } from "@/hooks/useUserData";
+import {
+    fetchWorkspaceEmployees,
+    // fetchEmployeeCategories,
+    createEmployee,
+    updateEmployee,
+    // type Employee,
+} from "@/store/slices/employeeSlice";
 
-export const useEmployees = () => {
+interface Employee {
+    employeeid: number;
+    name: string;
+    email: string;
+    profileimage: string;
+    employeecategoryid: number;
+    departmentid: number;
+    workspaceid: number;
+    employeeCategory: {
+        categoryid: number;
+        categoryname: string;
+        parentcategoryid: number;
+    };
+    department: {
+        departmentid: number;
+        departmentname: string;
+        parentdepartmentid: number | null;
+    };
+}
+
+// Update the EmployeeFilters interface
+interface EmployeeFilters {
+    department?: number;
+    category?: number;
+    search?: string;
+    page?: number;
+    limit?: number;
+    id?: number; // Add this to support single employee fetching
+}
+export const useWorkspaceEmployees = (filters?: any) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { employees, loading, error } = useSelector((state: RootState) => state.employee);
+    const { workspaceid } = useUserData();
+    const { employees, total, currentPage, limit, loading, error } = useSelector(
+        (state: RootState) => state.employee
+    );
 
     useEffect(() => {
-        dispatch(fetchEmployees());
-    }, [dispatch]);
+        if (workspaceid) {
+            dispatch(fetchWorkspaceEmployees({ 
+                workspaceId: Number(workspaceid), 
+                filters: {
+                    page: currentPage,
+                    limit,
+                    ...filters
+                }
+            }));
+        }
+    }, [dispatch, workspaceid, currentPage, limit, filters]);
 
-    return { employees, loading, error };
+    const addEmployee = async (data: any) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(createEmployee({ workspaceId: Number(workspaceid), data })).unwrap();
+    };
+
+    const editEmployee = async (employeeId: number, data: any) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(updateEmployee({ workspaceId: Number(workspaceid), employeeId, data })).unwrap();
+    };
+
+    return {
+        employees,
+        total,
+        currentPage,
+        limit,
+        loading,
+        error,
+        addEmployee,
+        editEmployee,
+    };
+};
+
+// export const useEmployeeCategories = () => {
+//     const dispatch = useDispatch<AppDispatch>();
+//     const { workspaceid } = useUserData();
+//     const { categories, loading, error } = useSelector(
+//         (state: RootState) => state.employee
+//     );
+
+//     useEffect(() => {
+//         if (workspaceid) {
+//             dispatch(fetchEmployeeCategories(Number(workspaceid)));
+//         }
+//     }, [dispatch, workspaceid]);
+
+//     return {
+//         categories,
+//         loading,
+//         error,
+//     };
+// };
+
+export const usePaginatedEmployees = (pageSize = 10) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { workspaceid } = useUserData();
+    const { employees, total, currentPage, loading, error } = useSelector(
+        (state: RootState) => state.employee
+    );
+
+    const setPage = (page: number) => {
+        if (workspaceid) {
+            dispatch(fetchWorkspaceEmployees({ 
+                workspaceId: Number(workspaceid), 
+                filters: { page, limit: pageSize } 
+            }));
+        }
+    };
+
+    useEffect(() => {
+        if (workspaceid) {
+            dispatch(fetchWorkspaceEmployees({ 
+                workspaceId: Number(workspaceid), 
+                filters: { page: 1, limit: pageSize } 
+            }));
+        }
+    }, [dispatch, workspaceid, pageSize]);
+
+    return {
+        employees,
+        total,
+        currentPage,
+        pageSize,
+        loading,
+        error,
+        setPage,
+        totalPages: Math.ceil(total / pageSize),
+    };
+};
+
+export const useEmployee = (employeeId: number) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { workspaceid } = useUserData();
+    const { employees, loading, error } = useSelector((state: RootState) => state.employee);
+    const [employee, setEmployee] = useState<any>(null);
+    
+    console.log(employees)
+    useEffect(() => {
+        const foundEmployee: any = employees.find(emp => emp.employeeid === employeeId);  // Changed from employeeId
+    console.log(foundEmployee)
+        if (foundEmployee) {
+            setEmployee(foundEmployee);
+        } else if (workspaceid) {
+            dispatch(fetchWorkspaceEmployees({ 
+                workspaceId: Number(workspaceid),
+                // filters: { foundEmployee }
+            }));
+        }
+    }, [dispatch, workspaceid, employeeId, employees]);
+
+    const updateEmployeeData = async (data: Partial<Employee>) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        try {
+            const result = await dispatch(updateEmployee({ 
+                workspaceId: Number(workspaceid), 
+                employeeId,
+                data 
+            })).unwrap();
+            setEmployee(result);
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    return {
+        employee,
+        loading,
+        error,
+        updateEmployee: updateEmployeeData
+    };
 };

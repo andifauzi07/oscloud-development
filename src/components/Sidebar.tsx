@@ -112,7 +112,6 @@ const Sidebar = () => {
 	const { selectedWorkspace, loading: workspacesLoading } = useWorkspace(Number(workspace_id));
 
 	useEffect(() => {
-		console.log({ selectedWorkspace, workspace_id });
 		setShowMoreFeatures(false);
 	}, [selectedPackage]);
 
@@ -139,6 +138,14 @@ const Sidebar = () => {
 
 	const categories = ['All employees', 'Employee Category A', ...(showMoreCategory ? ['UI Designer', 'Full Time', 'Temporary'] : [])];
 	const departments = ['All Department', 'Sales Department', ...(showMoreDepartment ? ['HR Department', 'IT Department', 'Finance'] : [])];
+
+	if (workspacesLoading) {
+		return (
+			<div className="flex items-center justify-center h-screen">
+				<div className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
 		<div className={`h-full overflow-y-auto bg-white border-r transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
@@ -168,7 +175,7 @@ const Sidebar = () => {
 						<SelectValue placeholder="Select Workspace" />
 					</SelectTrigger>
 					<SelectContent className="rounded-none">
-						<SelectItem value="{selectedWorkspace!.name}">{/* {selectedWorkspace?.name} */}</SelectItem>
+						<SelectItem value={selectedWorkspace?.name || ''}>{selectedWorkspace?.name || ''}</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
