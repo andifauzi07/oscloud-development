@@ -50,7 +50,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		header: 'Company',
 		cell: ({ row }) => (
 			<div className="flex items-center gap-2">
-				<span className="font-medium">{row.original.name}</span>
+				<span className="text-xs whitespace-nowrap">{row.original.name}</span>
 			</div>
 		),
 	},
@@ -60,7 +60,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		cell: ({ row }) => {
 			const count = getCompanyPersonnelCount(row.original.id);
 			return (
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 text-xs whitespace-nowrap">
 					<Users className="w-4 h-4" />
 					<span>{count}</span>
 				</div>
@@ -70,17 +70,17 @@ const columns: ColumnDef<CompanyTypes>[] = [
 	{
 		accessorKey: 'categoryGroup',
 		header: 'Category',
-		cell: ({ row }) => <span className="px-2 py-1 text-sm bg-gray-100 rounded-full">{row.original.categoryGroup}</span>,
+		cell: ({ row }) => <span className="px-2 py-1 bg-gray-100 rounded-full text-xs whitespace-nowrap">{row.original.categoryGroup}</span>,
 	},
 	{
 		accessorKey: 'cities',
 		header: 'Cities',
 		cell: ({ row }) => (
-			<div className="flex flex-wrap gap-1">
+			<div className="flex flex-wrap gap-1 text-xs whitespace-nowrap">
 				{row.original.cities.map((city, index) => (
 					<span
 						key={index}
-						className="px-2 py-1 text-xs bg-gray-100 rounded-full">
+						className="px-2 py-1 text-xs whitespace-nowrap bg-gray-100 rounded-full">
 						{city}
 					</span>
 				))}
@@ -95,7 +95,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 				{row.original.managers.map((manager, index) => (
 					<div
 						key={index}
-						className="text-sm">
+						className="text-xs whitespace-nowrap">
 						{manager.name} ({manager.role})
 					</div>
 				))}
@@ -108,7 +108,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		cell: ({ row }) => {
 			const leads = getActiveLeadsCount(row.original.id);
 			return (
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 text-xs whitespace-nowrap">
 					<Target className="w-4 h-4" />
 					<span>{leads}</span>
 				</div>
@@ -270,14 +270,14 @@ function RouteComponent() {
 			<div className="flex-1 overflow-auto">
 				<div className="max-w-full overflow-x-auto">
 					<div className="max-h-[500px] overflow-y-auto border-b border-t border-r">
-						<table className="w-full border-collapse">
-							<thead className="bg-gray-100 border-b sticky top-0 z-10">
+						<table className="w-full border-collapse table-auto">
+							<thead className="bg-gray-100 border-l border-b sticky top-0 z-10">
 								{table.getHeaderGroups().map((headerGroup) => (
 									<tr key={headerGroup.id}>
 										{headerGroup.headers.map((header) => (
 											<th
 												key={header.id}
-												className="py-4 px-2 text-left font-bold text-xs text-[#0a0a30]"
+												className="py-4 whitespace-nowrap px-2 text-left font-bold text-xs text-[#0a0a30]"
 												draggable
 												onDragStart={(e) => handleDragStart(e, header.column.id)}
 												onDragOver={handleDragOver}
@@ -293,10 +293,10 @@ function RouteComponent() {
 									<tr
 										key={row.id}
 										className="hover:bg-gray-50 bg-white text-left">
-										{row.getVisibleCells().map((cell, index) => (
+										{row.getVisibleCells().map((cell) => (
 											<td
 												key={cell.id}
-												className={`px-2 py-2 text-xs ${cell.column.id === 'image' ? 'w-16 h-16 min-w-[64px]' : 'whitespace-nowrap overflow-hidden text-ellipsis'}`}>
+												className={`px-2 max-h-20 py-2 text-xs ${cell.column.id === 'image' ? 'w-16 h-16 min-w-[64px]' : ''}`}>
 												{cell.column.id === 'image' ? (
 													<img
 														src={cell.getValue() as string}
@@ -304,7 +304,7 @@ function RouteComponent() {
 														className="w-16 h-16 object-cover"
 													/>
 												) : (
-													<span className="truncate">{flexRender(cell.column.columnDef.cell, cell.getContext())}</span>
+													<span className="whitespace-nowrap">{flexRender(cell.column.columnDef.cell, cell.getContext())} </span>
 												)}
 											</td>
 										))}

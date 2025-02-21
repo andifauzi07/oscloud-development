@@ -148,8 +148,8 @@ const Sidebar = () => {
 	}
 
 	return (
-		<div className={`h-full overflow-y-auto bg-white border-r transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
-			<div className="relative flex flex-row gap-2.5 font-bold text-center border-b">
+		<div className={`h-full bg-white transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
+			<div className="flex flex-row gap-2.5 font-bold text-center border-b">
 				<div className="mr-4">
 					<div className="flex-none p-3 bg-[#b0bd94]">
 						<div className="p-3 bg-[#550a00]"></div>

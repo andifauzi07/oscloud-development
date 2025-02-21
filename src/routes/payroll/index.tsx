@@ -61,11 +61,11 @@ const data: PayrollRow[] = [
 const columns: ColumnDef<PayrollRow>[] = [
 	{
 		accessorKey: 'image',
-		header: '',
+		header: 'image',
 		cell: ({ row }) => (
 			<img
 				src={row.original.image}
-				className="w-16 h-16 border-0 rounded-none"
+				className="w-10 border-0 rounded-none"
 			/>
 		),
 	},
@@ -76,7 +76,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 			<Input
 				enableEmoji={false}
 				defaultValue={row.original.id}
-				className="w-20 border-0 rounded-none"
+				className="text-xs whitespace-nowrap w-20 border-0 rounded-none"
 				onChange={(e) => {
 					// Handle ID change logic here
 					console.log('ID changed:', e.target.value);
@@ -91,7 +91,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 			<Input
 				enableEmoji={false}
 				defaultValue={row.original.name}
-				className="w-40 border-0 rounded-none"
+				className="text-xs whitespace-nowrap w-40 border-0 rounded-none"
 				onChange={(e) => {
 					// Handle Name change logic here
 					console.log('Name changed:', e.target.value);

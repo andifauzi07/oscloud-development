@@ -181,7 +181,7 @@ function RouteComponent() {
 										data-state={row.getIsSelected() && 'selected'}>
 										{row.getVisibleCells().map((cell) => (
 											<TableCell
-												className="text-base"
+												className="text-xs"
 												key={cell.id}>
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>
