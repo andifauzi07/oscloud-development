@@ -35,7 +35,6 @@ export const fetchWorkspaces = createAsyncThunk("workspace/fetchAll", async (_, 
 export const fetchWorkspaceById = createAsyncThunk("workspace/fetchById", async (workspaceId: number, { rejectWithValue }) => {
     try {
         const response = await apiClient.get(`/workspaces/${workspaceId}`);
-        console.log(response.data);
         return response.data;
     } catch (error: any) {
         return rejectWithValue(error.response?.data || "An error occurred");

@@ -30,11 +30,14 @@ export const useUserData = () => {
 
             try {
                 console.log(session.user.id)
+                // USER ID
+                // is not auth dynamic yet.
 
                 const { data, error } = await supabase
                     .from("User")
                     .select("userid, role, status, workspaceid")
-                    .eq("userid", session.user.id)
+                    // .eq("userid", session.user.id)
+                    .eq("userid", 1)
                     .single();
 
                     console.log(data)
