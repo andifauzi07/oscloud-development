@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
-import { useEmployees, useWorkspaceEmployees } from '@/hooks/useEmployee';
+import { useWorkspaceEmployees } from '@/hooks/useEmployee';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '../../components/ui/data-table';
 import Loading from '@/components/Loading';
 
-interface Employee {
+export interface Employee {
     employeeid: number;
     name: string;
     email: string;
@@ -64,7 +64,7 @@ const columns = [
     {
         accessorKey: 'employeeCategory.categoryname',
         header: 'Employee Category',
-        cell: ({ row }: any ) => row.original.employeeCategory?.categoryname || '-'
+        cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-'
     },
     {
         accessorKey: 'email',
