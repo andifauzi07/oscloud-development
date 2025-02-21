@@ -166,7 +166,7 @@ function RouteComponent() {
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none min-h-0 px-4 py-2 border-r bg-white border-b">
+			<div className="flex-none min-h-0 px-4 py-2 bg-white border-b border-r">
 				<div className="container flex justify-between md:px-6">
 					<h1>Employee List</h1>
 					<Link to="/employee/setting">Settings</Link>
@@ -207,57 +207,6 @@ function RouteComponent() {
 					</div>
 				</div>
 			</div>
-
-			{/* <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-t border-r border-b md:flex-row">
-				<div className="flex flex-col space-y-2 bg-white md:w-auto">
-					<Label htmlFor="keyword">Keyword</Label>
-					<Input
-						type="keyword"
-						id="keyword"
-						placeholder=""
-						className="border rounded-none w-[400px]"
-					/>
-				</div>
-
-				<div className="flex flex-col space-y-2">
-					<Label>Duration</Label>
-					<div className="flex items-center gap-2">
-						<Input
-							type="date"
-							className="w-[150px] border rounded-none"
-							enableEmoji={false}
-						/>
-						<span className="text-gray-500">-</span>
-						<Input
-							type="date"
-							className="w-[150px] border rounded-none"
-							enableEmoji={false}
-						/>
-					</div>
-				</div>
-
-				<div className="flex flex-col space-y-2">
-					<Label>Status</Label>
-					<div className="flex">
-						<Button
-							size="default"
-							className="w-full bg-black rounded-none md:w-20">
-							Active
-						</Button>
-						<Button
-							size="default"
-							variant="outline"
-							className="w-full rounded-none md:w-20">
-							All
-						</Button>
-					</div>
-				</div>
-
-				<div className="flex flex-col space-y-2">
-					<Label>‎ </Label>
-					<AdvancedFilterPopover />
-				</div>
-			</div> */}
 
 			{/* Responsive action buttons */}
 			<div className="flex justify-end flex-none w-full bg-white">

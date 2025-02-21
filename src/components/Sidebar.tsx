@@ -112,7 +112,6 @@ const Sidebar = () => {
     const { selectedWorkspace, loading: workspacesLoading } = useWorkspace(Number(workspace_id));
 
     useEffect(() => {
-        console.log({ selectedWorkspace, workspace_id, })
         setShowMoreFeatures(false);
     }, [selectedPackage]);
 
@@ -148,7 +147,6 @@ const Sidebar = () => {
             </div>
         );
     }
-
 
     return (
         <div className={`h-full overflow-y-auto bg-white border-r transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
