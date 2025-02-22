@@ -218,11 +218,35 @@ function RouteComponent() {
 				</TabsContent>
 
 				{/* Payment List Tab */}
-				<TabsContent value="paymentList">
-					{/* <DataTable
-						columns={columns}
-						data={data}
-					/> */}
+				<TabsContent
+					className="m-0"
+					value="paymentList">
+					<div className="w-full border-t bg-gray-100">
+						<div className="py-2 px-10">
+							<h1>Rate Type</h1>
+						</div>
+					</div>
+					<div className="flex border-t border-r w-full justify-between bg-white items-center">
+						<div className="w-1/3 justify-between px-10 flex ">
+							<h1>Hourly RateA</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+					</div>
+					<div className="flex border-t border-r w-full justify-between bg-white items-center">
+						<div className="w-1/3 justify-between px-10 flex ">
+							<h1>Hourly RateB</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+					</div>
+					<div className="flex border-t border-r w-full justify-between border-b bg-white items-center">
+						<div className="w-1/3 justify-between px-10 flex ">
+							<h1>Hourly RateC</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>
