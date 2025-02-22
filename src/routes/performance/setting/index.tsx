@@ -61,9 +61,9 @@ function RouteComponent() {
 					</DropdownMenuContent>
 				</DropdownMenu>
 				{/* <Link to="/performance/setting/$templateId"> */}
-				<Button className="w-20 text-black bg-transparent border-l border-r link border-r-none min-h-14">ADD+</Button>
+				<Button className="w-20 text-black bg-transparent border-l border-r link border-r-none h-10">ADD+</Button>
 				{/* </Link> */}
-				<Button className="w-20 text-black bg-transparent border-r link min-h-14">EDIT</Button>
+				<Button className="w-20 text-black bg-transparent border-r link h-10">EDIT</Button>
 			</div>
 
 			{/* Data Table */}

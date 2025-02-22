@@ -257,15 +257,20 @@ function ProjectView() {
 					className="m-0"
 					value="description">
 					<div className="flex flex-col border-r">
-						<div className="flex justify-between p-4 px-8 border-t">
-							<h1>Description</h1>
-							<h1>PRINT</h1>
+						<div className="flex justify-between border-t">
+							<div className="h-10 flex items-center px-10">
+								<h1 className="text-sm">Description</h1>
+							</div>
+							<Button className="w-20 text-black bg-transparent link h-10">PRINT</Button>
+							{/* </Link> */}
 						</div>
-						<div className="flex items-center justify-between p-2 px-8 bg-gray-100 border-t border-b">
-							<h1>General Information</h1>
-							<Button className="border">Edit</Button>
+						<div className="flex items-center justify-between bg-gray-100 border-t border-b">
+							<div className="px-8">
+								<h1 className="text-base"> 一般情報</h1>
+							</div>
+							<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 						</div>
-						<div className="flex flex-col">
+						<div className="flex text-xs flex-col">
 							<Input
 								className="p-4 border-none"
 								placeholder="Project Name"></Input>
@@ -292,9 +297,11 @@ function ProjectView() {
 								<h1>Required staff number</h1>
 								<h1>13</h1>
 							</div>
-							<div className="flex justify-between p-4 bg-gray-100 border-t border-b">
-								<h1>Description</h1>
-								<Button className="w-20 text-black bg-transparent border">Edit</Button>
+							<div className="flex items-center justify-between bg-gray-100 border-t border-b">
+								<div className="px-8">
+									<h1 className="text-base">Description</h1>
+								</div>
+								<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 							</div>
 							<Input
 								className="p-4 rounded-none"
