@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { supabase } from '@/backend/supabase/supabaseClient';
 import { RootState } from '@/store/store';
@@ -19,6 +19,7 @@ export const Route = createRootRoute({
 
 export default function RootComponent() {
 	const dispatch = useDispatch();
+	const [isMinimized, setIsMinimized] = useState(false);
 	const { session, loading }: any = useSelector((state: RootState) => state.auth);
 	const navigate = useNavigate();
 
@@ -66,10 +67,13 @@ export default function RootComponent() {
 		<div className="w-full h-full text-black rounded-none">
 			<DashboardNavbar />
 			<section className="bg-slate-50 w-full mt-10 flex h-full rounded-none">
-				<aside className="flex-shrink-0 border-r scroll-hidden fixed overflow-y-scroll h-screen w-[257px] z-10 rounded-none">
-					<Sidebar />
+				<aside className="flex-shrink-0 scroll-hidden fixed overflow-y-scroll h-screen w-[257px] z-10 rounded-none">
+					<Sidebar
+						isMinimized={isMinimized}
+						setIsMinimized={setIsMinimized}
+					/>
 				</aside>
-				<main className="flex w-full h-full flex-col ml-64 flex-1 overflow-hidden rounded-none">
+				<main className={`flex w-full h-full flex-col ${isMinimized ? 'ml-20' : 'ml-64'} transition-all duration-300 flex-1 overflow-hidden rounded-none`}>
 					<Header />
 					<Breadcrumb />
 					<Outlet />

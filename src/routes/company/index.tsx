@@ -271,7 +271,7 @@ function RouteComponent() {
 				<div className="max-w-full overflow-x-auto">
 					<div className="max-h-[500px] overflow-y-auto border-b border-t border-r">
 						<table className="w-full border-collapse table-auto">
-							<thead className="bg-gray-100 border-l border-b sticky top-0 z-10">
+							<thead className="bg-gray-100 border-b sticky top-0 z-10">
 								{table.getHeaderGroups().map((headerGroup) => (
 									<tr key={headerGroup.id}>
 										{headerGroup.headers.map((header) => (
