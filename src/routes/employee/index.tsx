@@ -119,6 +119,7 @@ export const Route = createFileRoute('/employee/')({
 function RouteComponent() {
     const { employees, loading } = useWorkspaceEmployees();
 
+
     if (loading) {
         return <Loading />
     }

@@ -39,7 +39,7 @@ interface EmployeeFilters {
     limit?: number;
     id?: number; // Add this to support single employee fetching
 }
-export const useWorkspaceEmployees = (filters?: any) => {
+export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
     const { employees, total, currentPage, limit, loading, error } = useSelector(
@@ -53,6 +53,7 @@ export const useWorkspaceEmployees = (filters?: any) => {
                 filters: {
                     page: currentPage,
                     limit,
+                    workspaceid: Number(workspaceid), // Add workspaceId to filters
                     ...filters
                 }
             }));
@@ -70,7 +71,7 @@ export const useWorkspaceEmployees = (filters?: any) => {
     };
 
     return {
-        employees,
+        employees: employees.filter(emp => emp.workspaceid === Number(workspaceid)), // Filter by workspace
         total,
         currentPage,
         limit,
@@ -112,7 +113,11 @@ export const usePaginatedEmployees = (pageSize = 10) => {
         if (workspaceid) {
             dispatch(fetchWorkspaceEmployees({ 
                 workspaceId: Number(workspaceid), 
-                filters: { page, limit: pageSize } 
+                filters: { 
+                    page, 
+                    limit: pageSize,
+                    workspaceid: Number(workspaceid)
+                } 
             }));
         }
     };
@@ -121,13 +126,17 @@ export const usePaginatedEmployees = (pageSize = 10) => {
         if (workspaceid) {
             dispatch(fetchWorkspaceEmployees({ 
                 workspaceId: Number(workspaceid), 
-                filters: { page: 1, limit: pageSize } 
+                filters: { 
+                    page: 1, 
+                    limit: pageSize,
+                    workspaceid: Number(workspaceid)
+                } 
             }));
         }
     }, [dispatch, workspaceid, pageSize]);
 
     return {
-        employees,
+        employees: employees.filter(emp => emp.workspaceid === Number(workspaceid)),
         total,
         currentPage,
         pageSize,
@@ -142,18 +151,23 @@ export const useEmployee = (employeeId: number) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
     const { employees, loading, error } = useSelector((state: RootState) => state.employee);
-    const [employee, setEmployee] = useState<any>(null);
+    const [employee, setEmployee] = useState<Employee | null>(null);
     
-    console.log(employees)
     useEffect(() => {
-        const foundEmployee: any = employees.find(emp => emp.employeeid === employeeId);  // Changed from employeeId
-    console.log(foundEmployee)
+        const foundEmployee = employees.find(
+            emp => emp.employeeid === employeeId && emp.workspaceid === Number(workspaceid)
+        );
+        
         if (foundEmployee) {
             setEmployee(foundEmployee);
         } else if (workspaceid) {
             dispatch(fetchWorkspaceEmployees({ 
                 workspaceId: Number(workspaceid),
-                // filters: { foundEmployee }
+                filters: { 
+                    page: 1, 
+                    limit: 1,
+                    workspaceid: Number(workspaceid)
+                }
             }));
         }
     }, [dispatch, workspaceid, employeeId, employees]);

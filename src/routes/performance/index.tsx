@@ -1,206 +1,166 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import { mockEmployees, EmployeeTypes } from '@/config/mockData/employees';
-import { mockPerformanceSheets, mockTemplates } from '@/config/mockData/templates';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import AdvancedFilterPopover from '@/components/search/advanced-search';
+import { useEffect, useState } from 'react';
+import { useWorkspaceEmployees } from '@/hooks/useEmployee';
+import { usePerformanceSheets, usePerformanceTemplates } from '@/hooks/usePerformance';
+import { DataTable } from '@/components/ui/data-table';
+import useDebounce from '@/hooks/useDebounce';
+import Loading from '@/components/Loading';
+
+interface PerformanceScore {
+    id: number;
+    name: string;
+    score: number;
+}
 
 export const Route = createFileRoute('/performance/')({
-	component: RouteComponent,
+    component: RouteComponent,
 });
 
-const getLatestPerformanceScores = (employeeId: number) => {
-	const employeeSheets = mockPerformanceSheets.filter((sheet) => sheet.employeeId === employeeId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-	if (employeeSheets.length === 0) return null;
-
-	const latestSheet = employeeSheets[0];
-	const template = mockTemplates.find((t) => t.id === latestSheet.templateId);
-
-	if (!template) return null;
-
-	return template.categories.map((cat) => {
-		// Calculate average score for category items
-		const categoryScores = Object.values(latestSheet.scores[cat.id] || {});
-		const avgScore = categoryScores.length > 0 ? Math.round(categoryScores.reduce((a, b) => a + b, 0) / categoryScores.length) : 0;
-
-		return {
-			id: cat.id,
-			name: cat.name,
-			score: avgScore,
-		};
-	});
-};
-
-const columns: ColumnDef<EmployeeTypes>[] = [
-	{
-		accessorKey: 'image',
-		header: '',
-		cell: ({ row }) => (
-			<div className="flex items-center justify-center h-full">
-				<figure className="w-16 h-16 overflow-hidden">
-					<img
-						className="object-cover w-full h-full"
-						src={row.original.image}
-						alt={`${row.original.name}'s profile`}
-					/>
-				</figure>
-			</div>
-		),
-	},
-	{
-		accessorKey: 'id',
-		header: 'ID',
-	},
-	{
-		accessorKey: 'name',
-		header: 'Name',
-		cell: ({ row }: any) => (
-			<Link
-				to={`/performance/$employeeId`}
-				params={{ employeeId: row.original.id }}>
-				{row.original.name}
-			</Link>
-		),
-	},
-	{
-		accessorKey: 'category',
-		header: 'Employee Category',
-	},
-	...mockTemplates[0].categories.map((category) => ({
-		accessorKey: category.name.toLowerCase().replace(/\s+/g, '_'),
-		header: category.name,
-		cell: ({ row }: any) => {
-			const scores = getLatestPerformanceScores(row.original.id);
-			const score = scores?.find((s) => s.name === category.name)?.score;
-			return score !== undefined ? `${score}%` : 'N/A';
-		},
-	})),
-	{
-		id: 'detail',
-		header: '',
-		cell: ({ row }: any) => (
-			<Link
-				to={`/performance/$employeeId`}
-				params={{ employeeId: row.original.id }}
-				className="w-full h-full">
-				<Button
-					variant="outline"
-					className="w-20 h-full">
-					DETAIL
-				</Button>
-			</Link>
-		),
-	},
-];
-
 function RouteComponent() {
-	const table = useReactTable({
-		data: mockEmployees,
-		columns,
-		getCoreRowModel: getCoreRowModel(),
-	});
+    const [searchQuery, setSearchQuery] = useState('');
+    const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
+    const debouncedSearch = useDebounce(searchQuery, 500);
+    const { employees, loading: employeesLoading } = useWorkspaceEmployees();
+    const { templates, loading: templatesLoading } = usePerformanceTemplates();
+    const { sheets, loading: sheetsLoading } = usePerformanceSheets({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate
+    });
 
-	return (
-		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none min-h-0 px-4 py-2 border-b border-r">
-				<div className="container flex justify-between md:px-6">
-					<h1>Performance</h1>
-					<Link to="/performance/setting">Settings</Link>
-				</div>
-			</div>
+    const defaultTemplate = templates[0];
 
-			<div className="flex flex-row flex-wrap items-center justify-between w-full gap-4 p-8 pt-4 bg-white border-b border-r md:flex-row">
-				<div className="flex flex-row flex-wrap gap-4">
-					<div className="flex flex-col w-full space-y-2 md:w-auto">
-						<Label htmlFor="keyword">Keyword</Label>
-						<Input
-							type="keyword"
-							id="keyword"
-							placeholder=""
-							className="border rounded-none w-[400px]"
-						/>
-					</div>
-				</div>
+    const getScore = (employeeId: number, categoryId: number) => {
+        return getPerformanceScore(sheets, employeeId, categoryId);
+    };
 
-				<div className="flex flex-col space-y-2">
-					<Label>Duration</Label>
-					<div className="flex items-center gap-2">
-						<Input
-							type="date"
-							enableEmoji={false}
-							className="w-[150px] border rounded-none"
-						/>
-						<span className="text-gray-500">-</span>
-						<Input
-							enableEmoji={false}
-							type="date"
-							className="w-[150px] border rounded-none"
-						/>
-					</div>
-				</div>
+    const columns: ColumnDef<any>[] = [
+        {
+            accessorKey: 'profileimage',
+            header: '',
+            cell: ({ row }) => (
+                <div className="flex items-center justify-center h-full">
+                    <figure className="w-16 h-16 overflow-hidden rounded-full">
+                        <img
+                            className="object-cover w-full h-full"
+                            src={row.original.profileimage || '/default-avatar.png'}
+                            alt={`${row.original.name}'s profile`}
+                        />
+                    </figure>
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'employeeid',
+            header: 'ID',
+        },
+        {
+            accessorKey: 'name',
+            header: 'Name',
+            cell: ({ row }) => (
+                <Link
+                    to={`/performance/$employeeId`}
+                    params={{ employeeId: row.original.employeeid }}
+                    className="text-blue-600 hover:underline">
+                    {row.original.name}
+                </Link>
+            ),
+        },
+        {
+            accessorKey: 'employeeCategory.categoryname',
+            header: 'Employee Category',
+            cell: ({ row }) => row.original.employeeCategory?.categoryname || '-'
+        },
+        ...(defaultTemplate?.categories?.map((category) => ({
+            accessorKey: `performance_${category.categoryid}`,
+            header: category.categoryname,
+            cell: ({ row }: any) => {
+                const score = getScore(row.original.employeeid, category.categoryid);
+                return score ? `${score}%` : 'N/A';
+            },
+        })) || []),
+        {
+            id: 'actions',
+            header: '',
+            cell: ({ row }) => (
+                <Link
+                    to={`/performance/$employeeId`}
+                    params={{ employeeId: row.original.employeeid }}>
+                    <Button variant="outline" className="w-20">
+                        DETAIL
+                    </Button>
+                </Link>
+            ),
+        },
+    ];
 
-				<div className="flex flex-col space-y-2">
-					<Label>‎</Label>
-					<AdvancedFilterPopover />
-				</div>
-			</div>
+    if (employeesLoading || templatesLoading || sheetsLoading) {
+        return <Loading />;
+    }
 
-			{/* Responsive action buttons */}
-			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-14">ADD+</Button>
-				<Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
-			</div>
-			{/* Table Section */}
-			<div className="flex-1 overflow-x-auto">
-				<div className="min-w-[1200px]">
-					<Table className="p-0 m-0">
-						<TableHeader className="bg-gray-100 border-r border-t">
-							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id}>
-									{headerGroup.headers.map((header) => (
-										<TableHead
-											className="py-4 text-[#0a0a30] text-xs font-bold"
-											key={header.id}>
-											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-										</TableHead>
-									))}
-								</TableRow>
-							))}
-						</TableHeader>
-						<TableBody>
-							{table.getRowModel().rows?.length ? (
-								table.getRowModel().rows.map((row) => (
-									<TableRow
-										className="h-20 border-r"
-										key={row.id}
-										data-state={row.getIsSelected() && 'selected'}>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell
-												className="text-base"
-												key={cell.id}>
-												{flexRender(cell.column.columnDef.cell, cell.getContext())}
-											</TableCell>
-										))}
-									</TableRow>
-								))
-							) : (
-								<TableRow>
-									<TableCell
-										colSpan={columns.length}
-										className="h-24 text-center">
-										No results.
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-				</div>
-			</div>
-		</div>
-	);
+    return (
+        <div className="flex flex-col flex-1 h-full">
+            <div className="flex-none min-h-0 px-4 py-2 border-b border-r">
+                <div className="container flex justify-between md:px-6">
+                    <h1>Performance</h1>
+                    <Link to="/performance/setting">Settings</Link>
+                </div>
+            </div>
+
+            <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b md:flex-row">
+                <div className="flex flex-row flex-wrap gap-4">
+                    <div className="flex flex-col space-y-2 md:w-auto">
+                        <Label htmlFor="keyword">Keyword</Label>
+                        <Input
+                            type="text"
+                            id="keyword"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search employees..."
+                            className="border rounded-none w-[400px]"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                    <Label>Duration</Label>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            type="date"
+                            enableEmoji={false}
+                            className="w-[150px] border rounded-none"
+                        />
+                        <span className="text-gray-500">-</span>
+                        <Input
+                            enableEmoji={false}
+                            type="date"
+                            className="w-[150px] border rounded-none"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex justify-end flex-none w-full bg-white">
+                <Button className="text-black bg-transparent border-l border-r md:w-20 link min-h-14">ADD+</Button>
+                <Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
+            </div>
+
+            <div className="border-r">
+                <DataTable
+                    columns={columns}
+                    data={employees || []}
+                />
+            </div>
+        </div>
+    );
 }
+
+// Helper function to get performance score (implement based on your API)
+const getPerformanceScore = (sheets: any, employeeId: number, categoryId: number) => {
+    // Implement this based on your API
+    return null;
+};

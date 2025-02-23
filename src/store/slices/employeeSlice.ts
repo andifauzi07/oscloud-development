@@ -17,12 +17,21 @@ interface Employee {
     employeeid: number;
     name: string;
     email: string;
-    profileImage: string;
+    profileimage: string;
+    employeecategoryid: number;
+    departmentid: number;
+    workspaceid: number;
     employeeCategory: {
-        id: number;
-        name: string;
+        categoryid: number;
+        categoryname: string;
+        parentcategoryid: number;
     };
-    department: Department;
+    department: {
+        departmentid: number;
+        departmentname: string;
+        parentdepartmentid: number | null;
+        workspaceid: number;
+    };
 }
 
 interface EmployeeFilters {
@@ -31,6 +40,7 @@ interface EmployeeFilters {
     search?: string;
     page?: number;
     limit?: number;
+    workspaceid?: number;
 }
 
 interface EmployeeResponse {
@@ -66,16 +76,16 @@ export const fetchWorkspaceEmployees = createAsyncThunk(
         try {
             const queryParams = new URLSearchParams();
             if (filters) {
-                if (filters.department) queryParams.append('department', filters.department.toString());
-                if (filters.category) queryParams.append('category', filters.category.toString());
-                if (filters.search) queryParams.append('search', filters.search);
-                if (filters.page) queryParams.append('page', filters.page.toString());
-                if (filters.limit) queryParams.append('limit', filters.limit.toString());
+                Object.entries(filters).forEach(([key, value]) => {
+                    if (value !== undefined) {
+                        queryParams.append(key, value.toString());
+                    }
+                });
             }
             
             const url = `/workspaces/${workspaceId}/employees${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
             const response = await apiClient.get(url);
-            return response.data as EmployeeResponse;
+            return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || "Failed to fetch employees");
         }

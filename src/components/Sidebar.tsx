@@ -176,8 +176,8 @@ const Sidebar = () => {
                         <SelectValue placeholder="Select Workspace" />
                     </SelectTrigger>
                     <SelectContent className='rounded-none'>
-                        <SelectItem value={selectedWorkspace?.name || ''}>
-                            {selectedWorkspace?.name || ''}
+                        <SelectItem value={selectedWorkspace?.name || 'default'}>
+                            {selectedWorkspace?.name || 'default'}
                         </SelectItem>
                     </SelectContent>
                 </Select>

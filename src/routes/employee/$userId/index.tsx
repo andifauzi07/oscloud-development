@@ -7,6 +7,7 @@ import { useEmployee } from '@/hooks/useEmployee';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import Loading from '@/components/Loading';
 
 interface EditedEmployee {
     name?: string;
@@ -98,8 +99,8 @@ function RouteComponent() {
     const { employee, loading, error, updateEmployee } = useEmployee(Number(userId));
     // const { categories } = useEmployeeCategories();
 
-    if (loading) {
-        return <div>Loading...</div>;
+    if (loading || !employee) {
+        return <Loading/>
     }
 
     if (error) {
@@ -131,7 +132,7 @@ function RouteComponent() {
     const basicInfo = [
         { 
             label: 'Employee ID', 
-            value: employee?.employeeId?.toString() || '-',
+            value: employee?.employeeid?.toString() || '-',
             key: 'employeeId',
         },
         { 
@@ -144,16 +145,20 @@ function RouteComponent() {
             value: editedEmployee.email || employee?.email || '-',
             key: 'email',
         },
-        // { 
-        //     label: 'Category', 
-        //     value: editedEmployee.employeeCategoryId?.toString() || 
-        //            employee?.employeeCategory?.id?.toString() || '-',
-        //     key: 'employeeCategoryId',
-        //     options: categories?.map((c: any) => ({ 
-        //         value: c.categoryId.toString(), 
-        //         label: c.name 
-        //     }))
-        // }
+        { 
+            label: 'Category', 
+            value: editedEmployee.employeeCategoryId?.toString() || 
+                   employee?.employeeCategory?.categoryid?.toString() || '-',
+            key: 'employeeCategoryId',
+            // options: employee?.employeeCategory?.map((c: any) => ({ 
+            //     value: c.categoryId.toString(), 
+            //     label: c.name 
+            // }))
+            options: Array.isArray(employee?.employeeCategory) ? employee.employeeCategory.map((c: any) => ({ 
+                value: c.categoryid.toString(), 
+                label: c.categoryname 
+            })) : []
+        }
     ];
 
     const contractInfo = [
@@ -177,7 +182,7 @@ function RouteComponent() {
 				<>
 					<div className="flex flex-col">
 						<div className="border-r">
-							<h2 className="container px-4 py-3 ">John Brown {userId}</h2>
+							<h2 className="container px-4 py-3 ">{employee?.name}</h2>
 						</div>
 						<div className="border-b">
 							<div className="flex justify-end flex-none w-full bg-white border-t">
@@ -220,7 +225,7 @@ function RouteComponent() {
 								<figure className="w-full h-[65%] relative overflow-hidden">
 									<img
 										className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%]"
-										src="https://plus.unsplash.com/premium_photo-1671656349322-41de944d259b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+										src={employee.profileimage}
 										alt="Profile"
 									/>
 								</figure>
@@ -261,10 +266,6 @@ function RouteComponent() {
 				</>
 			)}
 
-			{/* Outlet section */}
-			<div className="flex-none">
-				<Outlet />
-			</div>
         </div>
     );
 }

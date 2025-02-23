@@ -3,6 +3,7 @@ import authReducer from "./slices/authSlice"
 import workspaceReducer from "./slices/workspaceSlice"
 import employeeReducer from "./slices/employeeSlice"
 import userReducer from "./slices/userSlice"
+import performanceReducer from "./slices/performanceSlice"
 
 export const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
         user: userReducer,
         workspace: workspaceReducer,
         employee: employeeReducer,
+        performance: performanceReducer,
     }
 })
 

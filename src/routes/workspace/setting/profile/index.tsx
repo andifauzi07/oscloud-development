@@ -5,7 +5,7 @@ export const Route = createFileRoute('/workspace/setting/profile/')({
 })
 
 function RouteComponent() {
-    const { selectedWorkspace, loading, error, updateWorkspace } = useWorkspace(workspaceId);
+    // const { selectedWorkspace, loading, error, updateWorkspace } = useWorkspace(workspaceId);
 
     return <div>Hello "/workspace/setting/profile/"!</div>
 }

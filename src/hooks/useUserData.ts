@@ -34,7 +34,7 @@ export const useUserData = () => {
                 // is not auth dynamic yet.
 
                 const { data, error } = await supabase
-                    .from("User")
+                    .from("app_user")
                     .select("userid, role, status, workspaceid")
                     // .eq("userid", session.user.id)
                     .eq("userid", 1)
@@ -67,5 +67,12 @@ export const useUserData = () => {
         fetchUserData();
     }, [session]);
 
+    // const [userData, setUserData] = useState<UserData>({
+    //     userid: '1',
+    //     role: 'Admin',
+    //     status: 'Active',
+    //     workspaceid: '1',
+    //     loading: false,
+    // });
     return userData;
 };
