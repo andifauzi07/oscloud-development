@@ -321,7 +321,7 @@ const Sidebar: React.FC<{ isMinimized: boolean; setIsMinimized: any }> = ({ isMi
 			<button
 				onClick={() => setIsMinimized(!isMinimized)}
 				className="mx-auto pb-10 rounded w-full hover:bg-slate-100">
-				{isMinimized ? 'CLOSE' : 'OPEN'}
+				{isMinimized ? 'OPEN' : 'CLOSE'}
 			</button>
 		</div>
 	);

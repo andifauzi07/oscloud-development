@@ -1,6 +1,6 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { MenuIcon } from 'lucide-react';
+import { ChevronDown, MenuIcon } from 'lucide-react';
 import { signOut } from '../backend/auth/auth';
 
 const links = [
@@ -44,16 +44,16 @@ const DashboardNavbar = () => {
 						</li>
 					))}
 				</div>
-				<div className="gap-4 items-center border-r flex px-2">
+				<div className="items-center border-r flex">
 					{/* Username Login */}
-					<div className="border-r border-l h-full py-1 px-2 flex items-center">
-						<h1 className="text-xs text-black">Username</h1>
-					</div>
-
 					<DropdownMenu>
-						<DropdownMenuTrigger>
-							<MenuIcon size={24} />
+						<DropdownMenuTrigger className="m-0 flex px-4 justify-center items-center border-l h-full">
+							<h1 className="w-full text-xs text-black">Username</h1>
 						</DropdownMenuTrigger>
+						<div className="border-l h-full py-1 px-4 flex items-center">
+							JP <ChevronDown size={20} />
+						</div>
+
 						<DropdownMenuContent className="px-8 border bg-white py-2 mx-1 border-black">
 							<DropdownMenuItem className="border-none cursor-pointer hover:bg-slate-50">
 								<Link to="/">Profile</Link>
