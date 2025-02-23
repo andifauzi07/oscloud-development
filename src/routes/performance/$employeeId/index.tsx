@@ -145,15 +145,6 @@ function RouteComponent() {
             </div>
         </div>
     );
-			{/* Data Table */}
-			<div className="border-t border-b border-r">
-				<DataTable
-					columns={columns}
-					data={data}
-				/>
-			</div>
-		</div>
-	);
 }
 
 export const Route = createFileRoute('/performance/$employeeId/')({
