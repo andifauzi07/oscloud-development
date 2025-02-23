@@ -234,16 +234,16 @@ function RouteComponent() {
 			<div className="bg-white">
 				<h2 className="container px-4 py-3 ">{revertUrlString(paymentId)}</h2>
 			</div>
-			<div className="border-b border-t">
+			<div className="border-t border-b">
 				<DataTable
 					columns={columnsEmployee}
 					data={dataEmployee}
 				/>
 			</div>
-			<div className="flex w-full bg-white px-6 py-4">
+			<div className="flex w-full px-6 py-4 bg-white">
 				<h2 className="text-xl">Breakdown</h2>
 			</div>
-			<div className="border-b border-t">
+			<div className="border-t border-b">
 				<DataTable
 					columns={columBreakdown}
 					data={dataBreakdown}

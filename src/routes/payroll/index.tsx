@@ -7,6 +7,13 @@ import { ColumnDef } from '@tanstack/react-table';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { Label } from '@/components/ui/label';
 import { formatUrlString, revertUrlString } from '@/lib/utils';
+import { usePayroll } from '@/hooks/usePayroll';
+import { useUserData } from '@/hooks/useUserData';
+import Loading from '@/components/Loading';
+
+export const Route = createFileRoute('/payroll/')({
+	component: RouteComponent,
+});
 
 // Define the data row type
 type PayrollRow = {
@@ -20,42 +27,6 @@ type PayrollRow = {
 	numberOfPayment: string;
 	joinedOn: string;
 };
-
-const data: PayrollRow[] = [
-	{
-		image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		id: '1',
-		name: 'John Doe',
-		employeeCategory: 'Full-Time',
-		hourlyRateA: '$20',
-		hourlyRateB: '$25',
-		totalPayment: '$5,000',
-		numberOfPayment: '10',
-		joinedOn: '2023-01-01',
-	},
-	{
-		image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		id: '2',
-		name: 'Jane Smith',
-		employeeCategory: 'Part-Time',
-		hourlyRateA: '$18',
-		hourlyRateB: '$22',
-		totalPayment: '$3,500',
-		numberOfPayment: '8',
-		joinedOn: '2023-02-15',
-	},
-	{
-		image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		id: '3',
-		name: 'Alice Johnson',
-		employeeCategory: 'Contract',
-		hourlyRateA: '$25',
-		hourlyRateB: '$30',
-		totalPayment: '$6,000',
-		numberOfPayment: '12',
-		joinedOn: '2023-03-10',
-	},
-];
 
 // Define columns
 const columns: ColumnDef<PayrollRow>[] = [
@@ -76,7 +47,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 			<Input
 				enableEmoji={false}
 				defaultValue={row.original.id}
-				className="text-xs whitespace-nowrap w-20 border-0 rounded-none"
+				className="w-20 text-xs border-0 rounded-none whitespace-nowrap"
 				onChange={(e) => {
 					// Handle ID change logic here
 					console.log('ID changed:', e.target.value);
@@ -91,7 +62,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 			<Input
 				enableEmoji={false}
 				defaultValue={row.original.name}
-				className="text-xs whitespace-nowrap w-40 border-0 rounded-none"
+				className="w-40 text-xs border-0 rounded-none whitespace-nowrap"
 				onChange={(e) => {
 					// Handle Name change logic here
 					console.log('Name changed:', e.target.value);
@@ -130,7 +101,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 		cell: ({ row }) => (
 			<Link
 				to={'/payroll/$employeeId'}
-				params={{ employeeId: formatUrlString(row.original.name.toString()) }}
+				params={{ employeeId: row.original.id }}
 				className="w-full h-full">
 				<Button
 					variant="outline"
@@ -142,16 +113,32 @@ const columns: ColumnDef<PayrollRow>[] = [
 	},
 ];
 
-export const Route = createFileRoute('/payroll/')({
-	component: RouteComponent,
-});
+
 
 function RouteComponent() {
-	return (
-		<div className="flex flex-col flex-1 h-full">
-			{/* Tabs Section */}
-			<Tabs defaultValue="employeeList">
-				<div className="flex items-center justify-between px-4 bg-white border-b border-r">
+    const { workspaceid } = useUserData();
+    const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid) });
+
+    if (loading) return <Loading />;
+    if (error) return <div>Error: {error}</div>;
+
+    // Transform payments data to match the table structure
+    const tableData = payments.map(( payment: any ) => ({
+        image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        id: payment.employee.employeeId.toString(),
+        name: payment.employee.name,
+        employeeCategory: 'Staff', // Default category
+        hourlyRateA: payment.details[0] ? `¥${(payment.details[0].totalAmount / payment.details[0].hoursWorked).toFixed(2)}` : '-',
+        hourlyRateB: '-',
+        totalPayment: `¥${payment.totalPayment}`,
+        numberOfPayment: '1',
+        joinedOn: new Date().toISOString().split('T')[0],
+    }));
+
+    return (
+        <div className="flex flex-col flex-1 h-full">
+            <Tabs defaultValue="employeeList">
+                <div className="flex items-center justify-between px-4 bg-white border-b border-r">
 					<TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="employeeList"
@@ -201,8 +188,8 @@ function RouteComponent() {
 				</div>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">ADD+</Button>
-					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
+					<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">ADD+</Button>
+					<Button className="h-10 text-black bg-transparent border-r md:w-20 link">EDIT</Button>
 				</div>
 
 				{/* Employee List Tab */}
@@ -212,7 +199,7 @@ function RouteComponent() {
 					<div className="border-t border-r">
 						<DataTable
 							columns={columns}
-							data={data}
+							data={tableData}
 						/>
 					</div>
 				</TabsContent>
@@ -221,31 +208,31 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0"
 					value="paymentList">
-					<div className="w-full border-t bg-gray-100">
-						<div className="py-2 px-10">
+					<div className="w-full bg-gray-100 border-t">
+						<div className="px-10 py-2">
 							<h1>Rate Type</h1>
 						</div>
 					</div>
-					<div className="flex border-t border-r w-full justify-between bg-white items-center">
-						<div className="w-1/3 justify-between px-10 flex ">
+					<div className="flex items-center justify-between w-full bg-white border-t border-r">
+						<div className="flex justify-between w-1/3 px-10 ">
 							<h1>Hourly RateA</h1>
 							<h1> Active</h1>
 						</div>
-						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
 					</div>
-					<div className="flex border-t border-r w-full justify-between bg-white items-center">
-						<div className="w-1/3 justify-between px-10 flex ">
+					<div className="flex items-center justify-between w-full bg-white border-t border-r">
+						<div className="flex justify-between w-1/3 px-10 ">
 							<h1>Hourly RateB</h1>
 							<h1> Active</h1>
 						</div>
-						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
 					</div>
-					<div className="flex border-t border-r w-full justify-between border-b bg-white items-center">
-						<div className="w-1/3 justify-between px-10 flex ">
+					<div className="flex items-center justify-between w-full bg-white border-t border-b border-r">
+						<div className="flex justify-between w-1/3 px-10 ">
 							<h1>Hourly RateC</h1>
 							<h1> Active</h1>
 						</div>
-						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
 					</div>
 				</TabsContent>
 			</Tabs>

@@ -2,40 +2,40 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 
 export interface Point {
-    pointid: number;  // Changed from pointId
-    categoryid: number;  // Added
-    pointname: string;  // Changed from name
+    pointid: number; // Changed from pointId
+    categoryid: number; // Added
+    pointname: string; // Changed from name
     weight: number;
 }
 
 export interface Category {
-    categoryid: number;  // Changed from categoryId
-    templateid: number;  // Added
-    categoryname: string;  // Changed from name
+    categoryid: number; // Changed from categoryId
+    templateid: number; // Added
+    categoryname: string; // Changed from name
     points: Point[];
 }
 
 export interface Template {
-    templateid: number;  // Changed from templateId
-    templatename: string;  // Changed from templateName
-    workspaceid: number;  // Added
+    templateid: number; // Changed from templateId
+    templatename: string; // Changed from templateName
+    workspaceid: number; // Added
     categories: Category[];
 }
 
 export interface Score {
-    pointid: number;  // Changed from pointId
+    pointid: number; // Changed from pointId
     score: number;
 }
 
 export interface PerformanceSheet {
     sheetId: number;
     employee: {
-        employeeid: number;  // Changed from employeeId
+        employeeid: number; // Changed from employeeId
         name: string;
     };
     template: {
-        templateid: number;  // Changed from templateId
-        templatename: string;  // Changed from name
+        templateid: number; // Changed from templateId
+        templatename: string; // Changed from name
     };
     createdDate: string;
     scores: Score[];
@@ -56,111 +56,172 @@ const initialState: PerformanceState = {
     error: null,
 };
 
+// --- Templates
 export const fetchTemplates = createAsyncThunk(
     "performance/fetchTemplates",
     async (workspaceId: number, { rejectWithValue }) => {
         try {
-            const response = await apiClient.get(`/workspaces/${workspaceId}/performance/templates`);
-            console.log(response.data)
+            const response = await apiClient.get(
+                `/workspaces/${workspaceId}/performance/templates`
+            );
+            console.log(response.data);
             return response.data.templates;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to fetch templates");
+            return rejectWithValue(
+                error.response?.data || "Failed to fetch templates"
+            );
         }
     }
 );
 
 export const createTemplate = createAsyncThunk(
     "performance/createTemplate",
-    async ({ workspaceId, data }: { 
-        workspaceId: number; 
-        data: {
-            templatename: string;  // Changed from templateName
-            categories: {
-                categoryname: string;  // Changed from name
-                points: {
-                    pointname: string;  // Changed from name
-                    weight: number;
+    async (
+        {
+            workspaceId,
+            data,
+        }: {
+            workspaceId: number;
+            data: {
+                templatename: string; // Changed from templateName
+                categories: {
+                    categoryname: string; // Changed from name
+                    points: {
+                        pointname: string; // Changed from name
+                        weight: number;
+                    }[];
                 }[];
-            }[];
-        }
-    }, { rejectWithValue }) => {
+            };
+        },
+        { rejectWithValue }
+    ) => {
         try {
             const response = await apiClient.post(
-                `/workspaces/${workspaceId}/performance/templates`, 
+                `/workspaces/${workspaceId}/performance/templates`,
                 data
             );
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to create template");
+            return rejectWithValue(
+                error.response?.data || "Failed to create template"
+            );
         }
     }
 );
 
 export const updateTemplate = createAsyncThunk(
     "performance/updateTemplate",
-    async ({ workspaceId, templateId, data }: { 
-        workspaceId: number; 
-        templateId: number; 
-        data: Partial<Template> 
-    }, { rejectWithValue }) => {
+    async (
+        {
+            workspaceId,
+            templateId,
+            data,
+        }: {
+            workspaceId: number;
+            templateId: number;
+            data: Partial<Template>;
+        },
+        { rejectWithValue }
+    ) => {
         try {
             const response = await apiClient.put(
-                `/workspaces/${workspaceId}/performance/templates/${templateId}`, 
+                `/workspaces/${workspaceId}/performance/templates/${templateId}`,
                 data
             );
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to update template");
+            return rejectWithValue(
+                error.response?.data || "Failed to update template"
+            );
         }
     }
 );
 
+export const deleteTemplate = createAsyncThunk(
+    "performance/deleteTemplate",
+    async (
+        {
+            workspaceId,
+            templateId,
+        }: {
+            workspaceId: number;
+            templateId: number;
+        },
+        { rejectWithValue }
+    ) => {
+        try {
+            await apiClient.delete(
+                `/workspaces/${workspaceId}/performance/templates/${templateId}`
+            );
+            return templateId;
+        } catch (error: any) {
+            return rejectWithValue(
+                error.response?.data || "Failed to delete template"
+            );
+        }
+    }
+);
+
+// --- Sheets
 export const fetchSheets = createAsyncThunk(
     "performance/fetchSheets",
-    async ({ 
-        workspaceId, 
-        filters 
-    }: { 
-        workspaceId: number; 
-        filters?: {
-            employeeId?: number;
-            templateId?: number;
-            startDate?: string;
-            endDate?: string;
-        }
-    }, { rejectWithValue }) => {
+    async (
+        {
+            workspaceId,
+            filters,
+        }: {
+            workspaceId: number;
+            filters?: {
+                employeeId?: number;
+                templateId?: number;
+                startDate?: string;
+                endDate?: string;
+            };
+        },
+        { rejectWithValue }
+    ) => {
         try {
-            const response = await apiClient.get(`/workspaces/${workspaceId}/performance/sheets`, {
-                params: filters
-            });
+            const response = await apiClient.get(
+                `/workspaces/${workspaceId}/performance/sheets`,
+                {
+                    params: filters,
+                }
+            );
             return response.data.sheets;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to fetch sheets");
+            return rejectWithValue(
+                error.response?.data || "Failed to fetch sheets"
+            );
         }
     }
 );
 
 export const createSheet = createAsyncThunk(
     "performance/createSheet",
-    async ({ 
-        workspaceId, 
-        data 
-    }: { 
-        workspaceId: number; 
-        data: {
-            employeeId: number;
-            templateId: number;
-            scores: Score[];
-        }
-    }, { rejectWithValue }) => {
+    async (
+        {
+            workspaceId,
+            data,
+        }: {
+            workspaceId: number;
+            data: {
+                employeeId: number;
+                templateId: number;
+                scores: Score[];
+            };
+        },
+        { rejectWithValue }
+    ) => {
         try {
             const response = await apiClient.post(
-                `/workspaces/${workspaceId}/performance/sheets`, 
+                `/workspaces/${workspaceId}/performance/sheets`,
                 data
             );
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to create sheet");
+            return rejectWithValue(
+                error.response?.data || "Failed to create sheet"
+            );
         }
     }
 );
@@ -204,7 +265,9 @@ const performanceSlice = createSlice({
             })
             .addCase(updateTemplate.fulfilled, (state, action) => {
                 state.loading = false;
-                const index = state.templates.findIndex(t => t.templateid === action.payload.templateid);
+                const index = state.templates.findIndex(
+                    (t) => t.templateid === action.payload.templateid
+                );
                 if (index !== -1) {
                     state.templates[index] = action.payload;
                 }
