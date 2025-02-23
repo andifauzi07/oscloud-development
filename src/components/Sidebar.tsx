@@ -96,8 +96,7 @@ const featuresMap: Record<string, FeatureItem[]> = {
 	],
 };
 
-const Sidebar = () => {
-	const [isMinimized, setIsMinimized] = useState(false);
+const Sidebar: React.FC<{ isMinimized: boolean; setIsMinimized: any }> = ({ isMinimized, setIsMinimized }) => {
 	const [selectedPackage, setSelectedPackage] = useState<string>('default');
 	const [showMoreCategory, setShowMoreCategory] = useState(false);
 	const [showMoreDepartment, setShowMoreDepartment] = useState(false);
@@ -149,14 +148,14 @@ const Sidebar = () => {
 	}
 
 	return (
-		<div className={`h-full bg-white transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
+		<div className={`min-h-screen border-r bg-white transition-all duration-300 ${isMinimized ? 'w-20' : 'w-64'}`}>
 			<div className="flex flex-row gap-2.5 font-bold text-center border-b">
-				<div className="mr-4">
+				<div className={`${isMinimized ? 'mx-auto' : 'mr-4'}`}>
 					<div className="flex-none p-3 bg-[#b0bd94]">
 						<div className="p-3 bg-[#550a00]"></div>
 					</div>
 				</div>
-				<div className={`flex justify-center items-center transition-opacity duration-300 ${isMinimized ? 'opacity-0' : 'opacity-100'}`}>
+				<div className={`flex justify-center items-center transition-opacity duration-300 ${isMinimized ? 'hidden' : 'opacity-100'}`}>
 					<img
 						src="/logo/osmerge-beta-logo.png"
 						alt="os-merge"
@@ -176,9 +175,7 @@ const Sidebar = () => {
 						<SelectValue placeholder="Select Workspace" />
 					</SelectTrigger>
 					<SelectContent className="rounded-none">
-                        <SelectItem value={selectedWorkspace?.name || 'default'}>
-                            {selectedWorkspace?.name || 'default'}
-                        </SelectItem>
+						<SelectItem value={selectedWorkspace?.name || 'default'}>{selectedWorkspace?.name || 'default'}</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
@@ -206,11 +203,13 @@ const Sidebar = () => {
 					to={'/'}
 					icon={LogoBlue}
 					label="Staffing Agency Package"
+					isMinimized={isMinimized}
 				/>
 				<NavItem
 					to={'/'}
 					icon={LogoBlue}
 					label="Other App Name"
+					isMinimized={isMinimized}
 				/>
 				{/* <button className="text-sm text-blue-500 hover:underline">View more</button> */}
 			</div>
@@ -322,8 +321,8 @@ const Sidebar = () => {
 			</div>
 			<button
 				onClick={() => setIsMinimized(!isMinimized)}
-				className="absolute bottom-0 p-1 rounded left-2 hover:bg-slate-100">
-				{isMinimized ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+				className="mx-auto pb-10 rounded w-full hover:bg-slate-100">
+				{isMinimized ? 'CLOSE' : 'OPEN'}
 			</button>
 		</div>
 	);
