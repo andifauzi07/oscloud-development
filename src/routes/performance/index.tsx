@@ -80,6 +80,8 @@ function RouteComponent() {
             header: category.categoryname,
             cell: ({ row }: any) => {
                 const score = getScore(row.original.employeeid, category.categoryid);
+                const points = category.points.filter(point => point.categoryid === category.categoryid);
+                points
                 return score ? `${score}%` : 'N/A';
             },
         })) || []),
@@ -144,7 +146,7 @@ function RouteComponent() {
                     </div>
                 </div>
             </div>
-            {/* Responsive action buttons */ }
+            {/* Responsive action buttons */}
             <div className="flex justify-end flex-none w-full bg-white">
                 <Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-14">ADD+</Button>
                 <Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
@@ -159,8 +161,15 @@ function RouteComponent() {
     );
 }
 
-// Helper function to get performance score (implement based on your API)
-const getPerformanceScore = (sheets: any, employeeId: number, categoryId: number) => {
-    // Implement this based on your API
-    return null;
+const getPerformanceScore = (sheets: any[], employeeId: number, categoryId: number) => {
+    if (!sheets || sheets.length === 0) return null;
+
+    // Find the sheet for the given employee
+    const employeeSheet = sheets.find(sheet => sheet.employeeid === employeeId);
+    if (!employeeSheet || !employeeSheet.scores) return null;
+
+    // Find the score for the given category
+    const categoryScore = employeeSheet.scores.find((score: any) => score.categoryid === categoryId);
+
+    return categoryScore ? categoryScore.value : null;
 };
