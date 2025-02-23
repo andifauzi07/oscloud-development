@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';
 import { Button } from '../../../components/ui/button';
 import { Label } from '../../../components/ui/label';
@@ -212,6 +212,10 @@ const paymentStaffColumns: ColumnDef<PaymentStaff>[] = [
 		accessorKey: 'total_fee',
 		header: 'Total Fee',
 	},
+	{
+		header: 'EDIT ALL',
+		cell: ({ row }: any) => <button className="w-20 font-bold hover:cursor-pointer pr-8">EDIT</button>,
+	},
 ];
 
 export const Route = createFileRoute('/projects/$projectId/')({
@@ -272,45 +276,70 @@ function ProjectView() {
 						</div>
 						<div className="flex text-xs flex-col">
 							<Input
-								className="p-4 border-none"
+								className="px-10 border-none"
 								placeholder="Project Name"></Input>
-							<div className="grid grid-cols-2 p-4 border-t">
-								<h1>Client</h1>
-								<h1>Company Name</h1>
+
+							<div className="w-full justify-start border-t px-6 flex">
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>Client</h1>
+								</div>
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>Company Name</h1>
+								</div>
 							</div>
-							<div className="grid grid-cols-2 p-4 border-t">
-								<h1>Personnel</h1>
-								<h1>John Brown</h1>
-							</div>
-							<div className="grid grid-cols-2 p-4 border-t">
-								<h1>Category</h1>
-								<h1>Category A</h1>
-							</div>
-							<div className="grid grid-cols-2 p-4 border-t">
-								<h1>Manager</h1>
-								<div className="flex flex-row gap-2">
-									<img src="/public/vite.svg" />
+
+							<div className="w-full justify-start border-t px-6 flex">
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>Personnel</h1>
+								</div>
+								<div className="flex justify-start w-1/8 gap-14 p-4">
 									<h1>John Brown</h1>
 								</div>
 							</div>
-							<div className="grid grid-cols-2 p-4 border-t">
-								<h1>Required staff number</h1>
-								<h1>13</h1>
+							<div className="w-full justify-start border-t px-6 flex">
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>Category</h1>
+								</div>
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>Category</h1>
+								</div>
+							</div>
+
+							<div className="w-full justify-start border-t px-6 flex">
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>Manager</h1>
+								</div>
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<div className="flex flex-row gap-2">
+										<img src="/public/vite.svg" />
+										<h1>John Brown</h1>
+									</div>
+								</div>
+							</div>
+							<div className="w-full justify-start border-t px-6 flex">
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>Required staff number</h1>
+								</div>
+								<div className="flex justify-start w-1/8 gap-14 p-4">
+									<h1>13</h1>
+								</div>
 							</div>
 							<div className="flex items-center justify-between bg-gray-100 border-t border-b">
-								<div className="px-8">
+								<div className="px-10">
 									<h1 className="text-base">Description</h1>
 								</div>
 								<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 							</div>
 							<Input
-								className="p-4 rounded-none"
+								className="px-10 rounded-none"
 								placeholder="Bla bla bla bla"></Input>
-							<div className="flex items-center justify-between p-4 bg-gray-100 border-b border-t">
-								<h1>Assigned staffs</h1>
-								<div className="flex flex-row items-center gap-2">
+							<div className="flex items-center justify-between bg-gray-100 border-b border-t">
+								<div className="px-10">
+									<h1>Assigned staffs</h1>
+								</div>
+								<div className="flex flex-row items-center gap-6">
 									<h1>2/13</h1>
-									<Button className="w-20 text-black bg-transparent border">EDIT</Button>
+									<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 								</div>
 							</div>
 							<div className="p-0 px-0 m-0">
