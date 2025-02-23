@@ -97,3 +97,12 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+.scroll-hidden {
+	overflow: auto; /* Tetap bisa digulir */
+	scrollbar-width: none; /* Firefox */
+}
+
+.scroll-hidden::-webkit-scrollbar {
+	display: none; /* Chrome, Safari */
+}

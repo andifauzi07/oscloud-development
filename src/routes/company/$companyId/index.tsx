@@ -13,7 +13,7 @@ const InfoSection = ({ title, items }: { title: React.ReactNode; items: { label:
 			{items.map((item, index) => (
 				<div
 					key={index}
-					className="flex gap-8 border-b">
+					className="flex gap-8 border-b bg-white">
 					<div className="w-32 px-4 py-3 text-sm font-medium bg-white">
 						<span>{item?.label}</span>
 					</div>
@@ -87,13 +87,13 @@ function RouteComponent() {
 
 			{isCurrentPath && (
 				<>
-					<div className="px-8 bg-gray-100 border-r border-t">
+					<div className="px-8 bg-white border-r border-t">
 						<h2 className="container py-3">{company.name}</h2>
 					</div>
 
 					<div className="border-b">
 						<div className="flex justify-end flex-none w-full bg-white border-t">
-							<Button className="w-20 text-black bg-transparent border h-15 link">EDIT</Button>
+							<Button className="w-20 text-black bg-transparent border-r border-l h-10 link">EDIT</Button>
 						</div>
 					</div>
 

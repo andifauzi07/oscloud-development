@@ -423,7 +423,7 @@ function RouteComponent() {
 							</div>
 							<div className="border-b">
 								<div className="flex justify-end flex-none w-full bg-white border-t">
-									<Button className="w-20 text-black bg-transparent border-r border-l link h-14">EDIT</Button>
+									<Button className="w-20 text-black bg-transparent border-r border-l link h-10">EDIT</Button>
 								</div>
 							</div>
 						</div>
@@ -530,7 +530,7 @@ function RouteComponent() {
 							<AdvancedFilterPopover />
 						</div>
 					</div>
-					<div className="flex w-full bg-white p-2 border-r justify-end">
+					<div className="flex w-full bg-white border-r justify-end">
 						<Link
 							to="/payroll/$employeeId/joined-projects"
 							params={{ employeeId: employeeId }}>

@@ -105,50 +105,63 @@ function RouteComponent() {
     return (
         <div className="flex flex-col flex-1 h-full">
             <div className="flex-none min-h-0 px-4 py-2 border-b border-r">
-                <div className="container flex justify-between md:px-6">
+                <div className="container flex justify-between bg-white md:px-6">
                     <h1>Performance</h1>
                     <Link to="/performance/setting">Settings</Link>
                 </div>
             </div>
 
-            <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b md:flex-row">
+            <div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
                 <div className="flex flex-row flex-wrap gap-4">
-                    <div className="flex flex-col space-y-2 md:w-auto">
+                    <div className="flex flex-col w-full space-y-2 md:w-auto">
                         <Label htmlFor="keyword">Keyword</Label>
                         <Input
-                            type="text"
+                            type="keyword"
                             id="keyword"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search employees..."
+                            placeholder=""
                             className="border rounded-none w-[400px]"
                         />
                     </div>
                 </div>
+                <div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b md:flex-row">
+                    <div className="flex flex-row flex-wrap gap-4">
+                        <div className="flex flex-col space-y-2 md:w-auto">
+                            <Label htmlFor="keyword">Keyword</Label>
+                            <Input
+                                type="text"
+                                id="keyword"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search employees..."
+                                className="border rounded-none w-[400px]"
+                            />
+                        </div>
+                    </div>
 
-                <div className="flex flex-col space-y-2">
-                    <Label>Duration</Label>
-                    <div className="flex items-center gap-2">
-                        <Input
-                            type="date"
-                            enableEmoji={false}
-                            className="w-[150px] border rounded-none"
-                        />
-                        <span className="text-gray-500">-</span>
-                        <Input
-                            enableEmoji={false}
-                            type="date"
-                            className="w-[150px] border rounded-none"
-                        />
+                    <div className="flex flex-col space-y-2">
+                        <Label>Duration</Label>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                type="date"
+                                enableEmoji={false}
+                                className="w-[150px] border rounded-none"
+                            />
+                            <span className="text-gray-500">-</span>
+                            <Input
+                                enableEmoji={false}
+                                type="date"
+                                className="w-[150px] border rounded-none"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Responsive action buttons */}
             <div className="flex justify-end flex-none w-full bg-white">
-                <Button className="text-black bg-transparent border-l border-r md:w-20 link min-h-14">ADD+</Button>
+                <Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-14">ADD+</Button>
                 <Button className="text-black bg-transparent border-r md:w-20 link min-h-14">EDIT</Button>
             </div>
-
             <div className="border-r">
                 <DataTable
                     columns={columns}

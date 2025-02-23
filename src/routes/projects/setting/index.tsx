@@ -191,8 +191,8 @@ function RouteComponent() {
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border-r border-l md:w-20 link h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border-r md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent border-r border-l md:w-20 link h-10">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
 				</div>
 
 				{/* DataField Tab */}

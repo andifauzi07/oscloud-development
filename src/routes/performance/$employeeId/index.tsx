@@ -53,18 +53,18 @@ function RouteComponent() {
     if (templatesLoading || employeeLoading) return <Loading />;
 
     const columns = [
-        { 
-            header: 'Name', 
-            accessorKey: 'name' 
+        {
+            header: 'Name',
+            accessorKey: 'name'
         },
-        { 
-            header: 'Template', 
+        {
+            header: 'Template',
             accessorKey: 'template',
             cell: ({ row }: any) => row.original.template.templatename
         },
-        { 
-            header: 'Date', 
-            accessorKey: 'date' 
+        {
+            header: 'Date',
+            accessorKey: 'date'
         },
         {
             id: 'actions',
@@ -91,8 +91,8 @@ function RouteComponent() {
     return (
         <div className="flex-1 h-full">
             {/* Header Section */}
-            <div className="flex-none min-h-0 border-b">
-                <div className="container flex flex-row items-center justify-between pt-4">
+            <div className="flex-none min-h-0 border-b border-r">
+                <div className="container flex flex-row items-center justify-between px-2">
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-semibold">
                             {employee?.name}'s Performance Reviews
@@ -110,42 +110,28 @@ function RouteComponent() {
                             },
                         ]}
                     />
+                    <Link
+                        className="relative pt-2 bottom-2"
+                        to="/performance/setting">
+                        Setting
+                    </Link>
                 </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex justify-end flex-none w-full">
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger>
                         <Button className="w-full text-black bg-transparent border-none">
-                            Latest <ChevronDown className="w-4 h-4" />
+                            Latest <ChevronDown />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem>Latest</DropdownMenuItem>
-                        <DropdownMenuItem>Oldest</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button className="w-20 text-black bg-transparent border-l border-r link min-h-14">
-                            ADD+
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        {/* {template?.map((template) => (
-                            <DropdownMenuItem 
-                                key={template.templateid}
-                                onClick={() => handleCreateSheet()}
-                            >
-                                {template.templatename}
-                            </DropdownMenuItem>
-                        ))} */}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <Button className="w-20 text-black bg-transparent border-r link min-h-14">
-                    EDIT
-                </Button>
+                <Button className="w-20 h-10 text-black bg-transparent border-l border-r link border-r-none">ADD+</Button>
+                <Button className="w-20 h-10 text-black bg-transparent border-r link">EDIT</Button>
             </div>
 
             {/* Data Table */}
@@ -159,6 +145,15 @@ function RouteComponent() {
             </div>
         </div>
     );
+			{/* Data Table */}
+			<div className="border-t border-b border-r">
+				<DataTable
+					columns={columns}
+					data={data}
+				/>
+			</div>
+		</div>
+	);
 }
 
 export const Route = createFileRoute('/performance/$employeeId/')({

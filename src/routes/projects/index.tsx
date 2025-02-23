@@ -3,12 +3,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { mockCompanies } from '@/config/mockData/companies';
 import { DataTable } from '@/components/ui/data-table';
 import { projectsColumns } from '@/components/companyPersonnelProjectsDataTable';
-import { ProjectsTimeline } from '@/components/ProjectsTimeline';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Link } from '@tanstack/react-router';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
+import ScheduleTable from '@/components/EmployeTimeLine';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
@@ -22,7 +22,7 @@ function RouteComponent() {
 	return (
 		<div className="">
 			{/* Header Section */}
-			<div className="flex-none min-h-0 px-4 py-2 border-b">
+			<div className="flex-none min-h-0 border-b border-r px-4 py-2">
 				<div className="flex flex-row items-center justify-between bg-white md:px-6">
 					<h2 className="text-base">Project List</h2>
 					<Link to="/projects/setting">Settings</Link>
@@ -45,8 +45,8 @@ function RouteComponent() {
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border-l border-r md:w-20 link h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border-r md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent  md:w-20 link border-r border-l h-10">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
 				</div>
 
 				{/* List View Tab */}
@@ -103,7 +103,7 @@ function RouteComponent() {
 							<AdvancedFilterPopover />
 						</div>
 					</div>
-					<div className="border-r">
+					<div className="border-r border-b">
 						<DataTable
 							columns={projectsColumns}
 							data={validProjects}
@@ -115,7 +115,7 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0"
 					value="timeline">
-					<ProjectsTimeline projects={validProjects} />
+					<ScheduleTable />
 				</TabsContent>
 			</Tabs>
 		</div>

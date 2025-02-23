@@ -61,11 +61,11 @@ const data: PayrollRow[] = [
 const columns: ColumnDef<PayrollRow>[] = [
 	{
 		accessorKey: 'image',
-		header: '',
+		header: 'image',
 		cell: ({ row }) => (
 			<img
 				src={row.original.image}
-				className="w-16 h-16 border-0 rounded-none"
+				className="w-10 border-0 rounded-none"
 			/>
 		),
 	},
@@ -76,7 +76,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 			<Input
 				enableEmoji={false}
 				defaultValue={row.original.id}
-				className="w-20 border-0 rounded-none"
+				className="text-xs whitespace-nowrap w-20 border-0 rounded-none"
 				onChange={(e) => {
 					// Handle ID change logic here
 					console.log('ID changed:', e.target.value);
@@ -91,7 +91,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 			<Input
 				enableEmoji={false}
 				defaultValue={row.original.name}
-				className="w-40 border-0 rounded-none"
+				className="text-xs whitespace-nowrap w-40 border-0 rounded-none"
 				onChange={(e) => {
 					// Handle Name change logic here
 					console.log('Name changed:', e.target.value);
@@ -151,7 +151,7 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			{/* Tabs Section */}
 			<Tabs defaultValue="employeeList">
-				<div className="flex items-center justify-between px-4 bg-white border-b">
+				<div className="flex items-center justify-between px-4 bg-white border-b border-r">
 					<TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="employeeList"
@@ -165,7 +165,7 @@ function RouteComponent() {
 						</TabsTrigger>
 					</TabsList>
 				</div>
-				<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b border-r md:flex-row">
+				<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 					<div className="flex gap-8">
 						<div className="flex flex-col space-y-2 bg-white md:w-auto">
 							<Label htmlFor="keyword">Keyword</Label>
@@ -201,13 +201,15 @@ function RouteComponent() {
 				</div>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border-l border-b border-r md:w-20 link border-r-none h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border-b border-r md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
 				</div>
 
 				{/* Employee List Tab */}
-				<TabsContent value="employeeList">
-					<div className="border-t">
+				<TabsContent
+					className="m-0"
+					value="employeeList">
+					<div className="border-t border-r">
 						<DataTable
 							columns={columns}
 							data={data}
@@ -216,11 +218,35 @@ function RouteComponent() {
 				</TabsContent>
 
 				{/* Payment List Tab */}
-				<TabsContent value="paymentList">
-					{/* <DataTable
-						columns={columns}
-						data={data}
-					/> */}
+				<TabsContent
+					className="m-0"
+					value="paymentList">
+					<div className="w-full border-t bg-gray-100">
+						<div className="py-2 px-10">
+							<h1>Rate Type</h1>
+						</div>
+					</div>
+					<div className="flex border-t border-r w-full justify-between bg-white items-center">
+						<div className="w-1/3 justify-between px-10 flex ">
+							<h1>Hourly RateA</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+					</div>
+					<div className="flex border-t border-r w-full justify-between bg-white items-center">
+						<div className="w-1/3 justify-between px-10 flex ">
+							<h1>Hourly RateB</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+					</div>
+					<div className="flex border-t border-r w-full justify-between border-b bg-white items-center">
+						<div className="w-1/3 justify-between px-10 flex ">
+							<h1>Hourly RateC</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">REMOVE</Button>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>

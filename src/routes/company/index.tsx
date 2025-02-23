@@ -5,8 +5,7 @@ import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { Input } from '../../components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
-import { ChevronDown, Users, Target } from 'lucide-react';
+import { Users, Target } from 'lucide-react';
 import { CompanyTypes, mockCompanies } from '../../config/mockData/companies';
 import { mockEmployees } from '../../config/mockData/employees';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
@@ -51,7 +50,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		header: 'Company',
 		cell: ({ row }) => (
 			<div className="flex items-center gap-2">
-				<span className="font-medium">{row.original.name}</span>
+				<span className="text-xs whitespace-nowrap">{row.original.name}</span>
 			</div>
 		),
 	},
@@ -61,7 +60,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		cell: ({ row }) => {
 			const count = getCompanyPersonnelCount(row.original.id);
 			return (
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 text-xs whitespace-nowrap">
 					<Users className="w-4 h-4" />
 					<span>{count}</span>
 				</div>
@@ -71,17 +70,17 @@ const columns: ColumnDef<CompanyTypes>[] = [
 	{
 		accessorKey: 'categoryGroup',
 		header: 'Category',
-		cell: ({ row }) => <span className="px-2 py-1 text-sm bg-gray-100 rounded-full">{row.original.categoryGroup}</span>,
+		cell: ({ row }) => <span className="px-2 py-1 bg-gray-100 rounded-full text-xs whitespace-nowrap">{row.original.categoryGroup}</span>,
 	},
 	{
 		accessorKey: 'cities',
 		header: 'Cities',
 		cell: ({ row }) => (
-			<div className="flex flex-wrap gap-1">
+			<div className="flex flex-wrap gap-1 text-xs whitespace-nowrap">
 				{row.original.cities.map((city, index) => (
 					<span
 						key={index}
-						className="px-2 py-1 text-xs bg-gray-100 rounded-full">
+						className="px-2 py-1 text-xs whitespace-nowrap bg-gray-100 rounded-full">
 						{city}
 					</span>
 				))}
@@ -96,7 +95,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 				{row.original.managers.map((manager, index) => (
 					<div
 						key={index}
-						className="text-sm">
+						className="text-xs whitespace-nowrap">
 						{manager.name} ({manager.role})
 					</div>
 				))}
@@ -109,7 +108,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		cell: ({ row }) => {
 			const leads = getActiveLeadsCount(row.original.id);
 			return (
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 text-xs whitespace-nowrap">
 					<Target className="w-4 h-4" />
 					<span>{leads}</span>
 				</div>
@@ -218,22 +217,20 @@ function RouteComponent() {
 		getCoreRowModel: getCoreRowModel(),
 	});
 
+	console.log(table.getRowModel().rows[0].getVisibleCells()[0]);
+	console.log(table.getRowModel().rows[0].getVisibleCells()[0].id);
 	return (
 		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none px-4 py-2 min-h-0 border-b">
-				{/* <div className="flex justify-between px-4 py-4 border md:px-6">
-                    <h1 className="text-base">Companies</h1>
-                </div> */}
-
-				<div className="flex items-center justify-between md:px-6 bg-white border-r">
+			<div className="flex-none px-4 py-2 min-h-0 bg-white border-b border-r">
+				<div className="flex items-center justify-between md:px-6">
 					<h1 className="text-base">Company </h1>
 					<Link to="/company/setting">Settings</Link>
 				</div>
 			</div>
 
-			<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-b border-r md:flex-row">
-				<div className="flex flex-row flex-wrap gap-4">
-					<div className="flex flex-col w-full space-y-2 md:w-auto">
+			<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
+				<div className="flex gap-8">
+					<div className="flex flex-col space-y-2 bg-white md:w-auto">
 						<Label htmlFor="keyword">Keyword</Label>
 						<Input
 							type="keyword"
@@ -242,71 +239,80 @@ function RouteComponent() {
 							className="border rounded-none w-[400px]"
 						/>
 					</div>
-
 					<div className="flex flex-col space-y-2">
 						<Label>Status</Label>
 						<div className="flex">
 							<Button
 								size="default"
-								className="w-20 bg-black rounded-none md:w-20">
+								className="w-full bg-black rounded-none md:w-20">
 								Active
 							</Button>
 							<Button
 								size="default"
 								variant="outline"
-								className="w-20 rounded-none md:w-20">
+								className="w-full rounded-none md:w-20">
 								All
 							</Button>
 						</div>
 					</div>
-					<div className="flex flex-col space-y-2">
-						<Label>‎</Label>
-						<AdvancedFilterPopover />
-					</div>
+				</div>
+
+				<div className="flex flex-col space-y-2">
+					<Label>‎</Label>
+					<AdvancedFilterPopover />
 				</div>
 			</div>
 
 			<div className="flex justify-end flex-none bg-white">
-				<Button className="text-black bg-transparent border-r border-l h-15 md:w-20 link border-r-none ">ADD+</Button>
-				<Button className="text-black bg-transparent border-b-0 border-r h-15 md:w-20 link ">EDIT</Button>
+				<Button className="text-black bg-transparent border-r border-l h-10 md:w-20 link border-r-none ">ADD+</Button>
+				<Button className="text-black bg-transparent border-b-0 border-r h-10 md:w-20 link ">EDIT</Button>
 			</div>
-
-			<div className="flex-1 overflow-x-auto">
-				<div className="min-w-[1200px]">
-					<table className="w-full bg-white border-t border-b border-r rounded-md shadow-sm">
-						<thead className="bg-[#f3f4f6]">
-							{table.getHeaderGroups().map((headerGroup) => (
-								<tr key={headerGroup.id}>
-									{headerGroup.headers.map((header) => (
-										<th
-											key={header.id}
-											className="p-4 font-bold text-xs text-[#0a0a30]"
-											draggable
-											onDragStart={(e) => handleDragStart(e, header.column.id)}
-											onDragOver={handleDragOver}
-											onDrop={(e) => handleDrop(e, header.column.id)}>
-											{flexRender(header.column.columnDef.header, header.getContext())}
-										</th>
-									))}
-								</tr>
-							))}
-						</thead>
-						<tbody className="divide-y divide-gray-200">
-							{table.getRowModel().rows.map((row) => (
-								<tr
-									key={row.id}
-									className="hover:bg-gray-50">
-									{row.getVisibleCells().map((cell) => (
-										<td
-											key={cell.id}
-											className="p-4 w-16 text-xs">
-											{flexRender(cell.column.columnDef.cell, cell.getContext())}
-										</td>
-									))}
-								</tr>
-							))}
-						</tbody>
-					</table>
+			<div className="flex-1 overflow-auto">
+				<div className="max-w-full overflow-x-auto">
+					<div className="max-h-[500px] overflow-y-auto border-b border-t border-r">
+						<table className="w-full border-collapse table-auto">
+							<thead className="bg-gray-100 border-l border-b sticky top-0 z-10">
+								{table.getHeaderGroups().map((headerGroup) => (
+									<tr key={headerGroup.id}>
+										{headerGroup.headers.map((header) => (
+											<th
+												key={header.id}
+												className="py-4 whitespace-nowrap px-2 text-left font-bold text-xs text-[#0a0a30]"
+												draggable
+												onDragStart={(e) => handleDragStart(e, header.column.id)}
+												onDragOver={handleDragOver}
+												onDrop={(e) => handleDrop(e, header.column.id)}>
+												{flexRender(header.column.columnDef.header, header.getContext())}
+											</th>
+										))}
+									</tr>
+								))}
+							</thead>
+							<tbody className="divide-y divide-gray-200">
+								{table.getRowModel().rows.map((row) => (
+									<tr
+										key={row.id}
+										className="hover:bg-gray-50 bg-white text-left">
+										{row.getVisibleCells().map((cell) => (
+											<td
+												key={cell.id}
+												className={`px-2 max-h-20 py-2 text-xs ${cell.column.id === 'image' ? 'w-16 h-16 min-w-[64px]' : ''}`}>
+												{cell.column.id === 'image' ? (
+													<img
+														src={cell.getValue() as string}
+														alt="Company logo"
+														className="w-16 h-16 object-cover"
+													/>
+												) : (
+													<span className="whitespace-nowrap">{flexRender(cell.column.columnDef.cell, cell.getContext())} </span>
+												)}
+											</td>
+										))}
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -16,10 +16,10 @@ export default function AdvancedFilterPopover() {
 				<Button
 					variant="outline"
 					className="w-full">
-					Advanced Search <ChevronDown/>
+					Advanced Search <ChevronDown />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="flex flex-row w-[750px] p-4">
+			<PopoverContent className="flex flex-row w-[850px] mx-4 p-4">
 				<div className="flex flex-col gap-4">
 					<div className="flex flex-row gap-4">
 						<div className="flex flex-col gap-2">
