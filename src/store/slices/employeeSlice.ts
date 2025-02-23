@@ -82,7 +82,6 @@ export const fetchWorkspaceEmployees = createAsyncThunk(
                     }
                 });
             }
-            
             const url = `/workspaces/${workspaceId}/employees${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
             const response = await apiClient.get(url);
             return response.data;

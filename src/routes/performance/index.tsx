@@ -44,7 +44,7 @@ function RouteComponent() {
             header: '',
             cell: ({ row }) => (
                 <div className="flex items-center justify-center h-full">
-                    <figure className="w-16 h-16 overflow-hidden rounded-full">
+                    <figure className="w-16 h-16 overflow-hidden">
                         <img
                             className="object-cover w-full h-full"
                             src={row.original.profileimage || '/default-avatar.png'}
