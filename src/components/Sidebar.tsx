@@ -140,7 +140,7 @@ const Sidebar: React.FC<{ isMinimized: boolean; setIsMinimized: any }> = ({ isMi
 
 	if (workspacesLoading) {
 		return (
-            <></>
+			<></>
 			// <div className="flex items-center justify-center h-screen">
 			// 	<div className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
 			// </div>
@@ -157,7 +157,7 @@ const Sidebar: React.FC<{ isMinimized: boolean; setIsMinimized: any }> = ({ isMi
 				</div>
 				<div className={`flex justify-center items-center transition-opacity duration-300 ${isMinimized ? 'hidden' : 'opacity-100'}`}>
 					<img
-						src="/logo/osmerge-beta-logo.png"
+						src="/logo/oscloud-logo.png"
 						alt="os-merge"
 						className="w-24"
 					/>

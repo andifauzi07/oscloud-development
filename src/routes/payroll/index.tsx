@@ -32,12 +32,17 @@ type PayrollRow = {
 const columns: ColumnDef<PayrollRow>[] = [
 	{
 		accessorKey: 'image',
-		header: 'image',
+		header: '',
 		cell: ({ row }) => (
-			<img
-				src={row.original.image}
-				className="w-10 border-0 rounded-none"
-			/>
+			<div className="flex items-center justify-center h-full">
+				<figure className="w-16 h-16 overflow-hidden ">
+					<img
+						className="object-cover w-full h-full"
+						src={row.original.image || '/default-avatar.png'}
+						// alt={`${row.original.name}'s profile`}
+					/>
+				</figure>
+			</div>
 		),
 	},
 	{
