@@ -22,8 +22,8 @@ function RouteComponent() {
 	return (
 		<div className="">
 			{/* Header Section */}
-			<div className="flex-none min-h-0 border-b border-r px-4 py-2">
-				<div className="flex flex-row items-center justify-between bg-white md:px-6">
+			<div className="flex-none min-h-0 border-b bg-white border-r px-4 py-2">
+				<div className="flex flex-row items-center justify-between md:px-6">
 					<h2 className="text-base">Project List</h2>
 					<Link to="/projects/setting">Settings</Link>
 				</div>

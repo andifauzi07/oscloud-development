@@ -1,5 +1,7 @@
 import React from 'react';
 import { format, addDays } from 'date-fns';
+import { ChevronDown } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface Project {
 	name: string;
@@ -56,18 +58,23 @@ const ScheduleTable: React.FC = () => {
 
 	return (
 		<div className="overflow-auto w-full">
-			<table className="border-collapse border w-full text-sm">
+			<table className="border-collapse w-full py-8 text-sm">
 				<thead className="w-full">
 					<tr className="bg-gray-100 w-full">
 						<th
 							rowSpan={2}
-							className="border px-16 py-1 w-32">
+							className="border-t border-b px-16 py-1 w-32">
 							Manager
 						</th>
 						<th
 							className="border px-16 py-1"
 							colSpan={daysInRange.length}>
-							{format(minDate, 'yyyy MMMM')}
+							<div className="flex justify-between w-full">
+								<div>{format(minDate, 'yyyy MMMM')}</div>
+								<button className="flex">
+									Weekly <ChevronDown />
+								</button>
+							</div>
 						</th>
 					</tr>
 					<tr className="bg-gray-100 w-full">
@@ -79,13 +86,14 @@ const ScheduleTable: React.FC = () => {
 							</th>
 						))}
 					</tr>
+					<div></div>
 				</thead>
 				<tbody>
 					{managers.map((manager, index) => (
 						<tr
 							key={index}
-							className="border">
-							<td className="border font-bold py-2 text-center bg-white whitespace-nowrap">{manager.name}</td>
+							className="">
+							<td className="border-b font-bold py-2 text-center bg-white whitespace-nowrap">{manager.name}</td>
 							{daysInRange.map((day, index) => {
 								const project = manager.projects.find((p) => day >= p.start && day <= p.end);
 								return (

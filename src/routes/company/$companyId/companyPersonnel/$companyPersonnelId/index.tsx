@@ -18,6 +18,7 @@ import { leadsColumns } from '@/components/companyPersonnelLeadsListDataTable';
 import { projectsColumns } from '@/components/companyPersonnelProjectsDataTable';
 import { ProjectsTimeline } from '@/components/ProjectsTimeline';
 import ScheduleTable from '@/components/EmployeTimeLine';
+import AdvancedFilterPopover from '@/components/search/advanced-search';
 
 export const Route = createFileRoute('/company/$companyId/companyPersonnel/$companyPersonnelId/')({
 	component: RouteComponent,
@@ -113,7 +114,7 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			{/* Menus */}
-			<div className="flex-none min-h-0 border-b">
+			<div className="flex-none">
 				<div className="flex items-center justify-between">
 					<MenuList
 						items={tabs.map((tab) => ({
@@ -121,7 +122,11 @@ function RouteComponent() {
 							path: tab.path,
 						}))}
 					/>
-					<Link to={`/company/setting`}>Setting</Link>
+					<Link
+						to={`/company/setting`}
+						className="px-4">
+						Setting
+					</Link>
 				</div>
 			</div>
 
@@ -132,16 +137,16 @@ function RouteComponent() {
 
 			{/* Edit Button */}
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="w-1/2 text-black bg-transparent border md:w-20 min-h-14">EDIT</Button>
+				<Button className="w-1/2 text-black border-r border-l bg-transparent md:w-20 h-10">EDIT</Button>
 			</div>
 
 			{/* Tabs Section */}
 			<Tabs
 				defaultValue="profile"
-				className="w-full bg-white border [&>*]:p-0 [&>*]:m-0 rounded-none [&>*]:rounded-none">
-				<TabsList className=" justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+				className="w-full bg-white border-t [&>*]:p-0 [&>*]:m-0 rounded-none [&>*]:rounded-none">
+				<TabsList className=" justify-start w-full gap-8 bg-gray-100 [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8	">
 					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2 px-8 bg-gray-100"
+						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2 px-4"
 						value="profile">
 						Profile
 					</TabsTrigger>
@@ -161,22 +166,33 @@ function RouteComponent() {
 				<TabsContent
 					className="overflow-x-hidden"
 					value="profile">
-					<div className="grid grid-cols-2">
-						<div className="px-4 py-4 bg-white border">
-							<p className="font-semibold">Company Name:</p>
-							<p>{company?.name || 'Unknown'}</p>
+					<div className="flex text-xs flex-col">
+						<div className="w-full justify-start border-t px-6 flex">
+							<div className="flex justify-start w-1/8 gap-14 p-4">
+								<h1>Name</h1>
+							</div>
+							<div className="flex justify-start w-1/8 gap-14 p-4">
+								<h1>COMPANY A</h1>
+							</div>
 						</div>
-						<div className="px-4 py-4 bg-white border">
-							<p className="font-semibold">Email:</p>
-							<p>{company?.email || 'No Email Available'}</p>
+						<div className="w-full justify-start border-t px-6 flex">
+							<div className="flex justify-start w-1/8 gap-14 p-4">
+								<h1>Email</h1>
+							</div>
+							<div className="flex justify-start w-1/8 gap-14 p-4">
+								<h1>Johnson.white@companya.com</h1>
+							</div>
 						</div>
-						<div className="px-4 py-4 bg-white border">
-							<p className="font-semibold">Manager:</p>
-							<p>{company?.managers.map((m) => m.name).join(', ') || 'None'}</p>
+						<div className="w-full justify-start border-t px-6 flex">
+							<div className="flex justify-start w-1/8 gap-14 p-4">
+								<h1>Manager</h1>
+							</div>
+							<div className="flex justify-start w-1/8 gap-14 p-4">
+								<h1>John Brown</h1>
+							</div>
 						</div>
-						<div className="px-4 py-4 bg-white border">
-							<p className="font-semibold">Description:</p>
-							<p className="text-gray-500"></p>
+						<div className="w-full justify-start border-t border-b h-24 px-6 flex">
+							<p className="px-4 py-4">Description</p>
 						</div>
 					</div>
 				</TabsContent>
@@ -186,7 +202,7 @@ function RouteComponent() {
 					className="m-0 overflow-x-hidden"
 					value="leads">
 					<div>
-						<div className="flex flex-col gap-4 px-4 pt-4 border md:flex-row md:px-8 md:gap-16">
+						<div className="flex flex-col gap-4 px-4 border-t pt-4 border-b md:flex-row md:px-8 md:gap-16">
 							<div className="flex flex-col w-full space-y-2 md:w-auto">
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
@@ -215,28 +231,12 @@ function RouteComponent() {
 							</div>
 
 							<div className="flex flex-col space-y-2 md:p-5 md:m-0">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button
-											variant="outline"
-											className="w-full md:w-auto">
-											Advanced search {advancedSearchFilter && `(${advancedSearchFilter})`}
-											<ChevronDown className="w-4 h-4 ml-2" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent>
-										<DropdownMenuLabel>Advanced Search</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem onClick={() => handleAdvSearchSelect('Filter by Name')}>Filter by Name</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => handleAdvSearchSelect('Filter by Date')}>Filter by Date</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => handleAdvSearchSelect('Clear Filters')}>Clear Filters</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
+								<AdvancedFilterPopover />
 							</div>
 						</div>
 						<div>
 							<Tabs defaultValue="kanban">
-								<TabsList className="justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+								<TabsList className="justify-start w-full gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
 									<TabsTrigger
 										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 										value="kanban">
@@ -304,7 +304,7 @@ function RouteComponent() {
 					className="m-0 overflow-x-hidden"
 					value="projects">
 					<div>
-						<div className="flex flex-col gap-4 px-4 pt-4 border md:flex-row md:px-8 md:gap-16">
+						<div className="flex flex-col gap-4 px-4 border-t border-r pt-4 md:flex-row md:px-8 md:gap-16">
 							<div className="flex flex-col w-full space-y-2 md:w-auto">
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
@@ -333,28 +333,12 @@ function RouteComponent() {
 							</div>
 
 							<div className="flex flex-col space-y-2 md:p-5 md:m-0">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button
-											variant="outline"
-											className="w-full md:w-auto">
-											Advanced search {advancedSearchFilter && `(${advancedSearchFilter})`}
-											<ChevronDown className="w-4 h-4 ml-2" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent>
-										<DropdownMenuLabel>Advanced Search</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem onClick={() => handleAdvSearchSelect('Filter by Name')}>Filter by Name</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => handleAdvSearchSelect('Filter by Date')}>Filter by Date</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => handleAdvSearchSelect('Clear Filters')}>Clear Filters</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
+								<AdvancedFilterPopover />
 							</div>
 						</div>
 						<div>
 							<Tabs defaultValue="list">
-								<TabsList className="justify-start w-full gap-8 bg-white border [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+								<TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
 									<TabsTrigger
 										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 										value="list">
