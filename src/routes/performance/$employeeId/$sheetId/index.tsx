@@ -45,7 +45,7 @@ function RouteComponent() {
     const template = templates.find(t => t.templateid === sheet.template.templateId);
     if (!template) return <div>Template not found</div>;
 
-    const chartConfig = template.categories.reduce((acc, category, index) => ({
+    const chartConfig: Record<string, { label: string; color: string }> = template.categories.reduce((acc, category, index) => ({
         ...acc,
         [category.categoryname]: {
             label: category.categoryname,
