@@ -69,19 +69,20 @@ function RouteComponent() {
 		<div className="flex-1 h-full ">
 			{/* menus  */}
 			<div className="flex-none min-h-0">
-				<div className="flex items-center border-r justify-between px-4">
+				<div className="flex items-center border-r justify-between">
 					<MenuList
 						items={tabs.map((tab) => ({
 							label: tab.label,
 							path: tab.path,
 						}))}
 					/>
-
-					<Link
-						to={`/company/setting`}
-						params={{ companyId: company.id.toString() }}>
-						Settings
-					</Link>
+					<div className="px-4">
+						<Link
+							to={`/company/setting`}
+							params={{ companyId: company.id.toString() }}>
+							Settings
+						</Link>
+					</div>
 				</div>
 			</div>
 

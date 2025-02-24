@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ChevronDown } from 'lucide-react';
 import { mockTemplates } from '@/config/mockData/templates';
 import { DataTable } from '@/components/ui/data-table';
+import { TitleWrapper } from '@/components/wrapperElement';
 
 export const Route = createFileRoute('/performance/setting/')({
 	component: RouteComponent,
@@ -44,9 +45,9 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			{/* Header Section */}
-			<div className="flex items-center flex-none w-full p-4 bg-white border-b border-r">
+			<TitleWrapper>
 				<h1>Template List</h1>
-			</div>
+			</TitleWrapper>
 
 			{/* Action Buttons */}
 			<div className="flex justify-end flex-none w-full bg-white shadow-none">
@@ -67,7 +68,7 @@ function RouteComponent() {
 			</div>
 
 			{/* Data Table */}
-			<div>
+			<div className="border-t">
 				<DataTable
 					columns={columns}
 					data={mockTemplates}

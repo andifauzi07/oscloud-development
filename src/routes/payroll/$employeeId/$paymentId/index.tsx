@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
+import { TitleWrapper } from '@/components/wrapperElement';
 import { revertUrlString } from '@/lib/utils';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
@@ -227,23 +228,23 @@ function RouteComponent() {
 	const { employeeId, paymentId } = Route.useParams();
 
 	return (
-		<div className="flex flex-col border-r">
-			<div className="bg-white border-b">
-				<h2 className="container px-4 py-3 ">{revertUrlString(employeeId)}</h2>
-			</div>
-			<div className="bg-white">
-				<h2 className="container px-4 py-3 ">{revertUrlString(paymentId)}</h2>
-			</div>
-			<div className="border-t border-b">
+		<div className="flex flex-col">
+			<TitleWrapper>
+				<h2>{revertUrlString(employeeId)}</h2>
+			</TitleWrapper>
+			<TitleWrapper>
+				<h2>{revertUrlString(paymentId)}</h2>
+			</TitleWrapper>
+			<div className="border-b border-r">
 				<DataTable
 					columns={columnsEmployee}
 					data={dataEmployee}
 				/>
 			</div>
-			<div className="flex w-full px-6 py-4 bg-white">
+			<TitleWrapper>
 				<h2 className="text-xl">Breakdown</h2>
-			</div>
-			<div className="border-t border-b">
+			</TitleWrapper>
+			<div className="border-b border-r">
 				<DataTable
 					columns={columBreakdown}
 					data={dataBreakdown}

@@ -1,21 +1,28 @@
-import { AddRecordDialog } from "@/components/AddRecordDialog";
+import { CompanyPersonnelLeadsListDataTable } from "@/components/companyPersonnelLeadsListDataTable";
 import { EmployeePerformanceCell } from "@/components/EmployeePerformanceCell";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TitleWrapper } from "@/components/wrapperElement";
 import useDebounce from "@/hooks/useDebounce";
 import { useWorkspaceEmployees } from "@/hooks/useEmployee";
 import {
+    getCategoryScore,
     useEmployeePerformance,
     usePerformanceSheets,
     usePerformanceTemplates,
 } from "@/hooks/usePerformance";
 import { useUserData } from "@/hooks/useUserData";
+import { fetchEmployeePerformance } from "@/store/slices/performanceSlice";
+import { AppDispatch, RootState } from "@/store/store";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ColumnDef } from "@tanstack/react-table";
-import { useMemo, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AddRecordDialog } from "@/components/AddRecordDialog";
+
 import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
 
 export const Route = createFileRoute("/performance/")({
@@ -159,12 +166,10 @@ function RouteComponent() {
 
     return (
         <div className="flex flex-col flex-1 h-full">
-            <div className="flex-none min-h-0 px-4 py-2 bg-white border-b border-r">
-                <div className="container flex justify-between bg-white md:px-6">
-                    <h1>Performance</h1>
-                    <Link to="/performance/setting">Settings</Link>
-                </div>
-            </div>
+            <TitleWrapper>
+                <h1>Performance</h1>
+                <Link to="/performance/setting">Settings</Link>
+            </TitleWrapper>
 
             <div className="flex flex-row flex-wrap items-center w-full gap-8 px-8 py-4 bg-white border-b border-r md:flex-row">
                 <div className="flex flex-row flex-wrap gap-4">

@@ -17,7 +17,7 @@ const MenuList: React.FC<MenuListProps> = ({ items = [], wrapperClassName, ulCla
 	const match = useMatchRoute();
 
 	return (
-		<nav className={cn('px-2 flex-none', wrapperClassName)}>
+		<nav className={cn('px-8 flex-none', wrapperClassName)}>
 			<ul className={cn('list-none flex gap-12 h-full', ulClassName)}>
 				{items.map((tab) => {
 					const isActive = match({ to: tab.path });
