@@ -99,9 +99,9 @@ function RouteComponent() {
 	const { employee, loading, error, updateEmployee } = useEmployee(Number(userId));
 	// const { categories } = useEmployeeCategories();
 
-    if (loading || !employee) {
-        return <Loading/>
-    }
+	if (loading || !employee) {
+		return <Loading />;
+	}
 
 	if (error) {
 		return <div>Error: {typeof error === 'object' ? 'Failed to load employee' : error}</div>;
@@ -129,37 +129,38 @@ function RouteComponent() {
 		}
 	};
 
-    const basicInfo = [
-        { 
-            label: 'Employee ID', 
-            value: employee?.employeeid?.toString() || '-',
-            key: 'employeeId',
-        },
-        { 
-            label: 'Name', 
-            value: editedEmployee.name || employee?.name || '-',
-            key: 'name',
-        },
-        { 
-            label: 'Email', 
-            value: editedEmployee.email || employee?.email || '-',
-            key: 'email',
-        },
-        { 
-            label: 'Category', 
-            value: editedEmployee.employeeCategoryId?.toString() || 
-                   employee?.employeeCategory?.categoryid?.toString() || '-',
-            key: 'employeeCategoryId',
-            // options: employee?.employeeCategory?.map((c: any) => ({ 
-            //     value: c.categoryId.toString(), 
-            //     label: c.name 
-            // }))
-            options: Array.isArray(employee?.employeeCategory) ? employee.employeeCategory.map((c: any) => ({ 
-                value: c.categoryid.toString(), 
-                label: c.categoryname 
-            })) : []
-        }
-    ];
+	const basicInfo = [
+		{
+			label: 'Employee ID',
+			value: employee?.employeeid?.toString() || '-',
+			key: 'employeeId',
+		},
+		{
+			label: 'Name',
+			value: editedEmployee.name || employee?.name || '-',
+			key: 'name',
+		},
+		{
+			label: 'Email',
+			value: editedEmployee.email || employee?.email || '-',
+			key: 'email',
+		},
+		{
+			label: 'Category',
+			value: editedEmployee.employeeCategoryId?.toString() || employee?.employeeCategory?.categoryid?.toString() || '-',
+			key: 'employeeCategoryId',
+			// options: employee?.employeeCategory?.map((c: any) => ({
+			//     value: c.categoryId.toString(),
+			//     label: c.name
+			// }))
+			options: Array.isArray(employee?.employeeCategory)
+				? employee.employeeCategory.map((c: any) => ({
+						value: c.categoryid.toString(),
+						label: c.categoryname,
+					}))
+				: [],
+		},
+	];
 
 	const contractInfo = [
 		{ label: 'UserID', value: '終日' },
@@ -175,6 +176,13 @@ function RouteComponent() {
 			<div className="items-center flex-none min-h-0 border-b border-r">
 				<div className="container flex items-center justify-between px-4 bg-white">
 					<MenuList items={menuItems} />
+					<div>
+						<Link
+							to="/employee/$userId/setting"
+							params={{ userId: userId as string }}>
+							Setting
+						</Link>
+					</div>
 				</div>
 			</div>
 
@@ -267,6 +275,6 @@ function RouteComponent() {
 			<div className="flex-none">
 				<Outlet />
 			</div>
-        </div>
-    );
+		</div>
+	);
 }

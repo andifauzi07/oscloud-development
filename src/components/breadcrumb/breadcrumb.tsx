@@ -8,9 +8,9 @@ export function Breadcrumb() {
 
 	const breadcrumbMap: Record<string, string> = {
 		employee: 'Employee List',
-		setting: 'Settings',
+		setting: 'Setting',
 		category: 'Categories',
-		department: 'Departments',
+		department: 'Department',
 		performance: 'Performance Review',
 	};
 
@@ -38,7 +38,7 @@ export function Breadcrumb() {
 				<ShadcnBreadcrumb>
 					<BreadcrumbList>
 						<BreadcrumbItem key="home">
-							<Link to="/">osMerge</Link>
+							<Link to="/">Os-Cloud</Link>
 							<span className="mx-2">/</span>
 						</BreadcrumbItem>
 						{segments.map((segment, index) => {
