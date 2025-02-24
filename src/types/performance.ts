@@ -20,19 +20,19 @@ export interface Template {
 }
 
 export interface Score {
-    pointid: number; // Changed from pointId
+    pointId: number; // Changed from pointId
     score: number;
 }
 
 export interface PerformanceSheet {
     sheetId: number;
     employee: {
-        employeeid: number; // Changed from employeeId
+        employeeId: number; // Changed from employeeId
         name: string;
     };
     template: {
-        templateid: number; // Changed from templateId
-        templatename: string; // Changed from name
+        templateId: number; // Changed from templateId
+        name: string; // Changed from name
     };
     createdDate: string;
     scores: Score[];
@@ -103,6 +103,7 @@ export interface PerformanceResponse {
 export interface PerformanceState {
     templates: Template[];
     sheets: PerformanceSheet[];
+    currentSheet: PerformanceSheet | null; // Add this
     employeePerformances: { [key: number]: PerformanceResponse };
     loading: boolean;
     error: string | null;

@@ -8,16 +8,27 @@ import { ChevronDown } from 'lucide-react';
 import { usePerformanceTemplate, usePerformanceTemplates } from '@/hooks/usePerformance';
 import { useEmployee } from '@/hooks/useEmployee';
 import Loading from '@/components/Loading';
+import { usePerformanceSheets } from '../../../hooks/usePerformance';
+import { createSheet } from '../../../store/slices/performanceSlice';
 
 function RouteComponent() {
-	// REASSES THIS BECAUSE THIS SHOULD
-
 	const { employeeId } = useParams({ strict: false });
 	const { template, loading: templatesLoading } = usePerformanceTemplate(Number(employeeId));
 	const { employee, loading: employeeLoading } = useEmployee(Number(employeeId));
+    const { sheets, loading: sheetsLoading } = usePerformanceSheets({
+        employeeId: Number(employeeId)
+    });
 
 	if (!employeeId) return null;
-	if (templatesLoading || employeeLoading) return <Loading />;
+	if (templatesLoading || employeeLoading || sheetsLoading) return <Loading />;
+
+    // Transform sheets data for the table
+    const transformedSheets = sheets.map(sheet => ({
+        id: sheet.sheetId.toString(),
+        name: sheet.employee.name,
+        template: sheet.template.name,
+        date: new Date(sheet.createdDate).toLocaleDateString(),
+    }));
 
 	const columns = [
 		{
@@ -27,7 +38,7 @@ function RouteComponent() {
 		{
 			header: 'Template',
 			accessorKey: 'template',
-			cell: ({ row }: any) => row.original.template.templatename,
+			cell: ({ row }: any) => row.original.template,
 		},
 		{
 			header: 'Date',
@@ -102,11 +113,10 @@ function RouteComponent() {
 
 			{/* Data Table */}
 			<div className="border-t">
-				{/* TODO: Need Sheets Endpoint */}
-				{/* <DataTable
+				<DataTable
                     columns={columns}
-                    data={template}
-                /> */}
+                    data={transformedSheets}
+                />
 			</div>
 		</div>
 	);
