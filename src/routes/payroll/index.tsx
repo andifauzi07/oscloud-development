@@ -6,7 +6,6 @@ import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { Label } from '@/components/ui/label';
-import { formatUrlString, revertUrlString } from '@/lib/utils';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useUserData } from '@/hooks/useUserData';
 import Loading from '@/components/Loading';
@@ -118,33 +117,31 @@ const columns: ColumnDef<PayrollRow>[] = [
 	},
 ];
 
-
-
 function RouteComponent() {
-    const { workspaceid } = useUserData();
-    const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid) });
+	const { workspaceid } = useUserData();
+	const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid) });
 
-    if (loading) return <Loading />;
-    if (error) return <div>Error: {error}</div>;
+	if (loading) return <Loading />;
+	if (error) return <div>Error: {error}</div>;
 
-    // Transform payments data to match the table structure
-    const tableData = payments.map(( payment: any ) => ({
-        image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        id: payment.employee.employeeId.toString(),
-        name: payment.employee.name,
-        employeeCategory: 'Staff', // Default category
-        hourlyRateA: payment.details[0] ? `¥${(payment.details[0].totalAmount / payment.details[0].hoursWorked).toFixed(2)}` : '-',
-        hourlyRateB: '-',
-        totalPayment: `¥${payment.totalPayment}`,
-        numberOfPayment: '1',
-        joinedOn: new Date().toISOString().split('T')[0],
-    }));
+	// Transform payments data to match the table structure
+	const tableData = payments.map((payment: any) => ({
+		image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+		id: payment.employee.employeeId.toString(),
+		name: payment.employee.name,
+		employeeCategory: 'Staff', // Default category
+		hourlyRateA: payment.details[0] ? `¥${(payment.details[0].totalAmount / payment.details[0].hoursWorked).toFixed(2)}` : '-',
+		hourlyRateB: '-',
+		totalPayment: `¥${payment.totalPayment}`,
+		numberOfPayment: '1',
+		joinedOn: new Date().toISOString().split('T')[0],
+	}));
 
-    return (
-        <div className="flex flex-col flex-1 h-full">
-            <Tabs defaultValue="employeeList">
-                <div className="flex items-center justify-between px-4 bg-white border-b border-r">
-					<TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
+	return (
+		<div className="flex flex-col flex-1 h-full">
+			<Tabs defaultValue="employeeList">
+				<div className="flex items-center justify-between px-4 bg-white border-b border-r">
+					<TabsList className="justify-start px-4 gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="employeeList"
 							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">

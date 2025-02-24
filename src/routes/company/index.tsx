@@ -9,6 +9,7 @@ import { Users, Target } from 'lucide-react';
 import { CompanyTypes, mockCompanies } from '../../config/mockData/companies';
 import { mockEmployees } from '../../config/mockData/employees';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
+import { TitleWrapper } from '@/components/wrapperElement';
 
 // Utility functions
 const getCompanyPersonnelCount = (companyId: number): number => {
@@ -221,13 +222,10 @@ function RouteComponent() {
 	console.log(table.getRowModel().rows[0].getVisibleCells()[0].id);
 	return (
 		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none px-4 py-2 min-h-0 bg-white border-b border-r">
-				<div className="flex items-center justify-between md:px-6">
-					<h1 className="text-base">Company </h1>
-					<Link to="/company/setting">Settings</Link>
-				</div>
-			</div>
-
+			<TitleWrapper>
+				<h1 className="text-base">Company </h1>
+				<Link to="/company/setting">Settings</Link>
+			</TitleWrapper>
 			<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 				<div className="flex gap-8">
 					<div className="flex flex-col space-y-2 bg-white md:w-auto">

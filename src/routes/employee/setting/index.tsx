@@ -80,7 +80,7 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			<Tabs defaultValue="data-field">
-				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
 					<TabsTrigger
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 						value="data-field">
@@ -99,8 +99,8 @@ function RouteComponent() {
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-14">ADD+</Button>
-					<Button className="text-black bg-transparent border-r md:w-20 link h-14">EDIT</Button>
+					<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none h-10">ADD+</Button>
+					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
 				</div>
 
 				<TabsContent

@@ -8,6 +8,7 @@ import AdvancedFilterPopover from '../../../components/search/advanced-search';
 import { DataTable } from '../../../components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { GraphicChart } from '@/components/graphicChart';
+import { TitleWrapper } from '@/components/wrapperElement';
 
 // Define mock data for AssignedStaff
 export const mockAssignedStaff: AssignedStaff[] = [
@@ -227,12 +228,12 @@ function ProjectView() {
 
 	return (
 		<div className="flex flex-col bg-white">
-			<div className="px-8 py-2 border-r">
+			<TitleWrapper>
 				<h1>Project {projectId}</h1>
-			</div>
+			</TitleWrapper>
 
 			<Tabs defaultValue="description">
-				<TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+				<TabsList className="justify-start w-full gap-8 bg-white border-r border-b [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
 					<TabsTrigger
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 						value="description">
@@ -261,8 +262,8 @@ function ProjectView() {
 					className="m-0"
 					value="description">
 					<div className="flex flex-col border-r">
-						<div className="flex justify-between border-t">
-							<div className="h-10 flex items-center px-10">
+						<div className="flex justify-between">
+							<div className="h-10 flex items-center px-8">
 								<h1 className="text-sm">Description</h1>
 							</div>
 							<Button className="w-20 text-black bg-transparent link h-10">PRINT</Button>
@@ -270,71 +271,71 @@ function ProjectView() {
 						</div>
 						<div className="flex items-center justify-between bg-gray-100 border-t border-b">
 							<div className="px-8">
-								<h1 className="text-base"> 一般情報</h1>
+								<h1 className="text-base">一般情報</h1>
 							</div>
 							<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 						</div>
 						<div className="flex text-xs flex-col">
 							<Input
-								className="px-10 border-none"
+								className="px-8 border-none"
 								placeholder="Project Name"></Input>
 
-							<div className="w-full justify-start border-t px-6 flex">
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="w-full justify-start border-t px-6 gap-4 flex">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>Client</h1>
 								</div>
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>Company Name</h1>
 								</div>
 							</div>
 
-							<div className="w-full justify-start border-t px-6 flex">
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="w-full justify-start border-t px-6 gap-4 flex">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>Personnel</h1>
 								</div>
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>John Brown</h1>
 								</div>
 							</div>
-							<div className="w-full justify-start border-t px-6 flex">
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="w-full justify-start border-t px-6 gap-4 flex">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>Category</h1>
 								</div>
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>Category</h1>
 								</div>
 							</div>
 
-							<div className="w-full justify-start border-t px-6 flex">
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="w-full justify-start border-t px-6 gap-4 flex">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>Manager</h1>
 								</div>
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+								<div className="flex justify-start w-1/8 p-2">
 									<div className="flex flex-row gap-2">
 										<img src="/public/vite.svg" />
 										<h1>John Brown</h1>
 									</div>
 								</div>
 							</div>
-							<div className="w-full justify-start border-t px-6 flex">
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="w-full justify-start border-t px-6 gap-4 flex">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>Required staff number</h1>
 								</div>
-								<div className="flex justify-start w-1/8 gap-14 p-4">
+								<div className="flex justify-start w-1/8 p-2">
 									<h1>13</h1>
 								</div>
 							</div>
 							<div className="flex items-center justify-between bg-gray-100 border-t border-b">
-								<div className="px-10">
+								<div className="px-8">
 									<h1 className="text-base">Description</h1>
 								</div>
 								<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 							</div>
 							<Input
-								className="px-10 rounded-none"
+								className="px-8 rounded-none"
 								placeholder="Bla bla bla bla"></Input>
 							<div className="flex items-center justify-between bg-gray-100 border-b border-t">
-								<div className="px-10">
+								<div className="px-8">
 									<h1>Assigned staffs</h1>
 								</div>
 								<div className="flex flex-row items-center gap-6">
@@ -356,11 +357,11 @@ function ProjectView() {
 				<TabsContent
 					className="m-0"
 					value="members">
-					<div className="flex items-center p-4 bg-white border-t border-r">
+					<TitleWrapper>
 						<h1>Member adjustment</h1>
-					</div>
-					<div className="flex flex-row bg-white border-b">
-						<div className="w-1/3 p-4 border-t">
+					</TitleWrapper>
+					<div className="flex flex-row bg-white">
+						<div className="w-1/3 py-2 px-8">
 							<div className="flex items-center justify-between">
 								<h3>Added</h3>
 								<div className="flex items-center gap-2">
@@ -387,11 +388,11 @@ function ProjectView() {
 							</div>
 						</div>
 						<div className="w-full">
-							<div className="flex items-center p-4 border-t border-r border-l">
+							<div className="flex items-center p-4 border-r border-l">
 								<h1>Members</h1>
 							</div>
 
-							<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border md:flex-row">
+							<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border md:flex-row">
 								<div className="flex flex-col space-y-2 bg-white md:w-auto">
 									<Label htmlFor="keyword">Keyword</Label>
 									<Input
@@ -441,12 +442,12 @@ function ProjectView() {
 				<TabsContent
 					className="m-0"
 					value="payment">
-					<div className="flex items-center p-4 border-t border-r bg-white ">
+					<TitleWrapper>
 						<h1>Member adjustment</h1>
-					</div>
+					</TitleWrapper>
 					<div className="flex flex-row bg-white border-r ">
 						<div className="w-full">
-							<div className="flex flex-row items-center gap-4 p-4 border-t">
+							<div className="flex flex-row items-center gap-4 px-8 py-4">
 								<div className="flex flex-col space-y-2">
 									<Label htmlFor="keyword">Keyword</Label>
 									<Input
@@ -491,12 +492,12 @@ function ProjectView() {
 				<TabsContent
 					className="m-0"
 					value="P/L">
-					<div className="flex items-center px-4 py-2 bg-white border-t border-r">
+					<TitleWrapper>
 						<h1>Member adjustment</h1>
-					</div>
-					<div className="flex flex-row px-4 py-2 bg-white border-b border-t border-r">
+					</TitleWrapper>
+					<TitleWrapper>
 						<h1>Profit & Loss</h1>
-					</div>
+					</TitleWrapper>
 
 					<div className="flex w-full h-full">
 						{/* Left Side */}

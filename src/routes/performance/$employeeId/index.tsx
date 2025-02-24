@@ -10,109 +10,108 @@ import { useEmployee } from '@/hooks/useEmployee';
 import Loading from '@/components/Loading';
 
 function RouteComponent() {
-    // REASSES THIS BECAUSE THIS SHOULD
+	// REASSES THIS BECAUSE THIS SHOULD
 
-    const { employeeId } = useParams({ strict: false });
-    const { template, loading: templatesLoading } = usePerformanceTemplate(Number(employeeId));
-    const { employee, loading: employeeLoading } = useEmployee(Number(employeeId));
+	const { employeeId } = useParams({ strict: false });
+	const { template, loading: templatesLoading } = usePerformanceTemplate(Number(employeeId));
+	const { employee, loading: employeeLoading } = useEmployee(Number(employeeId));
 
-    if (!employeeId) return null;
-    if (templatesLoading || employeeLoading) return <Loading />;
+	if (!employeeId) return null;
+	if (templatesLoading || employeeLoading) return <Loading />;
 
-    const columns = [
-        {
-            header: 'Name',
-            accessorKey: 'name'
-        },
-        {
-            header: 'Template',
-            accessorKey: 'template',
-            cell: ({ row }: any) => row.original.template.templatename
-        },
-        {
-            header: 'Date',
-            accessorKey: 'date'
-        },
-        {
-            id: 'actions',
-            cell: ({ row }: any) => (
-                <Link
-                    to={`/performance/$employeeId/$sheetId`}
-                    params={{
-                        sheetId: row.original.id,
-                        employeeId: employeeId.toString(),
-                    }}>
-                    <Button variant="outline" className="w-20">
-                        DETAIL
-                    </Button>
-                </Link>
-            ),
-        },
-    ];
+	const columns = [
+		{
+			header: 'Name',
+			accessorKey: 'name',
+		},
+		{
+			header: 'Template',
+			accessorKey: 'template',
+			cell: ({ row }: any) => row.original.template.templatename,
+		},
+		{
+			header: 'Date',
+			accessorKey: 'date',
+		},
+		{
+			id: 'actions',
+			cell: ({ row }: any) => (
+				<Link
+					to={`/performance/$employeeId/$sheetId`}
+					params={{
+						sheetId: row.original.id,
+						employeeId: employeeId.toString(),
+					}}>
+					<Button
+						variant="outline"
+						className="w-20">
+						DETAIL
+					</Button>
+				</Link>
+			),
+		},
+	];
 
-    const handleCreateSheet = () => {
-        console.log("CREATE")
-    }
+	const handleCreateSheet = () => {
+		console.log('CREATE');
+	};
 
-    return (
-        <div className="flex-1 h-full">
-            {/* Header Section */}
-            <div className="flex-none min-h-0 border-b border-r">
-                <div className="container flex flex-row items-center justify-between px-2">
-                    <div className="flex items-center gap-4">
-                        <h1 className="text-xl font-semibold">
-                            {employee?.name}'s Performance Reviews
-                        </h1>
-                    </div>
-                    <MenuList
-                        items={[
-                            {
-                                label: 'Sheet List',
-                                path: `/performance/${employeeId}`,
-                            },
-                            {
-                                label: 'Access Control',
-                                path: `/performance/${employeeId}/accesscontrol`,
-                            },
-                        ]}
-                    />
-                    <Link
-                        className="relative pt-2 bottom-2"
-                        to="/performance/setting">
-                        Setting
-                    </Link>
-                </div>
-            </div>
+	return (
+		<div className="flex-1 h-full">
+			{/* Header Section */}
+			<div className="flex-none min-h-0 border-b border-r">
+				<div className="container flex flex-row items-center justify-between">
+					<div className="flex items-center gap-4 pl-8">
+						<h1 className="text-xl font-semibold">{employee?.name}'s Performance Reviews</h1>
+					</div>
+					<MenuList
+						items={[
+							{
+								label: 'Sheet List',
+								path: `/performance/${employeeId}`,
+							},
+							{
+								label: 'Access Control',
+								path: `/performance/${employeeId}/accesscontrol`,
+							},
+						]}
+					/>
+					<Link
+						className="relative pt-2 bottom-2"
+						to="/performance/setting">
+						Setting
+					</Link>
+				</div>
+			</div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end flex-none w-full">
-                <DropdownMenu>
-                    <DropdownMenuTrigger>
-                        <Button className="w-full text-black bg-transparent border-none">
-                            Latest <ChevronDown />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem>Latest</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <Button className="w-20 h-10 text-black bg-transparent border-l border-r link border-r-none">ADD+</Button>
-                <Button className="w-20 h-10 text-black bg-transparent border-r link">EDIT</Button>
-            </div>
+			{/* Action Buttons */}
+			<div className="flex justify-end flex-none w-full">
+				<DropdownMenu>
+					<DropdownMenuTrigger>
+						<Button className="w-full text-black bg-transparent border-none">
+							Latest <ChevronDown />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent>
+						<DropdownMenuItem>Latest</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+				<Button className="w-20 h-10 text-black bg-transparent border-l border-r link border-r-none">ADD+</Button>
+				<Button className="w-20 h-10 text-black bg-transparent border-r link">EDIT</Button>
+			</div>
 
-            {/* Data Table */}
-            <div className="border-t">
-
-                {/* TODO: Need Sheets Endpoint */}
-                {/* <DataTable
+			{/* Data Table */}
+			<div className="border-t">
+				{/* TODO: Need Sheets Endpoint */}
+				{/* <DataTable
                     columns={columns}
                     data={template}
                 /> */}
-            </div>
-        </div>
-    );
+			</div>
+		</div>
+	);
 }
 
 export const Route = createFileRoute('/performance/$employeeId/')({
-    component: RouteComponent,
+	component: RouteComponent,
 });

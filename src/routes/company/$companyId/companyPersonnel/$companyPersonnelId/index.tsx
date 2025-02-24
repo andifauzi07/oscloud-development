@@ -39,7 +39,7 @@ function RouteComponent() {
 		{ label: 'Profile', path: `/company/${companyId}` },
 		{
 			label: 'Personnel',
-			path: `/company/${companyId}/personnel`,
+			path: `/company/${companyId}/companyPersonnel`,
 		},
 	];
 
@@ -115,18 +115,20 @@ function RouteComponent() {
 		<div className="flex-1 h-full">
 			{/* Menus */}
 			<div className="flex-none">
-				<div className="flex items-center justify-between">
+				<div className="flex items-center justify-between border-r">
 					<MenuList
 						items={tabs.map((tab) => ({
 							label: tab.label,
 							path: tab.path,
 						}))}
 					/>
-					<Link
-						to={`/company/setting`}
-						className="px-4">
-						Setting
-					</Link>
+					<div className="pr-4">
+						<Link
+							to={`/company/setting`}
+							className="">
+							Setting
+						</Link>
+					</div>
 				</div>
 			</div>
 
@@ -144,27 +146,29 @@ function RouteComponent() {
 			<Tabs
 				defaultValue="profile"
 				className="w-full bg-white border-t [&>*]:p-0 [&>*]:m-0 rounded-none [&>*]:rounded-none">
-				<TabsList className=" justify-start w-full gap-8 bg-gray-100 [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8	">
-					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2 px-4"
-						value="profile">
-						Profile
-					</TabsTrigger>
-					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-						value="leads">
-						Leads
-					</TabsTrigger>
-					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-						value="projects">
-						Projects
-					</TabsTrigger>
-				</TabsList>
+				<div className="px-8">
+					<TabsList className=" justify-start w-full gap-8 bg-gray-100 [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+						<TabsTrigger
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+							value="profile">
+							Profile
+						</TabsTrigger>
+						<TabsTrigger
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+							value="leads">
+							Leads
+						</TabsTrigger>
+						<TabsTrigger
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+							value="projects">
+							Projects
+						</TabsTrigger>
+					</TabsList>
+				</div>
 
 				{/* Profile Tab */}
 				<TabsContent
-					className="overflow-x-hidden"
+					className="overflow-x-hidden m-0"
 					value="profile">
 					<div className="flex text-xs flex-col">
 						<div className="w-full justify-start border-t px-6 flex">
@@ -202,7 +206,7 @@ function RouteComponent() {
 					className="m-0 overflow-x-hidden"
 					value="leads">
 					<div>
-						<div className="flex flex-col gap-4 px-4 border-t pt-4 border-b md:flex-row md:px-8 md:gap-16">
+						<div className="flex flex-col gap-4 border-t pt-4 border-b md:flex-row px-8 md:gap-16">
 							<div className="flex flex-col w-full space-y-2 md:w-auto">
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
@@ -236,7 +240,7 @@ function RouteComponent() {
 						</div>
 						<div>
 							<Tabs defaultValue="kanban">
-								<TabsList className="justify-start w-full gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+								<TabsList className="justify-start w-full gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
 									<TabsTrigger
 										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 										value="kanban">
@@ -338,7 +342,7 @@ function RouteComponent() {
 						</div>
 						<div>
 							<Tabs defaultValue="list">
-								<TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+								<TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
 									<TabsTrigger
 										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 										value="list">
@@ -350,7 +354,9 @@ function RouteComponent() {
 										Timeline
 									</TabsTrigger>
 								</TabsList>
-								<TabsContent value="list">
+								<TabsContent
+									value="list"
+									className="m-0">
 									<DataTable
 										columns={projectsColumns}
 										data={company?.projects || []}
@@ -359,9 +365,6 @@ function RouteComponent() {
 								<TabsContent
 									value="timeline"
 									className="m-0">
-									{/* <ProjectsTimeline
-                                        projects={company?.projects || []}
-                                    /> */}
 									<ScheduleTable />
 								</TabsContent>
 							</Tabs>

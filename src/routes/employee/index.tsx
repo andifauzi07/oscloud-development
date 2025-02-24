@@ -8,6 +8,7 @@ import { useWorkspaceEmployees } from '@/hooks/useEmployee';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '../../components/ui/data-table';
 import Loading from '@/components/Loading';
+import { TitleWrapper } from '@/components/wrapperElement';
 
 export interface Employee {
 	employeeid: number;
@@ -130,13 +131,10 @@ function RouteComponent() {
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
-			<div className="flex-none min-h-0 px-4 py-2 bg-white border-b border-r">
-				<div className="container flex justify-between md:px-6">
-					<h1>Employee List</h1>
-					<Link to="/employee/setting">Settings</Link>
-				</div>
-			</div>
-
+			<TitleWrapper>
+				<h1>Employee List</h1>
+				<Link to="/employee/setting">Settings</Link>
+			</TitleWrapper>
 			<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 				<div className="flex flex-row flex-wrap gap-4">
 					<div className="flex flex-col space-y-2 md:w-auto">

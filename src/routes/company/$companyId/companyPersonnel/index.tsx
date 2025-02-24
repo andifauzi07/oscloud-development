@@ -59,7 +59,7 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			<div className="items-center flex-none min-h-0 border-b">
-				<div className="container flex border-r items-center justify-between px-4">
+				<div className="container flex border-r items-center justify-between">
 					<MenuList
 						items={[
 							{
@@ -72,12 +72,13 @@ function RouteComponent() {
 							},
 						]}
 					/>
-
-					<Link
-						className="relative"
-						to="/performance/setting">
-						Settings
-					</Link>
+					<div className="pr-4">
+						<Link
+							className="relative"
+							to="/performance/setting">
+							Settings
+						</Link>
+					</div>
 				</div>
 			</div>
 			<div className="flex items-center justify-start px-8 bg-white border-b border-r h-12">

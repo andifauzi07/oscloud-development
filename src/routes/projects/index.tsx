@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Link } from '@tanstack/react-router';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import ScheduleTable from '@/components/EmployeTimeLine';
+import { TitleWrapper } from '@/components/wrapperElement';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
@@ -22,16 +23,14 @@ function RouteComponent() {
 	return (
 		<div className="">
 			{/* Header Section */}
-			<div className="flex-none min-h-0 border-b bg-white border-r px-4 py-2">
-				<div className="flex flex-row items-center justify-between md:px-6">
-					<h2 className="text-base">Project List</h2>
-					<Link to="/projects/setting">Settings</Link>
-				</div>
-			</div>
+			<TitleWrapper>
+				<h2 className="text-base">Project List</h2>
+				<Link to="/projects/setting">Settings</Link>
+			</TitleWrapper>
 
 			{/* Tabs Section */}
 			<Tabs defaultValue="list">
-				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-4">
+				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
 					<TabsTrigger
 						value="list"
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
