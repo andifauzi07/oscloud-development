@@ -1,29 +1,33 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { Link } from '@tanstack/react-router';
-import { ColumnDef } from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { useEffect, useState } from 'react';
-import { useWorkspaceEmployees } from '@/hooks/useEmployee';
-import { usePerformanceSheets, usePerformanceTemplates } from '@/hooks/usePerformance';
-import { DataTable } from '@/components/ui/data-table';
-import useDebounce from '@/hooks/useDebounce';
-import Loading from '@/components/Loading';
+import { CompanyPersonnelLeadsListDataTable } from "@/components/companyPersonnelLeadsListDataTable";
+import { EmployeePerformanceCell } from "@/components/EmployeePerformanceCell";
+import Loading from "@/components/Loading";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import useDebounce from "@/hooks/useDebounce";
+import { useWorkspaceEmployees } from "@/hooks/useEmployee";
+import {
+	getCategoryScore,
+	useEmployeePerformance,
+	usePerformanceSheets,
+	usePerformanceTemplates,
+} from "@/hooks/usePerformance";
+import { useUserData } from "@/hooks/useUserData";
+import { fetchEmployeePerformance } from "@/store/slices/performanceSlice";
+import { AppDispatch, RootState } from "@/store/store";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ColumnDef } from "@tanstack/react-table";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-interface PerformanceScore {
-	id: number;
-	name: string;
-	score: number;
-}
-
-export const Route = createFileRoute('/performance/')({
+export const Route = createFileRoute("/performance/")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const [searchQuery, setSearchQuery] = useState('');
-	const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
+	const [searchQuery, setSearchQuery] = useState("");
+	const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
 	const debouncedSearch = useDebounce(searchQuery, 500);
 	const { employees, loading: employeesLoading } = useWorkspaceEmployees();
 	const { templates, loading: templatesLoading } = usePerformanceTemplates();
@@ -32,22 +36,31 @@ function RouteComponent() {
 		endDate: dateRange.endDate,
 	});
 
+	const { workspaceid } = useUserData();
+
 	const defaultTemplate = templates[0];
+	const { performanceData, loading: employeePerformanceLoading } =
+		useEmployeePerformance({
+			workspaceId: Number(workspaceid),
+			// templateId: defaultTemplate?.templateid,
+			// Pass employeeId if you want to fetch data for a specific employee
+			// employeeId: someEmployeeId,
+		});
 
-	const getScore = (employeeId: number, categoryId: number) => {
-		return getPerformanceScore(sheets, employeeId, categoryId);
-	};
+	const filteredEmployees = employees?.filter((employee: any) =>
+		employee.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+	);
 
-	const columns: ColumnDef<any>[] = [
+	const columns: ColumnDef<any>[] = useMemo(() => [
 		{
-			accessorKey: 'profileimage',
-			header: '',
-			cell: ({ row }) => (
+			accessorKey: "profileimage",
+			header: "",
+			cell: ({ row }: any) => (
 				<div className="flex items-center justify-center h-full">
 					<figure className="w-16 h-16 overflow-hidden">
 						<img
 							className="object-cover w-full h-full"
-							src={row.original.profileimage || '/default-avatar.png'}
+							src={row.original.profileimage || "/default-avatar.png"}
 							alt={`${row.original.name}'s profile`}
 						/>
 					</figure>
@@ -55,55 +68,64 @@ function RouteComponent() {
 			),
 		},
 		{
-			accessorKey: 'employeeid',
-			header: 'ID',
+			accessorKey: "employeeid",
+			header: "ID",
 		},
 		{
-			accessorKey: 'name',
-			header: 'Name',
-			cell: ({ row }) => (
+			accessorKey: "name",
+			header: "Name",
+			cell: ({ row }: any) => (
 				<Link
 					to={`/performance/$employeeId`}
 					params={{ employeeId: row.original.employeeid }}
-					className="text-blue-600 hover:underline">
+					className="text-blue-600 hover:underline"
+				>
 					{row.original.name}
 				</Link>
 			),
 		},
 		{
-			accessorKey: 'employeeCategory.categoryname',
-			header: 'Employee Category',
-			cell: ({ row }) => row.original.employeeCategory?.categoryname || '-',
+			accessorKey: "employeeCategory.categoryname",
+			header: "Employee Category",
+			cell: ({ row }: any) =>
+				row.original.employeeCategory?.categoryname || "-",
 		},
-		...(defaultTemplate?.categories?.map((category) => ({
+		...(defaultTemplate?.categories?.map((category: any) => ({
 			accessorKey: `performance_${category.categoryid}`,
 			header: category.categoryname,
-			cell: ({ row }: any) => {
-				const score = getScore(row.original.employeeid, category.categoryid);
-				const points = category.points.filter((point) => point.categoryid === category.categoryid);
-				points;
-				return score ? `${score}%` : 'N/A';
-			},
+			cell: (
+				{ row }: any // Add parentheses to return the component
+			) => (
+				<EmployeePerformanceCell
+					workspaceId={Number(workspaceid)}
+					employeeId={row.original.employeeid}
+					templateId={defaultTemplate.templateid}
+					categoryId={category.categoryid}
+				/>
+			),
 		})) || []),
 		{
-			id: 'actions',
-			header: '',
-			cell: ({ row }) => (
+			id: "actions",
+			header: "",
+			cell: ({ row }: any) => (
 				<Link
 					to={`/performance/$employeeId`}
-					params={{ employeeId: row.original.employeeid }}>
-					<Button
-						variant="outline"
-						className="w-20">
+					params={{ employeeId: row.original.employeeid }}
+				>
+					<Button variant="outline" className="w-20">
 						DETAIL
 					</Button>
 				</Link>
 			),
 		},
-	];
+	], [workspaceid, defaultTemplate]);
 
-	if (employeesLoading || templatesLoading || sheetsLoading) {
+	if (employeesLoading || templatesLoading || employeePerformanceLoading) {
 		return <Loading />;
+	}
+
+	if (!employees?.length || !templates?.length) {
+		return <div>No data available</div>;
 	}
 
 	return (
@@ -135,13 +157,19 @@ function RouteComponent() {
 					<div className="flex items-center gap-2">
 						<Input
 							type="date"
-							enableEmoji={false}
+							value={dateRange.startDate}
+							onChange={(e) =>
+								setDateRange({ ...dateRange, startDate: e.target.value })
+							}
 							className="w-[150px] border rounded-none"
 						/>
 						<span className="text-gray-500">-</span>
 						<Input
-							enableEmoji={false}
 							type="date"
+							value={dateRange.endDate}
+							onChange={(e) =>
+								setDateRange({ ...dateRange, endDate: e.target.value })
+							}
 							className="w-[150px] border rounded-none"
 						/>
 					</div>
@@ -149,28 +177,16 @@ function RouteComponent() {
 			</div>
 			{/* Responsive action buttons */}
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-10">ADD+</Button>
-				<Button className="text-black bg-transparent border-r md:w-20 link min-h-10">EDIT</Button>
+				<Button className="text-black bg-transparent border-l border-r md:w-20 link border-r-none min-h-10">
+					ADD+
+				</Button>
+				<Button className="text-black bg-transparent border-r md:w-20 link min-h-10">
+					EDIT
+				</Button>
 			</div>
 			<div className="border-r border-t">
-				<DataTable
-					columns={columns}
-					data={employees || []}
-				/>
+				<DataTable columns={columns} data={filteredEmployees || []} />
 			</div>
 		</div>
 	);
 }
-
-const getPerformanceScore = (sheets: any[], employeeId: number, categoryId: number) => {
-	if (!sheets || sheets.length === 0) return null;
-
-	// Find the sheet for the given employee
-	const employeeSheet = sheets.find((sheet) => sheet.employeeid === employeeId);
-	if (!employeeSheet || !employeeSheet.scores) return null;
-
-	// Find the score for the given category
-	const categoryScore = employeeSheet.scores.find((score: any) => score.categoryid === categoryId);
-
-	return categoryScore ? categoryScore.value : null;
-};

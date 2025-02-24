@@ -5,6 +5,8 @@ import employeeReducer from "./slices/employeeSlice"
 import userReducer from "./slices/userSlice"
 import performanceReducer from "./slices/performanceSlice"
 import payrollReducer from './slices/payrollSlice';
+import projectReducer from './slices/projectSlice';
+import companyReducer from './slices/companySlice';
 
 export const store = configureStore({
     reducer: {
@@ -14,6 +16,8 @@ export const store = configureStore({
         employee: employeeReducer,
         performance: performanceReducer,
         payroll: payrollReducer,
+        project: projectReducer,
+        company: companyReducer,
     }
 
 })

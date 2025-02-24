@@ -9,39 +9,6 @@ import { usePerformanceTemplate, usePerformanceTemplates } from '@/hooks/usePerf
 import { useEmployee } from '@/hooks/useEmployee';
 import Loading from '@/components/Loading';
 
-interface Point {
-    pointid: number;
-    categoryid: number;
-    pointname: string;
-    weight: number;
-}
-
-interface Category {
-    categoryid: number;
-    templateid: number;
-    categoryname: string;
-    points: Point[];
-}
-
-interface Template {
-    templateid: number;
-    templatename: string;
-    workspaceid: number;
-    categories: Category[];
-}
-
-interface PerformanceSheet {
-    id: number;
-    name: string;
-    template: Template;
-    date: string;
-    scores: {
-        categoryid: number;
-        pointid: number;
-        score: number;
-    }[];
-}
-
 function RouteComponent() {
     // REASSES THIS BECAUSE THIS SHOULD
 
@@ -85,7 +52,6 @@ function RouteComponent() {
 
     const handleCreateSheet = () => {
         console.log("CREATE")
-
     }
 
     return (
