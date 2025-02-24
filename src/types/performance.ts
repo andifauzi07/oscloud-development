@@ -112,6 +112,7 @@ export interface PerformanceState {
 export interface PerformanceFilters {
     employeeId?: number;
     templateId?: number;
+    sheetId?: number;
     startDate?: string;
     endDate?: string;
     search?: string;
