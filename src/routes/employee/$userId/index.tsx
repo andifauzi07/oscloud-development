@@ -177,11 +177,7 @@ function RouteComponent() {
 				<div className="container flex items-center justify-between px-4 bg-white">
 					<MenuList items={menuItems} />
 					<div>
-						<Link
-							to="/employee/$userId/setting"
-							params={{ userId: userId as string }}>
-							Setting
-						</Link>
+						<Link to="/employee/setting">Setting</Link>
 					</div>
 				</div>
 			</div>

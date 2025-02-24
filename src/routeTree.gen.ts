@@ -46,7 +46,6 @@ import { Route as PayrollEmployeeIdJoinedProjectsIndexImport } from './routes/pa
 import { Route as PayrollEmployeeIdPaymentIdIndexImport } from './routes/payroll/$employeeId/$paymentId/index'
 import { Route as GuestDashboardProjectIdIndexImport } from './routes/guest/dashboard/$projectId/index'
 import { Route as FeaturesProfitLossProjectNameIndexImport } from './routes/features/ProfitLoss/$projectName/index'
-import { Route as EmployeeUserIdSettingIndexImport } from './routes/employee/$userId/setting/index'
 import { Route as EmployeeUserIdProfileIndexImport } from './routes/employee/$userId/profile/index'
 import { Route as EmployeeUserIdPerformanceIndexImport } from './routes/employee/$userId/performance/index'
 import { Route as EmployeeUserIdPayrollIndexImport } from './routes/employee/$userId/payroll/index'
@@ -54,12 +53,8 @@ import { Route as CompanySettingDatacategoryIndexImport } from './routes/company
 import { Route as CompanyCompanyIdCompanyPersonnelIndexImport } from './routes/company/$companyId/companyPersonnel/index'
 import { Route as EmployeeSettingDepartmentDepartmentNameIndexImport } from './routes/employee/setting/department/$departmentName/index'
 import { Route as EmployeeSettingCategoryCategoryNameIndexImport } from './routes/employee/setting/category/$categoryName/index'
-import { Route as EmployeeUserIdSettingEmployeeCategoryIndexImport } from './routes/employee/$userId/setting/employee-category/index'
-import { Route as EmployeeUserIdSettingDepartmentIndexImport } from './routes/employee/$userId/setting/department/index'
-import { Route as EmployeeUserIdSettingDataCategoryIndexImport } from './routes/employee/$userId/setting/data-category/index'
 import { Route as CompanySettingDatacategoryDatacategoryViewIndexImport } from './routes/company/setting/datacategory/datacategoryView/index'
 import { Route as CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexImport } from './routes/company/$companyId/companyPersonnel/$companyPersonnelId/index'
-import { Route as EmployeeUserIdSettingDepartmentDepartmenIdIndexImport } from './routes/employee/$userId/setting/department/$departmenId/index'
 
 // Create/Update Routes
 
@@ -288,14 +283,6 @@ const FeaturesProfitLossProjectNameIndexRoute =
     getParentRoute: () => rootRoute,
   } as any)
 
-const EmployeeUserIdSettingIndexRoute = EmployeeUserIdSettingIndexImport.update(
-  {
-    id: '/employee/$userId/setting/',
-    path: '/employee/$userId/setting/',
-    getParentRoute: () => rootRoute,
-  } as any,
-)
-
 const EmployeeUserIdProfileIndexRoute = EmployeeUserIdProfileIndexImport.update(
   {
     id: '/employee/$userId/profile/',
@@ -347,27 +334,6 @@ const EmployeeSettingCategoryCategoryNameIndexRoute =
     getParentRoute: () => rootRoute,
   } as any)
 
-const EmployeeUserIdSettingEmployeeCategoryIndexRoute =
-  EmployeeUserIdSettingEmployeeCategoryIndexImport.update({
-    id: '/employee/$userId/setting/employee-category/',
-    path: '/employee/$userId/setting/employee-category/',
-    getParentRoute: () => rootRoute,
-  } as any)
-
-const EmployeeUserIdSettingDepartmentIndexRoute =
-  EmployeeUserIdSettingDepartmentIndexImport.update({
-    id: '/employee/$userId/setting/department/',
-    path: '/employee/$userId/setting/department/',
-    getParentRoute: () => rootRoute,
-  } as any)
-
-const EmployeeUserIdSettingDataCategoryIndexRoute =
-  EmployeeUserIdSettingDataCategoryIndexImport.update({
-    id: '/employee/$userId/setting/data-category/',
-    path: '/employee/$userId/setting/data-category/',
-    getParentRoute: () => rootRoute,
-  } as any)
-
 const CompanySettingDatacategoryDatacategoryViewIndexRoute =
   CompanySettingDatacategoryDatacategoryViewIndexImport.update({
     id: '/company/setting/datacategory/datacategoryView/',
@@ -379,13 +345,6 @@ const CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute =
   CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexImport.update({
     id: '/company/$companyId/companyPersonnel/$companyPersonnelId/',
     path: '/company/$companyId/companyPersonnel/$companyPersonnelId/',
-    getParentRoute: () => rootRoute,
-  } as any)
-
-const EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute =
-  EmployeeUserIdSettingDepartmentDepartmenIdIndexImport.update({
-    id: '/employee/$userId/setting/department/$departmenId/',
-    path: '/employee/$userId/setting/department/$departmenId/',
     getParentRoute: () => rootRoute,
   } as any)
 
@@ -610,13 +569,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmployeeUserIdProfileIndexImport
       parentRoute: typeof rootRoute
     }
-    '/employee/$userId/setting/': {
-      id: '/employee/$userId/setting/'
-      path: '/employee/$userId/setting'
-      fullPath: '/employee/$userId/setting'
-      preLoaderRoute: typeof EmployeeUserIdSettingIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/features/ProfitLoss/$projectName/': {
       id: '/features/ProfitLoss/$projectName/'
       path: '/features/ProfitLoss/$projectName'
@@ -694,27 +646,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanySettingDatacategoryDatacategoryViewIndexImport
       parentRoute: typeof rootRoute
     }
-    '/employee/$userId/setting/data-category/': {
-      id: '/employee/$userId/setting/data-category/'
-      path: '/employee/$userId/setting/data-category'
-      fullPath: '/employee/$userId/setting/data-category'
-      preLoaderRoute: typeof EmployeeUserIdSettingDataCategoryIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/employee/$userId/setting/department/': {
-      id: '/employee/$userId/setting/department/'
-      path: '/employee/$userId/setting/department'
-      fullPath: '/employee/$userId/setting/department'
-      preLoaderRoute: typeof EmployeeUserIdSettingDepartmentIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/employee/$userId/setting/employee-category/': {
-      id: '/employee/$userId/setting/employee-category/'
-      path: '/employee/$userId/setting/employee-category'
-      fullPath: '/employee/$userId/setting/employee-category'
-      preLoaderRoute: typeof EmployeeUserIdSettingEmployeeCategoryIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/employee/setting/category/$categoryName/': {
       id: '/employee/setting/category/$categoryName/'
       path: '/employee/setting/category/$categoryName'
@@ -727,13 +658,6 @@ declare module '@tanstack/react-router' {
       path: '/employee/setting/department/$departmentName'
       fullPath: '/employee/setting/department/$departmentName'
       preLoaderRoute: typeof EmployeeSettingDepartmentDepartmentNameIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/employee/$userId/setting/department/$departmenId/': {
-      id: '/employee/$userId/setting/department/$departmenId/'
-      path: '/employee/$userId/setting/department/$departmenId'
-      fullPath: '/employee/$userId/setting/department/$departmenId'
-      preLoaderRoute: typeof EmployeeUserIdSettingDepartmentDepartmenIdIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -773,7 +697,6 @@ export interface FileRoutesByFullPath {
   '/employee/$userId/payroll': typeof EmployeeUserIdPayrollIndexRoute
   '/employee/$userId/performance': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
-  '/employee/$userId/setting': typeof EmployeeUserIdSettingIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
   '/guest/dashboard/$projectId': typeof GuestDashboardProjectIdIndexRoute
   '/payroll/$employeeId/$paymentId': typeof PayrollEmployeeIdPaymentIdIndexRoute
@@ -785,12 +708,8 @@ export interface FileRoutesByFullPath {
   '/workspace/setting/security': typeof WorkspaceSettingSecurityIndexRoute
   '/company/$companyId/companyPersonnel/$companyPersonnelId': typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   '/company/setting/datacategory/datacategoryView': typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
-  '/employee/$userId/setting/data-category': typeof EmployeeUserIdSettingDataCategoryIndexRoute
-  '/employee/$userId/setting/department': typeof EmployeeUserIdSettingDepartmentIndexRoute
-  '/employee/$userId/setting/employee-category': typeof EmployeeUserIdSettingEmployeeCategoryIndexRoute
   '/employee/setting/category/$categoryName': typeof EmployeeSettingCategoryCategoryNameIndexRoute
   '/employee/setting/department/$departmentName': typeof EmployeeSettingDepartmentDepartmentNameIndexRoute
-  '/employee/$userId/setting/department/$departmenId': typeof EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -825,7 +744,6 @@ export interface FileRoutesByTo {
   '/employee/$userId/payroll': typeof EmployeeUserIdPayrollIndexRoute
   '/employee/$userId/performance': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile': typeof EmployeeUserIdProfileIndexRoute
-  '/employee/$userId/setting': typeof EmployeeUserIdSettingIndexRoute
   '/features/ProfitLoss/$projectName': typeof FeaturesProfitLossProjectNameIndexRoute
   '/guest/dashboard/$projectId': typeof GuestDashboardProjectIdIndexRoute
   '/payroll/$employeeId/$paymentId': typeof PayrollEmployeeIdPaymentIdIndexRoute
@@ -837,12 +755,8 @@ export interface FileRoutesByTo {
   '/workspace/setting/security': typeof WorkspaceSettingSecurityIndexRoute
   '/company/$companyId/companyPersonnel/$companyPersonnelId': typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   '/company/setting/datacategory/datacategoryView': typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
-  '/employee/$userId/setting/data-category': typeof EmployeeUserIdSettingDataCategoryIndexRoute
-  '/employee/$userId/setting/department': typeof EmployeeUserIdSettingDepartmentIndexRoute
-  '/employee/$userId/setting/employee-category': typeof EmployeeUserIdSettingEmployeeCategoryIndexRoute
   '/employee/setting/category/$categoryName': typeof EmployeeSettingCategoryCategoryNameIndexRoute
   '/employee/setting/department/$departmentName': typeof EmployeeSettingDepartmentDepartmentNameIndexRoute
-  '/employee/$userId/setting/department/$departmenId': typeof EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute
 }
 
 export interface FileRoutesById {
@@ -878,7 +792,6 @@ export interface FileRoutesById {
   '/employee/$userId/payroll/': typeof EmployeeUserIdPayrollIndexRoute
   '/employee/$userId/performance/': typeof EmployeeUserIdPerformanceIndexRoute
   '/employee/$userId/profile/': typeof EmployeeUserIdProfileIndexRoute
-  '/employee/$userId/setting/': typeof EmployeeUserIdSettingIndexRoute
   '/features/ProfitLoss/$projectName/': typeof FeaturesProfitLossProjectNameIndexRoute
   '/guest/dashboard/$projectId/': typeof GuestDashboardProjectIdIndexRoute
   '/payroll/$employeeId/$paymentId/': typeof PayrollEmployeeIdPaymentIdIndexRoute
@@ -890,12 +803,8 @@ export interface FileRoutesById {
   '/workspace/setting/security/': typeof WorkspaceSettingSecurityIndexRoute
   '/company/$companyId/companyPersonnel/$companyPersonnelId/': typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   '/company/setting/datacategory/datacategoryView/': typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
-  '/employee/$userId/setting/data-category/': typeof EmployeeUserIdSettingDataCategoryIndexRoute
-  '/employee/$userId/setting/department/': typeof EmployeeUserIdSettingDepartmentIndexRoute
-  '/employee/$userId/setting/employee-category/': typeof EmployeeUserIdSettingEmployeeCategoryIndexRoute
   '/employee/setting/category/$categoryName/': typeof EmployeeSettingCategoryCategoryNameIndexRoute
   '/employee/setting/department/$departmentName/': typeof EmployeeSettingDepartmentDepartmentNameIndexRoute
-  '/employee/$userId/setting/department/$departmenId/': typeof EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -932,7 +841,6 @@ export interface FileRouteTypes {
     | '/employee/$userId/payroll'
     | '/employee/$userId/performance'
     | '/employee/$userId/profile'
-    | '/employee/$userId/setting'
     | '/features/ProfitLoss/$projectName'
     | '/guest/dashboard/$projectId'
     | '/payroll/$employeeId/$paymentId'
@@ -944,12 +852,8 @@ export interface FileRouteTypes {
     | '/workspace/setting/security'
     | '/company/$companyId/companyPersonnel/$companyPersonnelId'
     | '/company/setting/datacategory/datacategoryView'
-    | '/employee/$userId/setting/data-category'
-    | '/employee/$userId/setting/department'
-    | '/employee/$userId/setting/employee-category'
     | '/employee/setting/category/$categoryName'
     | '/employee/setting/department/$departmentName'
-    | '/employee/$userId/setting/department/$departmenId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -983,7 +887,6 @@ export interface FileRouteTypes {
     | '/employee/$userId/payroll'
     | '/employee/$userId/performance'
     | '/employee/$userId/profile'
-    | '/employee/$userId/setting'
     | '/features/ProfitLoss/$projectName'
     | '/guest/dashboard/$projectId'
     | '/payroll/$employeeId/$paymentId'
@@ -995,12 +898,8 @@ export interface FileRouteTypes {
     | '/workspace/setting/security'
     | '/company/$companyId/companyPersonnel/$companyPersonnelId'
     | '/company/setting/datacategory/datacategoryView'
-    | '/employee/$userId/setting/data-category'
-    | '/employee/$userId/setting/department'
-    | '/employee/$userId/setting/employee-category'
     | '/employee/setting/category/$categoryName'
     | '/employee/setting/department/$departmentName'
-    | '/employee/$userId/setting/department/$departmenId'
   id:
     | '__root__'
     | '/'
@@ -1034,7 +933,6 @@ export interface FileRouteTypes {
     | '/employee/$userId/payroll/'
     | '/employee/$userId/performance/'
     | '/employee/$userId/profile/'
-    | '/employee/$userId/setting/'
     | '/features/ProfitLoss/$projectName/'
     | '/guest/dashboard/$projectId/'
     | '/payroll/$employeeId/$paymentId/'
@@ -1046,12 +944,8 @@ export interface FileRouteTypes {
     | '/workspace/setting/security/'
     | '/company/$companyId/companyPersonnel/$companyPersonnelId/'
     | '/company/setting/datacategory/datacategoryView/'
-    | '/employee/$userId/setting/data-category/'
-    | '/employee/$userId/setting/department/'
-    | '/employee/$userId/setting/employee-category/'
     | '/employee/setting/category/$categoryName/'
     | '/employee/setting/department/$departmentName/'
-    | '/employee/$userId/setting/department/$departmenId/'
   fileRoutesById: FileRoutesById
 }
 
@@ -1087,7 +981,6 @@ export interface RootRouteChildren {
   EmployeeUserIdPayrollIndexRoute: typeof EmployeeUserIdPayrollIndexRoute
   EmployeeUserIdPerformanceIndexRoute: typeof EmployeeUserIdPerformanceIndexRoute
   EmployeeUserIdProfileIndexRoute: typeof EmployeeUserIdProfileIndexRoute
-  EmployeeUserIdSettingIndexRoute: typeof EmployeeUserIdSettingIndexRoute
   FeaturesProfitLossProjectNameIndexRoute: typeof FeaturesProfitLossProjectNameIndexRoute
   GuestDashboardProjectIdIndexRoute: typeof GuestDashboardProjectIdIndexRoute
   PayrollEmployeeIdPaymentIdIndexRoute: typeof PayrollEmployeeIdPaymentIdIndexRoute
@@ -1099,12 +992,8 @@ export interface RootRouteChildren {
   WorkspaceSettingSecurityIndexRoute: typeof WorkspaceSettingSecurityIndexRoute
   CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute: typeof CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute
   CompanySettingDatacategoryDatacategoryViewIndexRoute: typeof CompanySettingDatacategoryDatacategoryViewIndexRoute
-  EmployeeUserIdSettingDataCategoryIndexRoute: typeof EmployeeUserIdSettingDataCategoryIndexRoute
-  EmployeeUserIdSettingDepartmentIndexRoute: typeof EmployeeUserIdSettingDepartmentIndexRoute
-  EmployeeUserIdSettingEmployeeCategoryIndexRoute: typeof EmployeeUserIdSettingEmployeeCategoryIndexRoute
   EmployeeSettingCategoryCategoryNameIndexRoute: typeof EmployeeSettingCategoryCategoryNameIndexRoute
   EmployeeSettingDepartmentDepartmentNameIndexRoute: typeof EmployeeSettingDepartmentDepartmentNameIndexRoute
-  EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute: typeof EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -1140,7 +1029,6 @@ const rootRouteChildren: RootRouteChildren = {
   EmployeeUserIdPayrollIndexRoute: EmployeeUserIdPayrollIndexRoute,
   EmployeeUserIdPerformanceIndexRoute: EmployeeUserIdPerformanceIndexRoute,
   EmployeeUserIdProfileIndexRoute: EmployeeUserIdProfileIndexRoute,
-  EmployeeUserIdSettingIndexRoute: EmployeeUserIdSettingIndexRoute,
   FeaturesProfitLossProjectNameIndexRoute:
     FeaturesProfitLossProjectNameIndexRoute,
   GuestDashboardProjectIdIndexRoute: GuestDashboardProjectIdIndexRoute,
@@ -1159,18 +1047,10 @@ const rootRouteChildren: RootRouteChildren = {
     CompanyCompanyIdCompanyPersonnelCompanyPersonnelIdIndexRoute,
   CompanySettingDatacategoryDatacategoryViewIndexRoute:
     CompanySettingDatacategoryDatacategoryViewIndexRoute,
-  EmployeeUserIdSettingDataCategoryIndexRoute:
-    EmployeeUserIdSettingDataCategoryIndexRoute,
-  EmployeeUserIdSettingDepartmentIndexRoute:
-    EmployeeUserIdSettingDepartmentIndexRoute,
-  EmployeeUserIdSettingEmployeeCategoryIndexRoute:
-    EmployeeUserIdSettingEmployeeCategoryIndexRoute,
   EmployeeSettingCategoryCategoryNameIndexRoute:
     EmployeeSettingCategoryCategoryNameIndexRoute,
   EmployeeSettingDepartmentDepartmentNameIndexRoute:
     EmployeeSettingDepartmentDepartmentNameIndexRoute,
-  EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute:
-    EmployeeUserIdSettingDepartmentDepartmenIdIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -1214,7 +1094,6 @@ export const routeTree = rootRoute
         "/employee/$userId/payroll/",
         "/employee/$userId/performance/",
         "/employee/$userId/profile/",
-        "/employee/$userId/setting/",
         "/features/ProfitLoss/$projectName/",
         "/guest/dashboard/$projectId/",
         "/payroll/$employeeId/$paymentId/",
@@ -1226,12 +1105,8 @@ export const routeTree = rootRoute
         "/workspace/setting/security/",
         "/company/$companyId/companyPersonnel/$companyPersonnelId/",
         "/company/setting/datacategory/datacategoryView/",
-        "/employee/$userId/setting/data-category/",
-        "/employee/$userId/setting/department/",
-        "/employee/$userId/setting/employee-category/",
         "/employee/setting/category/$categoryName/",
-        "/employee/setting/department/$departmentName/",
-        "/employee/$userId/setting/department/$departmenId/"
+        "/employee/setting/department/$departmentName/"
       ]
     },
     "/": {
@@ -1327,9 +1202,6 @@ export const routeTree = rootRoute
     "/employee/$userId/profile/": {
       "filePath": "employee/$userId/profile/index.tsx"
     },
-    "/employee/$userId/setting/": {
-      "filePath": "employee/$userId/setting/index.tsx"
-    },
     "/features/ProfitLoss/$projectName/": {
       "filePath": "features/ProfitLoss/$projectName/index.tsx"
     },
@@ -1363,23 +1235,11 @@ export const routeTree = rootRoute
     "/company/setting/datacategory/datacategoryView/": {
       "filePath": "company/setting/datacategory/datacategoryView/index.tsx"
     },
-    "/employee/$userId/setting/data-category/": {
-      "filePath": "employee/$userId/setting/data-category/index.tsx"
-    },
-    "/employee/$userId/setting/department/": {
-      "filePath": "employee/$userId/setting/department/index.tsx"
-    },
-    "/employee/$userId/setting/employee-category/": {
-      "filePath": "employee/$userId/setting/employee-category/index.tsx"
-    },
     "/employee/setting/category/$categoryName/": {
       "filePath": "employee/setting/category/$categoryName/index.tsx"
     },
     "/employee/setting/department/$departmentName/": {
       "filePath": "employee/setting/department/$departmentName/index.tsx"
-    },
-    "/employee/$userId/setting/department/$departmenId/": {
-      "filePath": "employee/$userId/setting/department/$departmenId/index.tsx"
     }
   }
 }
