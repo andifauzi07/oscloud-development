@@ -210,7 +210,7 @@ function RouteComponent() {
 				<AddRecordDialog
 					columns={columns}
 					onSave={handleAddRecord}
-					nonEditableColumns={['performance*']}
+					nonEditableColumns={['performance*', 'employeeid*']}
 				/>
 				<Button
 					onClick={() => setEditable((prev) => !prev)}
@@ -224,7 +224,7 @@ function RouteComponent() {
 					columns={columns}
 					loading={employeesLoading || templatesLoading || employeePerformanceLoading}
 					data={filteredEmployees}
-					nonEditableColumns={['performance*', 'profileimage', 'actions']}
+					nonEditableColumns={['performance*', 'profileimage', 'actions', 'employeeid']}
 					onSave={handleSaveEdits}
 				/>
 			</div>

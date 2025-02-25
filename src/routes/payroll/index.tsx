@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useUserData } from '@/hooks/useUserData';
 import Loading from '@/components/Loading';
+import { useCallback, useState } from 'react';
+import { AddRecordDialog } from '@/components/AddRecordDialog';
 
 export const Route = createFileRoute('/payroll/')({
 	component: RouteComponent,
@@ -47,32 +49,32 @@ const columns: ColumnDef<PayrollRow>[] = [
 	{
 		accessorKey: 'id',
 		header: 'ID',
-		cell: ({ row }) => (
-			<Input
-				enableEmoji={false}
-				defaultValue={row.original.id}
-				className="w-20 text-xs border-0 rounded-none whitespace-nowrap"
-				onChange={(e) => {
-					// Handle ID change logic here
-					console.log('ID changed:', e.target.value);
-				}}
-			/>
-		),
+		// cell: ({ row }) => (
+		// 	<Input
+		// 		enableEmoji={false}
+		// 		defaultValue={row.original.id}
+		// 		className="w-20 text-xs border-0 rounded-none whitespace-nowrap"
+		// 		onChange={(e) => {
+		// 			// Handle ID change logic here
+		// 			console.log('ID changed:', e.target.value);
+		// 		}}
+		// 	/>
+		// ),
 	},
 	{
 		accessorKey: 'name',
 		header: 'Name',
-		cell: ({ row }) => (
-			<Input
-				enableEmoji={false}
-				defaultValue={row.original.name}
-				className="w-40 text-xs border-0 rounded-none whitespace-nowrap"
-				onChange={(e) => {
-					// Handle Name change logic here
-					console.log('Name changed:', e.target.value);
-				}}
-			/>
-		),
+		// cell: ({ row }) => (
+		// 	<Input
+		// 		enableEmoji={false}
+		// 		defaultValue={row.original.name}
+		// 		className="w-40 text-xs border-0 rounded-none whitespace-nowrap"
+		// 		onChange={(e) => {
+		// 			// Handle Name change logic here
+		// 			console.log('Name changed:', e.target.value);
+		// 		}}
+		// 	/>
+		// ),
 	},
 	{
 		accessorKey: 'employeeCategory',
@@ -121,8 +123,26 @@ function RouteComponent() {
 	const { workspaceid } = useUserData();
 	const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid) });
 
-	// if (loading) return <Loading />;
-	// if (error) return <div>Error: {error}</div>;
+	const [editable, setEditable] = useState(false);
+
+	const handleAddRecord = async (data: any) => {
+		try {
+			// Add your API call here to save the new record
+			console.log('Adding new record:', data);
+		} catch (error) {
+			console.error('Failed to add record:', error);
+		}
+	};
+
+	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
+		try {
+			console.log('Saving updates:', updatedData);
+			// Add your API call here
+			setEditable(false); // Turn off edit mode after saving
+		} catch (error) {
+			console.error('Failed to save updates:', error);
+		}
+	}, []);
 
 	// Transform payments data to match the table structure
 	const tableData = payments.map((payment: any) => ({
@@ -190,8 +210,16 @@ function RouteComponent() {
 				</div>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">ADD+</Button>
-					<Button className="h-10 text-black bg-transparent border-r md:w-20 link">EDIT</Button>
+					<AddRecordDialog
+						columns={columns}
+						onSave={handleAddRecord}
+						nonEditableColumns={['image', 'id', 'joinedOn', 'numberOfPayment', 'action']}
+					/>
+					<Button
+						onClick={() => setEditable((prev) => !prev)}
+						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+						EDIT+
+					</Button>
 				</div>
 
 				{/* Employee List Tab */}
@@ -203,6 +231,9 @@ function RouteComponent() {
 							columns={columns}
 							data={tableData}
 							loading={loading || error}
+							isEditable={editable}
+							nonEditableColumns={['image', 'joinedOn', 'numberOfPayment', 'id', 'action*']}
+							onSave={handleSaveEdits}
 						/>
 					</div>
 				</TabsContent>

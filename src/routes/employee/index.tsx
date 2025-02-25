@@ -9,6 +9,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '../../components/ui/data-table';
 import Loading from '@/components/Loading';
 import { TitleWrapper } from '@/components/wrapperElement';
+import { useCallback, useState } from 'react';
+import { AddRecordDialog } from '@/components/AddRecordDialog';
 
 export interface Employee {
 	employeeid: number;
@@ -124,10 +126,26 @@ export const Route = createFileRoute('/employee/')({
 
 function RouteComponent() {
 	const { employees, loading } = useWorkspaceEmployees();
+	const [editable, setEditable] = useState(false);
 
-	// if (loading) {
-	// 	return <Loading />;
-	// }
+	const handleAddRecord = async (data: any) => {
+		try {
+			// Add your API call here to save the new record
+			console.log('Adding new record:', data);
+		} catch (error) {
+			console.error('Failed to add record:', error);
+		}
+	};
+
+	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
+		try {
+			console.log('Saving updates:', updatedData);
+			// Add your API call here
+			setEditable(false); // Turn off edit mode after saving
+		} catch (error) {
+			console.error('Failed to save updates:', error);
+		}
+	}, []);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -166,8 +184,16 @@ function RouteComponent() {
 			</div>
 
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link">ADD+</Button>
-				<Button className="h-10 text-black bg-transparent border-r md:w-20 link">EDIT</Button>
+				<AddRecordDialog
+					columns={columns}
+					onSave={handleAddRecord}
+					nonEditableColumns={['employeeCategory*', 'department*']}
+				/>
+				<Button
+					onClick={() => setEditable((prev) => !prev)}
+					className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+					EDIT+
+				</Button>
 			</div>
 
 			<div className="border-t border-b border-r">
@@ -175,6 +201,9 @@ function RouteComponent() {
 					columns={columns}
 					data={employees}
 					loading={loading}
+					isEditable={editable}
+					nonEditableColumns={['employeeCategory*', 'department*', 'email', 'profileimage', 'actions']}
+					onSave={handleSaveEdits}
 				/>
 			</div>
 		</div>

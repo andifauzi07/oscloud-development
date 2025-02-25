@@ -10,15 +10,38 @@ import { Link } from '@tanstack/react-router';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import ScheduleTable from '@/components/EmployeTimeLine';
 import { TitleWrapper } from '@/components/wrapperElement';
+import { useCallback, useState } from 'react';
+import { AddRecordDialog } from '@/components/AddRecordDialog';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
+	const [editable, setEditable] = useState(false);
+
 	// Fetch all projects from all companies
 	const allProjects = mockCompanies.flatMap((company) => company.projects);
 	const validProjects = allProjects.filter((project) => project && project.id);
+
+	const handleAddRecord = async (data: any) => {
+		try {
+			// Add your API call here to save the new record
+			console.log('Adding new record:', data);
+		} catch (error) {
+			console.error('Failed to add record:', error);
+		}
+	};
+
+	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
+		try {
+			console.log('Saving updates:', updatedData);
+			// Add your API call here
+			setEditable(false); // Turn off edit mode after saving
+		} catch (error) {
+			console.error('Failed to save updates:', error);
+		}
+	}, []);
 
 	return (
 		<div className="">
@@ -44,8 +67,16 @@ function RouteComponent() {
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent  md:w-20 link border-r border-l h-10">ADD+</Button>
-					<Button className="text-black bg-transparent border-r md:w-20 link h-10">EDIT</Button>
+					<AddRecordDialog
+						columns={projectsColumns}
+						onSave={handleAddRecord}
+						nonEditableColumns={['id*']}
+					/>
+					<Button
+						onClick={() => setEditable((prev) => !prev)}
+						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+						EDIT+
+					</Button>
 				</div>
 
 				{/* List View Tab */}
@@ -106,6 +137,10 @@ function RouteComponent() {
 						<DataTable
 							columns={projectsColumns}
 							data={validProjects}
+							loading={false}
+							isEditable={editable}
+							onSave={handleSaveEdits}
+							nonEditableColumns={['id*']}
 						/>
 					</div>
 				</TabsContent>

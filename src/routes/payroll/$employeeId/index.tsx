@@ -11,6 +11,8 @@ import { usePayroll } from '@/hooks/usePayroll'; // Import the usePayroll hook
 import { useUserData } from '@/hooks/useUserData';
 import Loading from '@/components/Loading';
 import { InfoSection, TitleWrapper } from '@/components/wrapperElement';
+import { AddRecordDialog } from '@/components/AddRecordDialog';
+import { useCallback, useState } from 'react';
 
 export const Route = createFileRoute('/payroll/$employeeId/')({
 	component: RouteComponent,
@@ -250,17 +252,17 @@ const paymentDataEmployeeColumn: ColumnDef<PaymentTab>[] = [
 	{
 		accessorKey: 'id',
 		header: 'ID',
-		cell: ({ row }) => (
-			<Input
-				enableEmoji={false}
-				defaultValue={row.original.id}
-				className="w-20 border-0 rounded-none"
-				onChange={(e) => {
-					// Handle ID change logic here
-					console.log('ID changed:', e.target.value);
-				}}
-			/>
-		),
+		// cell: ({ row }) => (
+		// 	<Input
+		// 		enableEmoji={false}
+		// 		defaultValue={row.original.id}
+		// 		className="w-20 border-0 rounded-none"
+		// 		onChange={(e) => {
+		// 			// Handle ID change logic here
+		// 			console.log('ID changed:', e.target.value);
+		// 		}}
+		// 	/>
+		// ),
 	},
 	{
 		accessorKey: 'name',
@@ -310,9 +312,26 @@ function RouteComponent() {
 	const { employeeId } = Route.useParams();
 	const { workspaceid } = useUserData();
 	const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid), employeeId: employeeId });
+	const [editable, setEditable] = useState(false);
 
-	// if (loading) return <Loading />;
-	// if (error) return <div>Error: {error}</div>;
+	const handleAddRecord = async (data: any) => {
+		try {
+			// Add your API call here to save the new record
+			console.log('Adding new record:', data);
+		} catch (error) {
+			console.error('Failed to add record:', error);
+		}
+	};
+
+	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
+		try {
+			console.log('Saving updates:', updatedData);
+			// Add your API call here
+			setEditable(false); // Turn off edit mode after saving
+		} catch (error) {
+			console.error('Failed to save updates:', error);
+		}
+	}, []);
 
 	// Transform payment data for employee profile
 	const employeeData = payments[0]
@@ -611,8 +630,16 @@ function RouteComponent() {
 					<div className="flex justify-between w-full bg-white border-r">
 						<h2 className="text-xl px-8">Payment</h2>
 						<div className="flex w-full justify-end">
-							<Button className="w-20 bg-white h-10 text-black border-l border-r">EDIT</Button>
-							<Button className="w-20 h-10 bg-white text-black border-r">CREATE +</Button>
+							<AddRecordDialog
+								columns={paymentDataEmployeeColumn}
+								onSave={handleAddRecord}
+								nonEditableColumns={['status*', 'id*']}
+							/>
+							<Button
+								onClick={() => setEditable((prev) => !prev)}
+								className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+								EDIT+
+							</Button>
 						</div>
 					</div>
 					<div className="border-t border-b border-r">
@@ -620,6 +647,9 @@ function RouteComponent() {
 							columns={paymentDataEmployeeColumn}
 							data={paymentDataEmployeeRow}
 							loading={loading || error}
+							onSave={handleSaveEdits}
+							isEditable={editable}
+							nonEditableColumns={['id', 'status']}
 						/>
 					</div>
 				</TabsContent>

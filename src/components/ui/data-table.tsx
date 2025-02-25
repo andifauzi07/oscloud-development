@@ -201,7 +201,7 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 				<div className="flex justify-end flex-none w-full bg-white border-b">
 					<Button
 						onClick={() => onSave(tableData)}
-						className="text-black bg-transparent border-t border-l border-r md:w-20 link border-l-none min-h-10">
+						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
 						SAVE
 					</Button>
 				</div>

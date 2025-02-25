@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
 import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import { Button } from '../../components/ui/button';
@@ -10,6 +10,8 @@ import { CompanyTypes, mockCompanies } from '../../config/mockData/companies';
 import { mockEmployees } from '../../config/mockData/employees';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { TitleWrapper } from '@/components/wrapperElement';
+import { AddRecordDialog } from '@/components/AddRecordDialog';
+import { DataTable } from '@/components/ui/data-table';
 
 // Utility functions
 const getCompanyPersonnelCount = (companyId: number): number => {
@@ -29,11 +31,14 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		accessorKey: 'image',
 		header: '',
 		cell: ({ row }) => (
-			<div className="flex items-center gap-2">
-				<img
-					src={row.original.image}
-					alt={`${row.original.name} logo`}
-				/>
+			<div className="flex items-center justify-center h-full">
+				<figure className="w-16 h-16 overflow-hidden">
+					<img
+						className="object-cover w-full h-full"
+						src={row.original.image || '/default-avatar.png'}
+						alt={`${row.original.name} logo`}
+					/>
+				</figure>
 			</div>
 		),
 	},
@@ -152,6 +157,26 @@ function RouteComponent() {
 	const [draggedKey, setDraggedKey] = useState<string | null>(null);
 	const [advancedSearchFilter, setAdvancedSearchFilter] = useState('');
 	const [searchKeyword, setSearchKeyword] = useState('');
+	const [editable, setEditable] = useState(false);
+
+	const handleAddRecord = async (data: any) => {
+		try {
+			// Add your API call here to save the new record
+			console.log('Adding new record:', data);
+		} catch (error) {
+			console.error('Failed to add record:', error);
+		}
+	};
+
+	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
+		try {
+			console.log('Saving updates:', updatedData);
+			// Add your API call here
+			setEditable(false); // Turn off edit mode after saving
+		} catch (error) {
+			console.error('Failed to save updates:', error);
+		}
+	}, []);
 
 	const filteredCompanies = React.useMemo(() => {
 		return mockCompanies.filter((company) => {
@@ -218,8 +243,6 @@ function RouteComponent() {
 		getCoreRowModel: getCoreRowModel(),
 	});
 
-	console.log(table.getRowModel().rows[0].getVisibleCells()[0]);
-	console.log(table.getRowModel().rows[0].getVisibleCells()[0].id);
 	return (
 		<div className="flex flex-col flex-1 h-full">
 			<TitleWrapper>
@@ -262,13 +285,21 @@ function RouteComponent() {
 			</div>
 
 			<div className="flex justify-end flex-none bg-white">
-				<Button className="text-black bg-transparent border-r border-l h-10 md:w-20 link border-r-none ">ADD+</Button>
-				<Button className="text-black bg-transparent border-b-0 border-r h-10 md:w-20 link ">EDIT</Button>
+				<AddRecordDialog
+					columns={columns}
+					onSave={handleAddRecord}
+					nonEditableColumns={['image*', 'id*', 'detail*']}
+				/>
+				<Button
+					onClick={() => setEditable((prev) => !prev)}
+					className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+					EDIT+
+				</Button>
 			</div>
 			<div className="flex-1 overflow-auto">
 				<div className="max-w-full overflow-x-auto">
 					<div className="max-h-[500px] overflow-y-auto border-b border-t border-r">
-						<table className="w-full border-collapse table-auto">
+						{/* <table className="w-full border-collapse table-auto">
 							<thead className="bg-gray-100 border-b sticky top-0 z-10">
 								{table.getHeaderGroups().map((headerGroup) => (
 									<tr key={headerGroup.id}>
@@ -309,7 +340,15 @@ function RouteComponent() {
 									</tr>
 								))}
 							</tbody>
-						</table>
+						</table> */}
+						<DataTable
+							columns={columns}
+							data={filteredCompanies}
+							loading={false}
+							isEditable={editable}
+							onSave={handleSaveEdits}
+							nonEditableColumns={['activeLeads*', 'managers', 'cities', 'personnelCount', 'image*', 'detail', 'id']}
+						/>
 					</div>
 				</div>
 			</div>
