@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const TitleWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	return <div className="container flex justify-between bg-white px-8 flex-none min-h-0 py-2 border-b border-r">{children}</div>;
+	return <div className="container flex justify-between bg-white px-8 flex-none min-h-10 py-2 border-b border-r">{children}</div>;
 };
 
 export const InfoSection = ({ title, items }: { title: React.ReactNode; items: { label: string; value: string }[] }) => (

@@ -125,9 +125,9 @@ export const Route = createFileRoute('/employee/')({
 function RouteComponent() {
 	const { employees, loading } = useWorkspaceEmployees();
 
-	if (loading) {
-		return <Loading />;
-	}
+	// if (loading) {
+	// 	return <Loading />;
+	// }
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -174,6 +174,7 @@ function RouteComponent() {
 				<DataTable
 					columns={columns}
 					data={employees}
+					loading={loading}
 				/>
 			</div>
 		</div>

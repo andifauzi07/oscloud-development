@@ -15,20 +15,20 @@ function RouteComponent() {
 	const { employeeId } = useParams({ strict: false });
 	const { template, loading: templatesLoading } = usePerformanceTemplate(Number(employeeId));
 	const { employee, loading: employeeLoading } = useEmployee(Number(employeeId));
-    const { sheets, loading: sheetsLoading } = usePerformanceSheets({
-        employeeId: Number(employeeId)
-    });
+	const { sheets, loading: sheetsLoading } = usePerformanceSheets({
+		employeeId: Number(employeeId),
+	});
 
 	if (!employeeId) return null;
-	if (templatesLoading || employeeLoading || sheetsLoading) return <Loading />;
+	// if (templatesLoading || employeeLoading || sheetsLoading) return <Loading />;
 
-    // Transform sheets data for the table
-    const transformedSheets = sheets.map(sheet => ({
-        id: sheet.sheetId.toString(),
-        name: sheet.employee.name,
-        template: sheet.template.name,
-        date: new Date(sheet.createdDate).toLocaleDateString(),
-    }));
+	// Transform sheets data for the table
+	const transformedSheets = sheets.map((sheet) => ({
+		id: sheet.sheetId.toString(),
+		name: sheet.employee.name,
+		template: sheet.template.name,
+		date: new Date(sheet.createdDate).toLocaleDateString(),
+	}));
 
 	const columns = [
 		{
@@ -114,9 +114,10 @@ function RouteComponent() {
 			{/* Data Table */}
 			<div className="border-t">
 				<DataTable
-                    columns={columns}
-                    data={transformedSheets}
-                />
+					columns={columns}
+					data={transformedSheets}
+					loading={templatesLoading || employeeLoading || sheetsLoading}
+				/>
 			</div>
 		</div>
 	);

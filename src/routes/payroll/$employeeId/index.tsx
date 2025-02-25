@@ -311,8 +311,8 @@ function RouteComponent() {
 	const { workspaceid } = useUserData();
 	const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid), employeeId: employeeId });
 
-	if (loading) return <Loading />;
-	if (error) return <div>Error: {error}</div>;
+	// if (loading) return <Loading />;
+	// if (error) return <div>Error: {error}</div>;
 
 	// Transform payment data for employee profile
 	const employeeData = payments[0]
@@ -539,6 +539,7 @@ function RouteComponent() {
 						<DataTable
 							columns={columnsEmployee}
 							data={joinedProjectsData}
+							loading={loading || error}
 						/>
 					</div>
 					<TitleWrapper>
@@ -548,6 +549,7 @@ function RouteComponent() {
 						<DataTable
 							columns={columBreakdown}
 							data={breakdownData}
+							loading={loading || error}
 						/>
 					</div>
 				</TabsContent>
@@ -617,6 +619,7 @@ function RouteComponent() {
 						<DataTable
 							columns={paymentDataEmployeeColumn}
 							data={paymentDataEmployeeRow}
+							loading={loading || error}
 						/>
 					</div>
 				</TabsContent>

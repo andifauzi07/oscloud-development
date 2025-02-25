@@ -121,8 +121,8 @@ function RouteComponent() {
 	const { workspaceid } = useUserData();
 	const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid) });
 
-	if (loading) return <Loading />;
-	if (error) return <div>Error: {error}</div>;
+	// if (loading) return <Loading />;
+	// if (error) return <div>Error: {error}</div>;
 
 	// Transform payments data to match the table structure
 	const tableData = payments.map((payment: any) => ({
@@ -202,6 +202,7 @@ function RouteComponent() {
 						<DataTable
 							columns={columns}
 							data={tableData}
+							loading={loading || error}
 						/>
 					</div>
 				</TabsContent>

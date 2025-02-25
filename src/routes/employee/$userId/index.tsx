@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import Loading from '@/components/Loading';
+import { TitleWrapper } from '@/components/wrapperElement';
 
 interface EditedEmployee {
 	name?: string;
@@ -185,11 +186,12 @@ function RouteComponent() {
 			{isCurrentPath && (
 				<>
 					<div className="flex flex-col">
-						<div className="border-r">
-							<h2 className="container px-4 py-3 ">{employee?.name}</h2>
-						</div>
+						<TitleWrapper>
+							<h2>{employee?.name}</h2>
+						</TitleWrapper>
+
 						<div className="border-b">
-							<div className="flex justify-end flex-none w-full bg-white border-t">
+							<div className="flex justify-end flex-none w-full bg-white">
 								{isEditing ? (
 									<>
 										<Button
