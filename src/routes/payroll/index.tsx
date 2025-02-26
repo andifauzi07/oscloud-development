@@ -8,7 +8,6 @@ import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { Label } from '@/components/ui/label';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useUserData } from '@/hooks/useUserData';
-import Loading from '@/components/Loading';
 import { useCallback, useState } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 
@@ -161,7 +160,7 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			<Tabs defaultValue="employeeList">
 				<div className="flex items-center justify-between px-4 bg-white border-b border-r">
-					<TabsList className="justify-start px-4 gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
+					<TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="employeeList"
 							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
