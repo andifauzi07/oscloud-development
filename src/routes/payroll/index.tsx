@@ -174,58 +174,57 @@ function RouteComponent() {
 						</TabsTrigger>
 					</TabsList>
 				</div>
-				<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
-					<div className="flex gap-8">
-						<div className="flex flex-col space-y-2 bg-white md:w-auto">
-							<Label htmlFor="keyword">Keyword</Label>
-							<Input
-								type="keyword"
-								id="keyword"
-								placeholder=""
-								className="border rounded-none w-[400px]"
-							/>
-						</div>
-						<div className="flex flex-col space-y-2">
-							<Label>Status</Label>
-							<div className="flex">
-								<Button
-									size="default"
-									className="w-full bg-black rounded-none md:w-20">
-									Active
-								</Button>
-								<Button
-									size="default"
-									variant="outline"
-									className="w-full rounded-none md:w-20">
-									All
-								</Button>
-							</div>
-						</div>
-					</div>
-
-					<div className="flex flex-col space-y-2">
-						<Label>‎</Label>
-						<AdvancedFilterPopover />
-					</div>
-				</div>
-
-				<div className="flex justify-end flex-none w-full bg-white">
-					<AddRecordDialog
-						columns={columns}
-						onSave={handleAddRecord}
-						nonEditableColumns={['image', 'id', 'joinedOn', 'numberOfPayment', 'action']}
-					/>
-					<Button
-						onClick={() => setEditable((prev) => !prev)}
-						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-						EDIT+
-					</Button>
-				</div>
 
 				{/* Employee List Tab */}
 				<TabsContent
 					className="m-0"
 					value="employeeList">
+					<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
+						<div className="flex gap-8">
+							<div className="flex flex-col space-y-2 bg-white md:w-auto">
+								<Label htmlFor="keyword">Keyword</Label>
+								<Input
+									type="keyword"
+									id="keyword"
+									placeholder=""
+									className="border rounded-none w-[400px]"
+								/>
+							</div>
+							<div className="flex flex-col space-y-2">
+								<Label>Status</Label>
+								<div className="flex">
+									<Button
+										size="default"
+										className="w-full bg-black rounded-none md:w-20">
+										Active
+									</Button>
+									<Button
+										size="default"
+										variant="outline"
+										className="w-full rounded-none md:w-20">
+										All
+									</Button>
+								</div>
+							</div>
+						</div>
+
+						<div className="flex flex-col space-y-2">
+							<Label>‎</Label>
+							<AdvancedFilterPopover />
+						</div>
+					</div>
+					<div className="flex justify-end flex-none w-full bg-white">
+						<AddRecordDialog
+							columns={columns}
+							onSave={handleAddRecord}
+							nonEditableColumns={['image', 'id', 'joinedOn', 'numberOfPayment', 'action']}
+						/>
+						<Button
+							onClick={() => setEditable((prev) => !prev)}
+							className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+							EDIT+
+						</Button>
+					</div>
 					<div className="border-t border-r">
 						<DataTable
 							columns={columns}
@@ -242,7 +241,7 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0"
 					value="paymentList">
-					<div className="w-full bg-gray-100 border-t">
+					<div className="w-full bg-gray-100">
 						<div className="px-10 py-2">
 							<h1>Rate Type</h1>
 						</div>

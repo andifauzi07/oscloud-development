@@ -5,32 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { useWorkspaceEmployees } from '@/hooks/useEmployee';
-import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '../../components/ui/data-table';
-import Loading from '@/components/Loading';
 import { TitleWrapper } from '@/components/wrapperElement';
 import { useCallback, useState } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
-
-export interface Employee {
-	employeeid: number;
-	name: string;
-	email: string;
-	profileimage: string;
-	employeecategoryid: number;
-	departmentid: number;
-	workspaceid: number;
-	employeeCategory: {
-		categoryid: number;
-		categoryname: string;
-		parentcategoryid: number;
-	};
-	department: {
-		departmentid: number;
-		departmentname: string;
-		parentdepartmentid: number | null;
-	};
-}
 
 const columns = [
 	{
@@ -65,7 +43,7 @@ const columns = [
 		),
 	},
 	{
-		accessorKey: 'employeeCategory.categoryname',
+		accessorKey: 'employeeCategoryId',
 		header: 'Employee Category',
 		cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-',
 	},
@@ -84,7 +62,7 @@ const columns = [
 			),
 	},
 	{
-		accessorKey: 'department.departmentname',
+		accessorKey: 'departmentId',
 		header: 'Department',
 		cell: ({ row }: any) => row.original.department?.departmentname || '-',
 	},
@@ -125,12 +103,13 @@ export const Route = createFileRoute('/employee/')({
 });
 
 function RouteComponent() {
-	const { employees, loading } = useWorkspaceEmployees();
+	const { employees, loading, addEmployee } = useWorkspaceEmployees();
 	const [editable, setEditable] = useState(false);
 
 	const handleAddRecord = async (data: any) => {
 		try {
 			// Add your API call here to save the new record
+			addEmployee(data);
 			console.log('Adding new record:', data);
 		} catch (error) {
 			console.error('Failed to add record:', error);
@@ -187,7 +166,7 @@ function RouteComponent() {
 				<AddRecordDialog
 					columns={columns}
 					onSave={handleAddRecord}
-					nonEditableColumns={['employeeCategory*', 'department*']}
+					nonEditableColumns={['employeeid*']}
 				/>
 				<Button
 					onClick={() => setEditable((prev) => !prev)}
@@ -202,7 +181,7 @@ function RouteComponent() {
 					data={employees}
 					loading={loading}
 					isEditable={editable}
-					nonEditableColumns={['employeeCategory*', 'department*', 'email', 'profileimage', 'actions']}
+					nonEditableColumns={['employeeid*', 'actions']}
 					onSave={handleSaveEdits}
 				/>
 			</div>

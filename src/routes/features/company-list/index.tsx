@@ -265,6 +265,7 @@ function RouteComponent() {
 			<DataTable
 				columns={columnsEmployee}
 				data={dataEmployee}
+				laoding={false}
 			/>
 			<div className="flex w-full bg-white px-6 py-4">
 				<h2 className="text-xl">Breakdown</h2>
@@ -272,6 +273,7 @@ function RouteComponent() {
 			<DataTable
 				columns={columBreakdown}
 				data={dataBreakdown}
+				loading={false}
 			/>
 		</div>
 	);

@@ -68,8 +68,8 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			{/* Header Section */}
-			<div className="flex-none min-h-0 border-b">
-				<div className="container flex flex-row items-center justify-between">
+			{/* <div className="flex-none min-h-0">
+				<div className="container flex flex-row items-center border-r pr-8 justify-between">
 					<MenuList
 						items={[
 							{
@@ -88,24 +88,27 @@ function RouteComponent() {
 						Setting
 					</Link>
 				</div>
-			</div>
+			</div> */}
 
 			{/* Title Section */}
-			<div className="flex items-center justify-start px-4 bg-white border border-l-0 min-h-14">
+			<div className="flex items-center justify-start px-8 bg-white border-r border-b border-l-0 min-h-14">
 				<h2 className="text-base font-semibold">All Employees</h2>
 			</div>
 
 			{/* Action Buttons */}
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="w-1/2 text-black bg-transparent border md:w-20 link border-r-none min-h-14">ADD+</Button>
-				<Button className="w-1/2 text-black bg-transparent border md:w-20 link min-h-14">EDIT</Button>
+				<Button className="w-1/2 text-black bg-transparent border-r border-l md:w-20 link border-r-none min-h-10">ADD+</Button>
+				<Button className="w-1/2 text-black bg-transparent border-r md:w-20 link min-h-10">EDIT</Button>
 			</div>
 
 			{/* Data Table */}
-			<DataTable
-				columns={columns}
-				data={data}
-			/>
+			<div className="border-t">
+				<DataTable
+					columns={columns}
+					data={data}
+					loading={false}
+				/>
+			</div>
 		</div>
 	);
 }
