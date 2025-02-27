@@ -29,7 +29,6 @@ export const useUserData = () => {
             }
 
             try {
-                console.log(session.user.id)
                 // USER ID
                 // is not auth dynamic yet.
 

@@ -218,7 +218,7 @@ function RouteComponent() {
 					EDIT+
 				</Button>
 			</div>
-			<div className="border-t border-r border-b">
+			<div className="border-t border-b border-r">
 				<DataTable
 					isEditable={editable}
 					columns={columns}

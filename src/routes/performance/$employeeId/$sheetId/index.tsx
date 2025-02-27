@@ -6,7 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { usePerformanceSheets, usePerformanceTemplates } from "@/hooks/usePerformance";
+import { usePerformanceSheets } from "@/hooks/usePerformance";
 import { useUserData } from "@/hooks/useUserData";
 import Loading from "@/components/Loading";
 
@@ -16,14 +16,10 @@ export const Route = createFileRoute("/performance/$employeeId/$sheetId/")({
 
 function RouteComponent() {
     const { employeeId, sheetId } = useParams({ strict: false });
-    const { workspaceid } = useUserData();
-    const { sheet, loading: sheetLoading, error: sheetError } = usePerformanceSheets({
+    const { sheet, loading, error } = usePerformanceSheets({
         employeeId: Number(employeeId),
         sheetId: Number(sheetId)
     });
-
-    // Get template after sheet is loaded
-    const { templates, loading: templateLoading } = usePerformanceTemplates();
     const [scores, setScores] = useState<Record<string, number>>({});
     const [isEditing, setIsEditing] = useState(false);
 
@@ -37,29 +33,9 @@ function RouteComponent() {
         }
     }, [sheet]);
 
-    if (sheetLoading || templateLoading) return <Loading />;
-    if (sheetError) return <div>Error: {sheetError}</div>;
-    if (!sheet?.template) return <div>Sheet not found</div>;
-
-    // Find the matching template
-    const template = templates.find(t => t.templateid === sheet.template.templateId);
-    if (!template) return <div>Template not found</div>;
-
-    const chartConfig: Record<string, { label: string; color: string }> = template.categories.reduce((acc, category, index) => ({
-        ...acc,
-        [category.categoryname]: {
-            label: category.categoryname,
-            color: `hsl(var(--chart-${index + 1}))`,
-        },
-    }), {});
-
-    const chartData = template.categories.map(category => ({
-        name: category.categoryname,
-        value: category.points.reduce((sum, point) => {
-            const score = scores[point.pointid] || 0;
-            return sum + score;
-        }, 0),
-    }));
+    if (loading) return <Loading />;
+    if (error) return <div>Error: {error}</div>;
+    if (!sheet) return <div>Sheet not found</div>;
 
     const handleScoreChange = (pointId: number, value: string) => {
         const numValue = Math.min(100, Math.max(0, Number(value) || 0));
@@ -89,7 +65,7 @@ function RouteComponent() {
                     {sheet.employee.name}'s Performance Review
                     <Link 
                         to="/performance/setting/$templateId" 
-                        params={{templateId: template.templateid.toString()}}
+                        params={{templateId: sheet.template.templateId.toString()}}
                     >
                         Setting
                     </Link>
@@ -126,80 +102,31 @@ function RouteComponent() {
                 <Card className="flex flex-col h-full border rounded-none">
                     <CardContent className="flex-1">
                         <p className="pt-4">Total Score: {sheet.totalScore}</p>
-                        <ChartContainer
-                            config={chartConfig}
-                            className="w-full h-full min-h-[500px] flex items-center justify-center"
-                        >
-                            <PieChart width={500} height={500}>
-                                <ChartTooltip
-                                    cursor={false}
-                                    content={<ChartTooltipContent />}
-                                />
-                                <Pie
-                                    data={chartData}
-                                    dataKey="value"
-                                    nameKey="name"
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={100}
-                                    outerRadius={200}
-                                    labelLine={false}
-                                >
-                                    {chartData.map((entry, index) => (
-                                        <Cell
-                                            key={`cell-${index}`}
-                                            fill={chartConfig[entry.name].color}
-                                        />
-                                    ))}
-                                </Pie>
-                            </PieChart>
-                        </ChartContainer>
+                        {/* Add your chart visualization here using sheet data */}
                     </CardContent>
                 </Card>
 
                 {/* Performance Details Section */}
                 <div className="flex flex-col h-full bg-white border">
-                    {template.categories.map((category) => (
-                        <div key={category.categoryid} className="mb-4 border">
-                            <div
-                                className="flex items-center gap-4"
-                                style={{ backgroundColor: chartConfig[category.categoryname].color }}
-                            >
-                                <div className="flex-1 p-4">
-                                    <span className="font-medium text-white">
-                                        {category.categoryname}
-                                    </span>
-                                </div>
-                                <div className="flex">
-                                    <div className="w-20 p-4 text-center text-white">Score</div>
-                                    <div className="w-20 p-4 text-center text-black bg-white">Weight</div>
+                    {sheet.scores.map((score) => (
+                        <div key={score.pointId} className="flex items-center border-t">
+                            <div className="flex-1 p-4">
+                                <span>Point {score.pointId}</span>
+                            </div>
+                            <div className="flex items-center">
+                                <div className="w-20 border-l">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={scores[score.pointId] || score.score}
+                                        onChange={(e) => handleScoreChange(score.pointId, e.target.value)}
+                                        className="h-full text-center border-none"
+                                        disabled={!isEditing}
+                                        enableEmoji={false}
+                                    />
                                 </div>
                             </div>
-
-                            {category.points.map((point) => (
-                                <div key={point.pointid} className="flex items-center border-t">
-                                    <div className="flex-1 p-4">
-                                        <span>{point.pointname}</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <div className="w-20 border-l">
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                value={scores[point.pointid] || 0}
-                                                onChange={(e) => handleScoreChange(point.pointid, e.target.value)}
-                                                className="h-full text-center border-none"
-                                                disabled={!isEditing}
-                                                enableEmoji={false}
-                                            />
-                                        </div>
-                                        <div className="w-20 p-4 text-center border border-b-0">
-                                            {point.weight}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     ))}
                 </div>

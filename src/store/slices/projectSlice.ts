@@ -1,40 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
-
-// Types
-interface AssignedStaff {
-    employeeId: number;
-    name: string;
-    rateType: string;
-    rateValue: number;
-    breakHours: number;
-}
-
-interface ProjectManager {
-    userId: number;
-    name: string;
-}
-
-interface ProjectFinancials {
-    totalLabourCost: number;
-    totalTransportFee: number;
-}
-
-export interface Project {
-    projectId: number;
-    name: string;
-    startDate: string;
-    endDate: string;
-    manager: ProjectManager;
-    assignedStaff: AssignedStaff[];
-    financials: ProjectFinancials;
-}
-
-interface ProjectState {
-    projects: Project[];
-    loading: boolean;
-    error: string | null;
-}
+import { ProjectState } from "@/types/performance";
 
 // Initial state
 const initialState: ProjectState = {
@@ -47,25 +13,67 @@ const initialState: ProjectState = {
 export const fetchProjects = createAsyncThunk(
     "project/fetchAll",
     async ({ 
-        workspaceId,
+        workspaceid,
         filters 
     }: { 
-        workspaceId: number;
+        workspaceid: number;  // Make workspaceid required
         filters?: {
             managerId?: number;
             startDate?: string;
             endDate?: string;
-            status?: string;
+            // status?: string;
             view?: 'list' | 'timeline';
+            employeeId?: number;
+            projectid?: number;
+            companyId?: number;
         };
     }, { rejectWithValue }) => {
         try {
-            const response = await apiClient.get(`/workspaces/${workspaceId}/projects`, {
-                params: filters
+            if (!workspaceid) {
+                throw new Error('Workspace ID is required');
+            }
+
+            const response = await apiClient.get(`/workspaces/${workspaceid}/projects`, {
+                params: {
+                    // workspaceid, // Ensure workspaceid is sent as query parameter
+                    ...filters,
+                    // status: filters?.status || 'active'  // Default to active projects
+                }
             });
+            console.log(filters)
+            console.log(response.data)
+            
+            if (!response.data) {
+                throw new Error('No data received from server');
+            }
+
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to fetch projects");
+            return rejectWithValue(
+                error.response?.data?.message || 
+                error.message || 
+                "Failed to fetch projects"
+            );
+        }
+    }
+);
+
+export const fetchProjectById = createAsyncThunk(
+    "project/fetchById",
+    async ({ 
+        workspaceid, 
+        projectId 
+    }: { 
+        workspaceid: number;
+        projectId: number;
+    }, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(
+                `/workspaces/${workspaceid}/projects/${projectId}`
+            );
+            return response.data.project;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || "Failed to fetch project");
         }
     }
 );
@@ -73,10 +81,10 @@ export const fetchProjects = createAsyncThunk(
 export const createProject = createAsyncThunk(
     "project/create",
     async ({ 
-        workspaceId, 
+        workspaceid, 
         data 
     }: { 
-        workspaceId: number;
+        workspaceid: number;
         data: {
             name: string;
             startDate: string;
@@ -91,7 +99,7 @@ export const createProject = createAsyncThunk(
     }, { rejectWithValue }) => {
         try {
             const response = await apiClient.post(
-                `/workspaces/${workspaceId}/projects`,
+                `/workspaces/${workspaceid}/projects`,
                 data
             );
             return response.data;
@@ -104,11 +112,11 @@ export const createProject = createAsyncThunk(
 export const assignStaffToProject = createAsyncThunk(
     "project/assignStaff",
     async ({ 
-        workspaceId, 
+        workspaceid, 
         projectId, 
         data 
     }: { 
-        workspaceId: number;
+        workspaceid: number;
         projectId: number;
         data: {
             employeeId: number;
@@ -118,7 +126,7 @@ export const assignStaffToProject = createAsyncThunk(
     }, { rejectWithValue }) => {
         try {
             const response = await apiClient.post(
-                `/workspaces/${workspaceId}/projects/${projectId}/staff`,
+                `/workspaces/${workspaceid}/projects/${projectId}/staff`,
                 data
             );
             return response.data;
@@ -131,17 +139,17 @@ export const assignStaffToProject = createAsyncThunk(
 export const removeStaffFromProject = createAsyncThunk(
     "project/removeStaff",
     async ({ 
-        workspaceId, 
+        workspaceid, 
         projectId, 
         employeeId 
     }: { 
-        workspaceId: number;
+        workspaceid: number;
         projectId: number;
         employeeId: number;
     }, { rejectWithValue }) => {
         try {
             await apiClient.delete(
-                `/workspaces/${workspaceId}/projects/${projectId}/staff/${employeeId}`
+                `/workspaces/${workspaceid}/projects/${projectId}/staff/${employeeId}`
             );
             return { projectId, employeeId };
         } catch (error: any) {
@@ -188,6 +196,26 @@ const projectSlice = createSlice({
                         staff => staff.employeeId !== action.payload.employeeId
                     );
                 }
+            })
+            // Fetch Project By Id
+            .addCase(fetchProjectById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchProjectById.fulfilled, (state, action) => {
+                state.loading = false;
+                const existingIndex = state.projects.findIndex(
+                    p => p.projectId === action.payload.projectId
+                );
+                if (existingIndex >= 0) {
+                    state.projects[existingIndex] = action.payload;
+                } else {
+                    state.projects.push(action.payload);
+                }
+            })
+            .addCase(fetchProjectById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             });
     },
 });

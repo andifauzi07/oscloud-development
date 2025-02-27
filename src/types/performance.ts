@@ -27,11 +27,11 @@ export interface Score {
 export interface PerformanceSheet {
     sheetId: number;
     employee: {
-        employeeId: number; // Changed from employeeId
+        employeeid: number; // Changed from employeeId
         name: string;
     };
     template: {
-        templateId: number; // Changed from templateId
+        templateid: number; // Changed from templateId
         name: string; // Changed from name
     };
     createdDate: string;
@@ -112,7 +112,6 @@ export interface PerformanceState {
 export interface PerformanceFilters {
     employeeId?: number;
     templateId?: number;
-    sheetId?: number;
     startDate?: string;
     endDate?: string;
     search?: string;
@@ -122,4 +121,51 @@ export interface PerformanceScore {
     pointId: number;
     categoryId: number;
     score: number;
+}
+
+export interface AssignedStaff {
+    employeeId: number;
+    name: string;
+    rateType: string;
+    rateValue: number;
+    breakHours: number;
+}
+
+export interface ProjectManager {
+    userId: number;
+    name: string;
+}
+
+export interface ProjectFinancials {
+    totalLabourCost: number;
+    totalTransportFee: number;
+}
+
+export interface Company {
+    companyId: number;
+    name: string;
+    logo: string;
+}
+
+export interface Project {
+    projectId: number;
+    name: string;
+    startDate: string;
+    endDate: string;
+    projectid: number;
+    startdate: string;
+    enddate: string;
+    managerid: number;
+    workspaceid: number;
+    companyid: number;
+    manager: ProjectManager;
+    company: Company;
+    assignedStaff: AssignedStaff[];
+    financials: ProjectFinancials;
+}
+
+export interface ProjectState {
+    projects: Project[];
+    loading: boolean;
+    error: string | null;
 }
