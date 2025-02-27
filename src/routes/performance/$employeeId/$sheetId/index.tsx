@@ -1,14 +1,3 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useParams } from "@tanstack/react-router";
-import { Pie, PieChart, Cell } from "recharts";
-import { Card, CardContent } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { usePerformanceSheets } from "@/hooks/usePerformance";
-import { useUserData } from "@/hooks/useUserData";
-import Loading from "@/components/Loading";
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useParams } from '@tanstack/react-router';
 import { Pie, PieChart, Cell } from 'recharts';
@@ -60,7 +49,7 @@ function RouteComponent() {
 	if (!sheet?.template) return <div>Sheet not found</div>;
 
 	// Find the matching template
-	const template = templates.find((t) => t.templateid === sheet.template.templateId);
+	const template = templates.find((t) => t.templateid === sheet.template.templateid);
 	if (!template) return <div>Template not found</div>;
 
 	const chartConfig: Record<string, { label: string; color: string }> = template.categories.reduce(
@@ -93,7 +82,7 @@ function RouteComponent() {
 	const handleEditSave = () => {
 		if (isEditing) {
 			console.log('Saving scores:', {
-				employeeId: sheet.employee.employeeId,
+				employeeId: sheet.employee.employeeid,
 				sheetId: sheet.sheetId,
 				scores,
 			});

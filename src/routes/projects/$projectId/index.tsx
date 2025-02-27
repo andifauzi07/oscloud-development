@@ -347,6 +347,7 @@ function ProjectView() {
 								<DataTable
 									columns={assignedStaffColumns}
 									data={mockAssignedStaff}
+									loading={false}
 								/>
 							</div>
 						</div>
@@ -432,6 +433,7 @@ function ProjectView() {
 								<DataTable
 									columns={assignedStaffColumns}
 									data={mockAssignedStaff}
+									loading={false}
 								/>
 							</div>
 						</div>
@@ -484,6 +486,7 @@ function ProjectView() {
 								<DataTable
 									columns={paymentStaffColumns}
 									data={mockPaymentStaff}
+									loading={false}
 								/>
 							</div>
 						</div>
