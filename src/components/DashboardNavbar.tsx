@@ -50,8 +50,8 @@ const DashboardNavbar = () => {
 						<DropdownMenuTrigger className="m-0 flex px-4 justify-center items-center border-l h-full">
 							<h1 className="w-full text-xs text-black">Username</h1>
 						</DropdownMenuTrigger>
-						<div className="border-l h-full py-1 px-4 flex items-center">
-							JP <ChevronDown size={20} />
+						<div className="border-l h-full text-xs py-1 px-4 flex items-center">
+							JP <ChevronDown size={18} />
 						</div>
 
 						<DropdownMenuContent className="px-8 border bg-white py-2 mx-1 border-black">

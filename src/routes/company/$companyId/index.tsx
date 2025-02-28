@@ -5,38 +5,107 @@ import { Input } from '../../../components/ui/input';
 import { mockCompanies } from '../../../config/mockData/companies';
 import { getCompanyPersonnelCount } from '../../../config/mockData/employees';
 import MenuList from '../../../components/menuList';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-const InfoSection = ({ title, items }: { title: React.ReactNode; items: { label: string; value: string }[] }) => (
-	<div className="flex flex-col">
-		<h2 className="px-4 py-4 text-sm font-medium border-b bg-gray-100">{title}</h2>
-		<div className="">
+export const Route = createFileRoute('/company/$companyId/')({
+	component: RouteComponent,
+});
+
+const InfoSection = ({
+	title,
+	items,
+	isEditing,
+	onValueChange,
+}: {
+	title: React.ReactNode;
+	items: {
+		label: string;
+		value: string;
+		key?: string;
+		options?: { value: string; label: string }[];
+	}[];
+	isEditing?: boolean;
+	onValueChange?: (key: string, value: string) => void;
+}) => (
+	<div className="flex flex-col border-l">
+		<h2 className="px-4 py-4 text-sm font-medium bg-gray-100 border-b ">{title}</h2>
+		<div className=" bg-white">
 			{items.map((item, index) => (
 				<div
 					key={index}
-					className="flex gap-8 border-b bg-white">
-					<div className="w-32 px-4 py-3 text-sm font-medium bg-white">
-						<span>{item?.label}</span>
+					className="flex gap-12 border-b">
+					<div className="w-32 px-4 py-2 text-xs font-medium text-gray-600">
+						<span>{item.label}</span>
 					</div>
-					<div className="flex-1 px-4 py-3 text-sm">
-						<span>{item?.value}</span>
+					<div className="flex-1 px-4 py-2 text-xs bg-white">
+						{isEditing && item.key && onValueChange ? (
+							item.options ? (
+								<Select
+									value={item.value}
+									onValueChange={(value) => onValueChange(item.key!, value)}>
+									<SelectTrigger>
+										<SelectValue placeholder={`Select ${item.label}`} />
+									</SelectTrigger>
+									<SelectContent>
+										{item.options.map((option) => (
+											<SelectItem
+												key={option.value}
+												value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							) : (
+								<Input
+									value={item.value}
+									onChange={(e) => onValueChange(item.key!, e.target.value)}
+									className="h-8"
+								/>
+							)
+						) : (
+							<span>{item.value}</span>
+						)}
 					</div>
 				</div>
 			))}
 		</div>
 	</div>
 );
-export const Route = createFileRoute('/company/$companyId/')({
-	component: RouteComponent,
-});
 
 function RouteComponent() {
 	const { companyId } = useParams({ strict: false });
+	const [isEditing, setIsEditing] = useState(false);
+	const [editedEmployee, setEditedEmployee] = useState({});
 	const location = useLocation();
 	const isCurrentPath = location.pathname === `/company/${companyId}`;
 
 	// Find the company data
 	const company = mockCompanies.find((c) => c.id === Number(companyId)) || mockCompanies[0];
 	const personnelCount = getCompanyPersonnelCount(company.id);
+
+	const handleValueChange = (key: string, value: string | number) => {
+		setEditedEmployee((prev) => ({
+			...prev,
+			[key]: value,
+		}));
+	};
+
+	const handleSave = async () => {
+		try {
+			if (!Object.keys(editedEmployee).length) {
+				toast.error('No changes to save');
+				return;
+			}
+			setIsEditing(false);
+			setEditedEmployee({});
+			toast.success('Employee updated successfully');
+		} catch (error) {
+			toast.error('Failed to update employee');
+		}
+	};
 
 	const tabs = [
 		{ label: 'Profile', path: `/company/${companyId}` },
@@ -69,7 +138,7 @@ function RouteComponent() {
 		<div className="flex-1 h-full ">
 			{/* menus  */}
 			<div className="flex-none min-h-0">
-				<div className="flex items-center border-r justify-between">
+				<div className="flex items-center pl-4 border-r justify-between">
 					<MenuList
 						items={tabs.map((tab) => ({
 							label: tab.label,
@@ -79,6 +148,7 @@ function RouteComponent() {
 					<div className="px-4">
 						<Link
 							to={`/company/setting`}
+							className="text-xs"
 							params={{ companyId: company.id.toString() }}>
 							Settings
 						</Link>
@@ -94,7 +164,29 @@ function RouteComponent() {
 
 					<div className="border-b">
 						<div className="flex justify-end flex-none w-full bg-white border-t">
-							<Button className="w-20 text-black bg-transparent border-r border-l h-10 link">EDIT</Button>
+							{isEditing ? (
+								<>
+									<Button
+										className="w-20 h-10 text-black bg-transparent border-l border-r link"
+										onClick={handleSave}>
+										SAVE
+									</Button>
+									<Button
+										className="w-20 h-10 text-black bg-transparent border-r link"
+										onClick={() => {
+											setIsEditing(false);
+											setEditedEmployee({});
+										}}>
+										CANCEL
+									</Button>
+								</>
+							) : (
+								<Button
+									className="w-20 h-10 text-black bg-transparent border-l border-r link"
+									onClick={() => setIsEditing(true)}>
+									EDIT
+								</Button>
+							)}
 						</div>
 					</div>
 
@@ -130,6 +222,8 @@ function RouteComponent() {
 								<InfoSection
 									items={basicInfo}
 									title="Basic Information"
+									isEditing={isEditing}
+									onValueChange={handleValueChange}
 								/>
 								<InfoSection
 									items={managersInfo}

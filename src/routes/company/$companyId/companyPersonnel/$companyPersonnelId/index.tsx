@@ -296,6 +296,7 @@ function RouteComponent() {
 												manager: company?.managers.map((m) => m.name).join(', ') || 'Unknown',
 											})) || []
 										}
+										loading={false}
 									/>
 								</TabsContent>
 							</Tabs>
@@ -360,6 +361,7 @@ function RouteComponent() {
 									<DataTable
 										columns={projectsColumns}
 										data={company?.projects || []}
+										loading={false}
 									/>
 								</TabsContent>
 								<TabsContent

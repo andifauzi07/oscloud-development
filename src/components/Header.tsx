@@ -12,7 +12,7 @@ function Header() {
 	const title = result.charAt(0).toUpperCase() + result.slice(1);
 
 	return (
-		<div className="w-full border-b border-r flex flex-none flex-col justify-center h-[var(--header-height)]  p-4 px-6">
+		<div className="w-full border-b border-r flex flex-none flex-col justify-center h-[var(--header-height)]  py-4 px-8">
 			<div className="container">
 				<div className="flex items-center w-full gap-4">
 					{/* logo  */}

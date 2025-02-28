@@ -1,13 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
-import MenuList from '@/components/menuList';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Link } from '@tanstack/react-router';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { formatUrlString } from '@/lib/utils';
-import apiClient from '@/api/apiClient';
+import { useDepartments, useFlatDepartmentList } from '@/hooks/useDepartment';
 
 export const Route = createFileRoute('/employee/setting/')({
 	component: RouteComponent,
@@ -94,18 +93,30 @@ const employeeCategoryColumns = [
 ];
 
 const departmentColumns = [
-	{ id: 'departmentName', header: 'Department Name', accessorKey: 'departmentName' },
-	{ id: 'parentDepartment', header: 'Parent Department', accessorKey: 'parentDepartment' },
-	{ id: 'manager', header: 'Manager', accessorKey: 'manager' },
-	{ id: 'employees', header: 'Employees', accessorKey: 'employees' },
 	{
-		id: 'action',
+		header: 'Department Name',
+		accessorKey: 'departmentname',
+	},
+	{
+		header: 'Parent Department',
+		accessorKey: 'parentdepartmentid',
+		cell: ({ row }: any) => <h1>{row.original.parentDepartmentId ? row.original.parentDepartmentId : '-'}</h1>,
+	},
+	{
+		header: 'Manager',
+		accessorKey: 'managerCount',
+	},
+	{
+		header: 'Employees',
+		accessorKey: 'employeeCount',
+	},
+	{
 		header: '',
-		accessorKey: 'action',
+		accessorKey: 'departmentid',
 		cell: ({ row }: any) => (
 			<Link
 				to={`/employee/setting/department/$departmentName`}
-				params={{ departmentName: formatUrlString(row.original.departmentName) }}
+				params={{ departmentName: row.original.departmentid }}
 				className="w-20 px-4 py-2 text-black transition bg-transparent border rounded-none link hover:bg-gray-100">
 				VIEW
 			</Link>
@@ -113,10 +124,9 @@ const departmentColumns = [
 	},
 ];
 
-const departmentData = [{ id: 1, departmentName: 'Sales department', parentDepartment: '-', manager: '12', employees: '12', action: 'VIEW' }];
-
 async function RouteComponent() {
 	const [editable, setEditable] = useState(false);
+	const { flatDepartments, loading } = useFlatDepartmentList();
 	const handleAddRecord = async (data: any) => {
 		try {
 			// Add your API call here to save the new record
@@ -259,8 +269,8 @@ async function RouteComponent() {
 					<div className="border-t border-b border-r">
 						<DataTable
 							columns={departmentColumns}
-							data={departmentData}
-							loading={false}
+							data={flatDepartments}
+							loading={loading}
 							onSave={handleSaveEdits}
 							nonEditableColumns={['action*', 'employees', 'manager']}
 							isEditable={editable}

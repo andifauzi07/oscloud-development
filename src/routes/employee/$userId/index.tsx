@@ -47,15 +47,15 @@ const InfoSection = ({
 }) => (
 	<div className="flex flex-col border-l">
 		<h2 className="px-4 py-4 text-sm font-medium bg-gray-100 border-b border-r">{title}</h2>
-		<div className="">
+		<div className=" bg-white">
 			{items.map((item, index) => (
 				<div
 					key={index}
 					className="flex gap-8 border-b border-r">
-					<div className="w-32 px-4 py-3 text-sm font-medium text-gray-600">
+					<div className="w-32 px-4 py-2 text-sm font-medium bg-white text-gray-600">
 						<span>{item.label}</span>
 					</div>
-					<div className="flex-1 px-4 py-3 text-sm">
+					<div className="flex-1 px-4 py-2 text-sm bg-white">
 						{isEditing && item.key && onValueChange ? (
 							item.options ? (
 								<Select
@@ -178,7 +178,11 @@ function RouteComponent() {
 				<div className="container flex items-center justify-between px-4 bg-white">
 					<MenuList items={menuItems} />
 					<div>
-						<Link to="/employee/setting">Setting</Link>
+						<Link
+							className="text-xs"
+							to="/employee/setting">
+							Setting
+						</Link>
 					</div>
 				</div>
 			</div>

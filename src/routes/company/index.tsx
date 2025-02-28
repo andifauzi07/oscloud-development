@@ -31,7 +31,7 @@ const columns: ColumnDef<CompanyTypes>[] = [
 		accessorKey: 'image',
 		header: '',
 		cell: ({ row }) => (
-			<div className="flex items-center justify-center h-full">
+			<div className="flex items-center justify-start h-full">
 				<figure className="w-16 h-16 overflow-hidden">
 					<img
 						className="object-cover w-full h-full"
@@ -247,7 +247,11 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			<TitleWrapper>
 				<h1 className="text-base">Company </h1>
-				<Link to="/company/setting">Settings</Link>
+				<Link
+					className="text-xs"
+					to="/company/setting">
+					Settings
+				</Link>
 			</TitleWrapper>
 			<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 				<div className="flex gap-8">
@@ -293,54 +297,12 @@ function RouteComponent() {
 				<Button
 					onClick={() => setEditable((prev) => !prev)}
 					className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-					EDIT+
+					EDIT
 				</Button>
 			</div>
 			<div className="flex-1 overflow-auto">
 				<div className="max-w-full overflow-x-auto">
-					<div className="max-h-[500px] overflow-y-auto border-b border-t border-r">
-						{/* <table className="w-full border-collapse table-auto">
-							<thead className="bg-gray-100 border-b sticky top-0 z-10">
-								{table.getHeaderGroups().map((headerGroup) => (
-									<tr key={headerGroup.id}>
-										{headerGroup.headers.map((header) => (
-											<th
-												key={header.id}
-												className="py-4 whitespace-nowrap px-2 text-left font-bold text-xs text-[#0a0a30]"
-												draggable
-												onDragStart={(e) => handleDragStart(e, header.column.id)}
-												onDragOver={handleDragOver}
-												onDrop={(e) => handleDrop(e, header.column.id)}>
-												{flexRender(header.column.columnDef.header, header.getContext())}
-											</th>
-										))}
-									</tr>
-								))}
-							</thead>
-							<tbody className="divide-y divide-gray-200">
-								{table.getRowModel().rows.map((row) => (
-									<tr
-										key={row.id}
-										className="hover:bg-gray-50 bg-white text-left">
-										{row.getVisibleCells().map((cell) => (
-											<td
-												key={cell.id}
-												className={`px-2 max-h-20 py-2 text-xs ${cell.column.id === 'image' ? 'w-16 h-16 min-w-[64px]' : ''}`}>
-												{cell.column.id === 'image' ? (
-													<img
-														src={cell.getValue() as string}
-														alt="Company logo"
-														className="w-16 h-16 object-cover"
-													/>
-												) : (
-													<span className="whitespace-nowrap">{flexRender(cell.column.columnDef.cell, cell.getContext())} </span>
-												)}
-											</td>
-										))}
-									</tr>
-								))}
-							</tbody>
-						</table> */}
+					<div className="max-h-[500px] overflow-y-auto">
 						<DataTable
 							columns={columns}
 							data={filteredCompanies}

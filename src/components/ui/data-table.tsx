@@ -161,11 +161,11 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 				style={style}
 				{...attributes}
 				{...listeners}
-				className="border-t border-gray-200">
+				className="border-t">
 				{row.getVisibleCells().map((cell: any) => (
 					<TableCell
 						key={cell.id}
-						className="p-4">
+						className="">
 						{flexRender(cell.column.columnDef.cell, cell.getContext())}
 					</TableCell>
 				))}
@@ -189,7 +189,7 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 				style={enableColumnDragAndDrop ? style : undefined}
 				{...(enableColumnDragAndDrop ? attributes : {})}
 				{...(enableColumnDragAndDrop ? listeners : {})}
-				className="p-4 text-left font-bold text-[#0a0a30] cursor-pointer">
+				className="text-left font-bold text-[#0a0a30] cursor-pointer">
 				{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 			</TableHead>
 		);
@@ -206,7 +206,7 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 					</Button>
 				</div>
 			)}
-			<div className="w-full bg-white border-t border-b border-gray-200">
+			<div className="w-full bg-white border-t border-r border-b">
 				{enableRowDragAndDrop || enableColumnDragAndDrop ? (
 					<DndContext
 						sensors={sensors}
@@ -277,14 +277,16 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 						</SortableContext>
 					</DndContext>
 				) : (
-					<Table>
-						<TableHeader className="bg-[#f3f4f6]">
+					<Table className="m-0 p-0">
+						<TableHeader className="bg-gray-100">
 							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id}>
+								<TableRow
+									className="m-0 p-0"
+									key={headerGroup.id}>
 									{headerGroup.headers.map((header) => (
 										<TableHead
 											key={header.id}
-											className="p-4 text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]">
+											className="text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]">
 											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 										</TableHead>
 									))}
@@ -296,11 +298,11 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 								table.getRowModel().rows.map((row) => (
 									<TableRow
 										key={row.id}
-										className="border-t border-gray-200">
+										className="border-t">
 										{row.getVisibleCells().map((cell) => (
 											<TableCell
 												key={cell.id}
-												className="p-4 text-xs whitespace-nowrap">
+												className="text-xs whitespace-nowrap">
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>
 										))}

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import MenuList from '@/components/menuList';
 import { DataTable } from '@/components/ui/data-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Heading1 } from 'lucide-react';
 import { usePerformanceTemplate, usePerformanceTemplates } from '@/hooks/usePerformance';
 import { useEmployee } from '@/hooks/useEmployee';
 import Loading from '@/components/Loading';
@@ -32,8 +32,9 @@ function RouteComponent() {
 
 	const columns = [
 		{
-			header: 'Name',
+			header: () => <h1 className="pl-8">Name</h1>,
 			accessorKey: 'name',
+			cell: ({ row }: any) => <h1 className="pl-8">{row.original.name}</h1>,
 		},
 		{
 			header: 'Template',
@@ -47,18 +48,20 @@ function RouteComponent() {
 		{
 			id: 'actions',
 			cell: ({ row }: any) => (
-				<Link
-					to={`/performance/$employeeId/$sheetId`}
-					params={{
-						sheetId: row.original.id,
-						employeeId: employeeId.toString(),
-					}}>
-					<Button
-						variant="outline"
-						className="w-20">
-						DETAIL
-					</Button>
-				</Link>
+				<div className="w-full flex justify-end">
+					<Link
+						to={`/performance/$employeeId/$sheetId`}
+						params={{
+							sheetId: row.original.id,
+							employeeId: employeeId.toString(),
+						}}>
+						<Button
+							variant="outline"
+							className="w-20 border-r border-l border-t-0 border-b-0">
+							DETAIL
+						</Button>
+					</Link>
+				</div>
 			),
 		},
 	];
@@ -88,7 +91,7 @@ function RouteComponent() {
 						]}
 					/>
 					<Link
-						className="relative pt-2 bottom-2"
+						className="text-xs pr-5"
 						to="/performance/setting">
 						Setting
 					</Link>
@@ -112,13 +115,11 @@ function RouteComponent() {
 			</div>
 
 			{/* Data Table */}
-			<div className="border-t">
-				<DataTable
-					columns={columns}
-					data={transformedSheets}
-					loading={templatesLoading || employeeLoading || sheetsLoading}
-				/>
-			</div>
+			<DataTable
+				columns={columns}
+				data={transformedSheets}
+				loading={templatesLoading || employeeLoading || sheetsLoading}
+			/>
 		</div>
 	);
 }

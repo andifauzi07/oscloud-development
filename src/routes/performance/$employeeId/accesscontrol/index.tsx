@@ -28,8 +28,8 @@ function RouteComponent() {
 	const columns = [
 		{
 			accessorKey: 'userid',
-			header: 'User ID',
-			cell: ({ row }: any) => <h1 className="text-base">{row.original.userid}</h1>,
+			header: () => <h1 className="pl-8">User ID</h1>,
+			cell: ({ row }: any) => <h1 className="pl-8">{row.original.userid}</h1>,
 		},
 		{
 			accessorKey: 'email',
@@ -37,7 +37,7 @@ function RouteComponent() {
 			cell: ({ row }: any) => (
 				<a
 					href={`mailto:${row.original.email}}`}
-					className="text-base text-blue-500 underline">
+					className="text-blue-500 underline">
 					{row.original.email}
 				</a>
 			),
@@ -45,22 +45,24 @@ function RouteComponent() {
 		{
 			accessorKey: 'status',
 			header: 'Status',
-			cell: ({ row }: any) => <h1 className=" text-[#0a0a30] text-base">{row.original.status}</h1>,
+			cell: ({ row }: any) => <h1 className=" text-[#0a0a30] ">{row.original.status}</h1>,
 		},
 		{
 			accessorKey: 'role',
 			header: 'Role',
-			cell: ({ row }: any) => <h1 className="text-base">{row.original.role}</h1>,
+			cell: ({ row }: any) => <h1 className="">{row.original.role}</h1>,
 		},
 		{
 			id: 'actions',
 			header: '',
 			cell: () => (
-				<Button
-					variant="outline"
-					className="self-end w-20 text-black bg-transparent border rounded-none">
-					REMOVE
-				</Button>
+				<div className="w-full flex justify-end">
+					<Button
+						variant="outline"
+						className="self-end w-20 text-black bg-transparent border border-t-0 border-b-0">
+						REMOVE
+					</Button>
+				</div>
 			),
 		},
 	];
@@ -68,7 +70,7 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			<div className="flex-none min-h-0 border-b">
-				<div className="container flex flex-row items-center justify-between pt-4">
+				<div className="pl-4 container flex flex-row items-center justify-between">
 					<MenuList
 						items={[
 							{
@@ -82,14 +84,14 @@ function RouteComponent() {
 						]}
 					/>
 					<Link
-						className="relative bottom-2"
+						className="pr-5 text-xs"
 						to="/performance/setting">
 						Setting
 					</Link>
 				</div>
 			</div>
 
-			<div className="flex justify-end flex-none w-full border-b">
+			<div className="flex justify-end flex-none w-full">
 				<AddRecordDialog
 					columns={columns}
 					onSave={handleAddRecord}
@@ -97,13 +99,11 @@ function RouteComponent() {
 				/>
 			</div>
 
-			<div className="">
-				<DataTable
-					columns={columns}
-					data={users}
-					loading={loading}
-				/>
-			</div>
+			<DataTable
+				columns={columns}
+				data={users}
+				loading={loading}
+			/>
 		</div>
 	);
 }

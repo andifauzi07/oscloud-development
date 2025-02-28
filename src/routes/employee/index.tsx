@@ -15,15 +15,11 @@ const columns = [
 		accessorKey: 'profileimage',
 		header: '',
 		cell: ({ row }: any) => (
-			<div className="flex items-center justify-center h-full">
-				<figure className="w-16 h-16 overflow-hidden">
-					<img
-						className="object-cover w-full h-full"
-						src={row.original.profileimage || '/default-avatar.png'}
-						alt={`${row.original.name}'s profile`}
-					/>
-				</figure>
-			</div>
+			<img
+				className="object-cover w-16 h-16"
+				src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+				alt={`${row.original.name}'s profile`}
+			/>
 		),
 	},
 	{
@@ -130,7 +126,11 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			<TitleWrapper>
 				<h1>Employee List</h1>
-				<Link to="/employee/setting">Settings</Link>
+				<Link
+					className="text-xs"
+					to="/employee/setting">
+					Settings
+				</Link>
 			</TitleWrapper>
 			<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
 				<div className="flex flex-row flex-wrap gap-4">
@@ -171,20 +171,18 @@ function RouteComponent() {
 				<Button
 					onClick={() => setEditable((prev) => !prev)}
 					className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-					EDIT+
+					EDIT
 				</Button>
 			</div>
 
-			<div className="border-t border-b border-r">
-				<DataTable
-					columns={columns}
-					data={employees}
-					loading={loading}
-					isEditable={editable}
-					nonEditableColumns={['employeeid*', 'actions']}
-					onSave={handleSaveEdits}
-				/>
-			</div>
+			<DataTable
+				columns={columns}
+				data={employees}
+				loading={loading}
+				isEditable={editable}
+				nonEditableColumns={['employeeid*', 'actions']}
+				onSave={handleSaveEdits}
+			/>
 		</div>
 	);
 }

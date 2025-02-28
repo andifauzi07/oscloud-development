@@ -32,7 +32,7 @@ function RouteComponent() {
 
 	// Define columns with custom cells
 	const columns = [
-		{ header: 'ID', accessorKey: 'id' },
+		{ header: () => <h1 className="pl-8">ID</h1>, accessorKey: 'id', cell: ({ row }: any) => <h1 className="pl-8">{row.original.id}</h1> },
 		{ header: 'Name', accessorKey: 'name' },
 		{ header: 'Company', accessorKey: 'company' },
 		{ header: 'Manager', accessorKey: 'manager' },
@@ -40,18 +40,20 @@ function RouteComponent() {
 		{ header: 'Closed Leads', accessorKey: 'closedLeads' },
 		{ header: 'Status', accessorKey: 'status' },
 		{
-			header: 'Actions',
+			header: '',
 			accessorKey: 'id',
 			cell: ({ row }: any) => (
-				<Button
-					variant="outline"
-					className="w-20">
-					<Link
-						params={{ companyId: row.original.companyId, companyPersonnelId: row.original.id }}
-						to="/company/$companyId/companyPersonnel/$companyPersonnelId">
-						VIEW
-					</Link>
-				</Button>
+				<div className="w-full justify-end flex items-center">
+					<Button
+						variant="outline"
+						className="w-20 border-b-0 border-t-0 border-r-0">
+						<Link
+							params={{ companyId: row.original.companyId, companyPersonnelId: row.original.id }}
+							to="/company/$companyId/companyPersonnel/$companyPersonnelId">
+							VIEW
+						</Link>
+					</Button>
+				</div>
 			),
 		},
 	];
@@ -59,7 +61,7 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			<div className="items-center flex-none min-h-0 border-b">
-				<div className="container flex border-r items-center justify-between">
+				<div className="container flex border-r pl-4 items-center justify-between">
 					<MenuList
 						items={[
 							{
@@ -74,7 +76,7 @@ function RouteComponent() {
 					/>
 					<div className="pr-4">
 						<Link
-							className="relative"
+							className="text-xs"
 							to="/performance/setting">
 							Settings
 						</Link>
@@ -88,12 +90,11 @@ function RouteComponent() {
 				<Button className="w-20 text-black bg-transparent border-r md:w-20 link border-l h-10">ADD+</Button>
 				<Button className="w-20 text-black bg-transparent border-b-0 border-r border-t-0 md:w-20 link h-10">EDIT</Button>
 			</div>
-			<div className="border-r border-t">
-				<DataTable
-					columns={columns}
-					data={data}
-				/>
-			</div>
+			<DataTable
+				columns={columns}
+				data={data}
+				loading={false}
+			/>
 		</div>
 	);
 }

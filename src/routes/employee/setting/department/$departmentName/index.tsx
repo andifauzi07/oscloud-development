@@ -10,6 +10,8 @@ import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { revertUrlString } from '@/lib/utils';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { ColumnDef } from '@tanstack/react-table';
+import { useDepartment, useDepartments, useFlatDepartmentList } from '@/hooks/useDepartment';
+import { number } from 'zod';
 
 export const Route = createFileRoute('/employee/setting/department/$departmentName/')({
 	component: RouteComponent,
@@ -41,11 +43,11 @@ type DepartmentData = {
 };
 
 function RouteComponent() {
-	const { departmentName } = useParams({ strict: false });
+	const { departmentName } = Route.useParams();
 	const decodedDepartmentName = revertUrlString(departmentName as string);
-	const [advancedSearchFilter, setAdvancedSearchFilter] = useState('');
 	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 	const [editable, setEditable] = useState(false);
+	const { department, error, loading } = useDepartment(Number(departmentName));
 
 	const handleAddRecord = async (data: any) => {
 		try {
@@ -56,32 +58,15 @@ function RouteComponent() {
 		}
 	};
 
-	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
-		try {
-			console.log('Saving updates:', updatedData);
-			// Add your API call here
-			setEditable(false); // Turn off edit mode after saving
-		} catch (error) {
-			console.error('Failed to save updates:', error);
-		}
-	}, []);
-	// Handle window resize
-	useEffect(() => {
-		const handleResize = () => setScreenWidth(window.innerWidth);
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
-	}, []);
-
-	// Sample data
-	const managers: Manager[] = [
-		{ id: '1', name: 'John Doe', email: 'john@example.com', role: 'Admin' },
-		{
-			id: '2',
-			name: 'Jane Smith',
-			email: 'jane@example.com',
-			role: 'Manager',
-		},
-	];
+	// const handleSaveEdits = useCallback(async (updatedData: any[]) => {
+	// 	try {
+	// 		console.log('Saving updates:', updatedData);
+	// 		// Add your API call here
+	// 		setEditable(false); // Turn off edit mode after saving
+	// 	} catch (error) {
+	// 		console.error('Failed to save updates:', error);
+	// 	}
+	// }, []);
 
 	const memberData: Member[] = [
 		{
@@ -97,41 +82,6 @@ function RouteComponent() {
 			email: 'bob@example.com',
 			category: 'Staff',
 			image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		},
-	];
-
-	// Column definitions for managers
-	const managerColumns = [
-		{
-			header: () => <span className="pl-4">Name</span>,
-			accessorKey: 'name',
-			cell: (props: any) => <span className="pl-4">{props.row.original.email}</span>,
-		},
-		{
-			header: 'ID',
-			accessorKey: 'id',
-			cell: (props: any) => (screenWidth > 640 ? props.row.original.id : null),
-		},
-		{
-			header: 'Email',
-			accessorKey: 'email',
-			cell: (props: any) => <span className="truncate">{props.row.original.email}</span>,
-		},
-		{
-			header: 'Role',
-			accessorKey: 'role',
-			cell: (props: any) => (screenWidth > 768 ? props.row.original.role : null),
-		},
-		{
-			header: '',
-			accessorKey: 'id',
-			cell: (props: any) => (
-				<Button
-					variant="outline"
-					onClick={() => handleRemove(props.row.original.id)}>
-					Remove
-				</Button>
-			),
 		},
 	];
 
@@ -162,84 +112,22 @@ function RouteComponent() {
 		},
 	];
 
-	const departmentData: DepartmentData[] = [
+	const subDepartments = [
 		{
-			id: 123,
-			image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-			name: 'John Brown',
-			email: 'test@gmail.com',
-			category: 'Category A',
-			score: 's (98%)',
+			header: 'Department Name',
+			accessorKey: 'departmentname',
 		},
 		{
-			id: 4323,
-			image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-			name: '田中里佳子',
-			email: 'test@gmail.com',
-			category: 'Category A',
-			score: 'B (69%)',
+			header: 'Employee',
+			accessorKey: 'employeeCount',
 		},
 		{
-			id: 23243,
-			image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-			name: '浅川一郎',
-			email: 'test@gmail.com',
-			category: 'Category A',
-			score: 'A (80%)',
-		},
-		{
-			id: 433,
-			image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-			name: '岡田泰一',
-			email: 'test@gmail.com',
-			category: 'Category A',
-			score: 'C (59%)',
-		},
-		{
-			id: 4323,
-			image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-			name: '田中里佳子',
-			email: 'test@gmail.com',
-			category: 'Category A',
-			score: 'B (69%)',
-		},
-	];
-
-	const departmenColumn: ColumnDef<DepartmentData>[] = [
-		{
-			header: '',
-			accessorKey: 'image',
-			cell: (props: any) => (
-				<img
-					src={props.row.original.image}
-					alt={props.row.original.name}
-					className="w-10 h-10 "
-				/>
-			),
-		},
-		{
-			header: 'Name',
-			accessorKey: 'name',
-		},
-		{
-			header: 'ID',
-			accessorKey: 'id',
-		},
-		{
-			header: 'EMAIL',
-			accessorKey: 'email',
-		},
-		{
-			header: 'Category',
-			accessorKey: 'category',
-		},
-		{
-			header: 'Score',
-			accessorKey: 'score',
+			header: 'Manager',
+			accessorKey: 'managerCount',
 		},
 		{
 			header: '',
-			accessorKey: 'id',
+			accessorKey: 'departmentid',
 			cell: (props: any) => (
 				<Button
 					variant="outline"
@@ -258,10 +146,10 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			{/* Header Section */}
-			<TitleWrapper>{decodedDepartmentName}</TitleWrapper>
+			<TitleWrapper>{loading ? <span className="loading"></span> : <h1 className="font-bold text-base">{department?.departmentName.toLocaleUpperCase()}</h1>}</TitleWrapper>
 
 			{/* Managers Table */}
-			<div className="w-full flex justify-between border-b items-center bg-white">
+			<div className="w-full flex justify-between border-b items-center bg-gray-100">
 				<h2 className="px-8">Description</h2>
 				<Button
 					onClick={() => setEditable((prev) => !prev)}
@@ -269,15 +157,17 @@ function RouteComponent() {
 					EDIT+
 				</Button>
 			</div>
-			<div className="border-r border-b">
-				<DataTable
-					columns={managerColumns}
-					data={managers}
-					loading={false}
-					isEditable={editable}
-					onSave={handleSaveEdits}
-					nonEditableColumns={['id*']}
-				/>
+			<div className="w-full flex gap-8 bg-white py-2 px-8 border-r border-b">
+				<div>
+					<h1>Department Name :</h1>
+				</div>
+				<div>{loading ? <span className="loading"></span> : <h1 className="font-bold">{department?.departmentName}</h1>}</div>
+			</div>
+			<div className="w-full flex gap-8 bg-white py-2 px-8 border-r border-b">
+				<div>
+					<h1>Parent Department :</h1>
+				</div>
+				<div>{loading && department?.parentDepartmentId === undefined ? <span className="loading"></span> : <h1>{department?.parentDepartmentId !== null ? department?.parentDepartmentId : ' - '}</h1>}</div>
 			</div>
 
 			{/* Members Table */}
@@ -326,7 +216,7 @@ function RouteComponent() {
 					</div>
 					<div className="w-full">
 						<div className="flex items-center p-4 border-r border-l">
-							<h1>Members</h1>
+							<h1>Sub Department</h1>
 						</div>
 
 						<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border md:flex-row">
@@ -367,9 +257,9 @@ function RouteComponent() {
 						</div>
 						<div className="border-l border-r">
 							<DataTable
-								columns={departmenColumn}
-								data={departmentData}
-								loading={false}
+								columns={subDepartments}
+								data={department?.subDepartments || []}
+								loading={loading}
 							/>
 						</div>
 					</div>
