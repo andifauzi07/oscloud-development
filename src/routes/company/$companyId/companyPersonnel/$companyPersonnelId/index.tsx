@@ -15,8 +15,6 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { KanbanBoard, KanbanCard, KanbanColumn } from '@/components/Kanban';
 import { DataTable } from '@/components/ui/data-table';
 import { leadsColumns } from '@/components/companyPersonnelLeadsListDataTable';
-import { projectsColumns } from '@/components/companyPersonnelProjectsDataTable';
-import { ProjectsTimeline } from '@/components/ProjectsTimeline';
 import ScheduleTable from '@/components/EmployeTimeLine';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 
@@ -139,7 +137,7 @@ function RouteComponent() {
 
 			{/* Edit Button */}
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="w-1/2 text-black border-r border-l bg-transparent md:w-20 h-10">EDIT</Button>
+				<Button className="w-1/2 h-10 text-black bg-transparent border-l border-r md:w-20">EDIT</Button>
 			</div>
 
 			{/* Tabs Section */}
@@ -168,34 +166,34 @@ function RouteComponent() {
 
 				{/* Profile Tab */}
 				<TabsContent
-					className="overflow-x-hidden m-0"
+					className="m-0 overflow-x-hidden"
 					value="profile">
-					<div className="flex text-xs flex-col">
-						<div className="w-full justify-start border-t px-6 flex">
-							<div className="flex justify-start w-1/8 gap-14 p-4">
+					<div className="flex flex-col text-xs">
+						<div className="flex justify-start w-full px-6 border-t">
+							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>Name</h1>
 							</div>
-							<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>COMPANY A</h1>
 							</div>
 						</div>
-						<div className="w-full justify-start border-t px-6 flex">
-							<div className="flex justify-start w-1/8 gap-14 p-4">
+						<div className="flex justify-start w-full px-6 border-t">
+							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>Email</h1>
 							</div>
-							<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>Johnson.white@companya.com</h1>
 							</div>
 						</div>
-						<div className="w-full justify-start border-t px-6 flex">
-							<div className="flex justify-start w-1/8 gap-14 p-4">
+						<div className="flex justify-start w-full px-6 border-t">
+							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>Manager</h1>
 							</div>
-							<div className="flex justify-start w-1/8 gap-14 p-4">
+							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>John Brown</h1>
 							</div>
 						</div>
-						<div className="w-full justify-start border-t border-b h-24 px-6 flex">
+						<div className="flex justify-start w-full h-24 px-6 border-t border-b">
 							<p className="px-4 py-4">Description</p>
 						</div>
 					</div>
@@ -206,7 +204,7 @@ function RouteComponent() {
 					className="m-0 overflow-x-hidden"
 					value="leads">
 					<div>
-						<div className="flex flex-col gap-4 border-t pt-4 border-b md:flex-row px-8 md:gap-16">
+						<div className="flex flex-col gap-4 px-8 pt-4 border-t border-b md:flex-row md:gap-16">
 							<div className="flex flex-col w-full space-y-2 md:w-auto">
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
@@ -309,7 +307,7 @@ function RouteComponent() {
 					className="m-0 overflow-x-hidden"
 					value="projects">
 					<div>
-						<div className="flex flex-col gap-4 px-4 border-t border-r pt-4 md:flex-row md:px-8 md:gap-16">
+						<div className="flex flex-col gap-4 px-4 pt-4 border-t border-r md:flex-row md:px-8 md:gap-16">
 							<div className="flex flex-col w-full space-y-2 md:w-auto">
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
@@ -358,11 +356,11 @@ function RouteComponent() {
 								<TabsContent
 									value="list"
 									className="m-0">
-									<DataTable
+									{/* <DataTable
 										columns={projectsColumns}
 										data={company?.projects || []}
 										loading={false}
-									/>
+									/> */}
 								</TabsContent>
 								<TabsContent
 									value="timeline"

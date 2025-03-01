@@ -1,198 +1,236 @@
-import { AddRecordDialog } from '@/components/AddRecordDialog';
-import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useCallback, useState } from 'react';
+// src/routes/company/setting/index.tsx
+import { createFileRoute, Link } from "@tanstack/react-router";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { DataTable } from "@/components/ui/data-table";
+import { TitleWrapper } from "@/components/wrapperElement";
 
-export const Route = createFileRoute('/company/setting/')({
-	component: RouteComponent,
+export const Route = createFileRoute("/company/setting/")({
+    component: RouteComponent,
 });
 
-const dataFieldColumns = [
-	{ id: 'field', header: 'Data Field shown in profile', accessorKey: 'field' },
-	{ id: 'type', header: 'Type', accessorKey: 'type' },
-	{ id: 'category', header: 'Category', accessorKey: 'category' },
-	{ id: 'dateCreated', header: 'Date Created', accessorKey: 'dateCreated' },
-	{ id: 'dateAdded', header: 'Date Added', accessorKey: 'dateAdded' },
-	{ id: 'status', header: 'Status', accessorKey: 'status' },
-];
+// Reusing the ColumnSetting interface from index.tsx for consistency
+interface ColumnSetting {
+    accessorKey: string;
+    label: string;
+    type: "text" | "number" | "boolean" | "email" | "date" | "file" | "image";
+    date_created: string;
+    status: "shown" | "hidden";
+}
 
-const dataFieldData = [
-	{
-		id: 1,
-		field: 'Name',
-		type: 'Custom Data',
-		category: '',
-		dateCreated: '2024.11.01',
-		dateAdded: '2024.11.01',
-		status: 'Active',
-	},
-	{
-		id: 2,
-		field: 'Phone number',
-		type: 'Custom data',
-		category: 'Basic information',
-		dateCreated: '2024.11.01',
-		dateAdded: '2024.11.01',
-		status: 'Hidden',
-	},
-	{
-		id: 3,
-		field: 'Email address',
-		type: 'Custom Data',
-		category: 'Basic information',
-		dateCreated: '2025.11.02',
-		dateAdded: '2025.11.01',
-		status: 'Hidden',
-	},
-	{
-		id: 4,
-		field: 'Name',
-		type: 'Custom Data',
-		category: '',
-		dateCreated: '2024.11.01',
-		dateAdded: '2024.11.01',
-		status: 'Active',
-	},
-	{
-		id: 5,
-		field: 'User ID',
-		type: 'Text Date',
-		category: 'Basic information',
-		dateCreated: '2024.11.01',
-		dateAdded: '2024.11.01',
-		status: 'Hidden',
-	},
-];
-
-const categoryColumns = [
-	{ accessorKey: 'categoryName', header: 'Category' },
-	{ accessorKey: 'parentCategory', header: 'Parent Category' },
-	{
-		id: 'action',
-		accessorKey: 'action',
-		header: 'Actions',
-		cell: ({ row }: any) => (
-			<Link
-				to={`/employee/setting/category/$categoryName`}
-				params={{ categoryName: row.original.categoryName }}>
-				<Button className="w-20 text-black bg-transparent border rounded-none link">VIEW</Button>
-			</Link>
-		),
-	},
-];
-
-const categoryData = [
-	{
-		id: 1,
-		categoryName: 'Basic information',
-		parentCategory: '-',
-		action: 'VIEW',
-	},
-	{
-		id: 2,
-		categoryName: 'SNS',
-		parentCategory: 'Basic information',
-		action: 'VIEW',
-	},
-	{
-		id: 3,
-		categoryName: 'Contracts',
-		parentCategory: 'Basic Information',
-		action: 'VIEW',
-	},
+// Default column settings (same as in index.tsx)
+const defaultColumnSettings: ColumnSetting[] = [
+    {
+        accessorKey: "logo",
+        label: "Company Profile Picture",
+        type: "image",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "companyId",
+        label: "ID",
+        type: "number",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "name",
+        label: "Company",
+        type: "text",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "personnel",
+        label: "Personnel No.",
+        type: "number",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "category_group",
+        label: "Category Group",
+        type: "text",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "city",
+        label: "Cities",
+        type: "text",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "created_at",
+        label: "Created at",
+        type: "date",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "managerid",
+        label: "Manager",
+        type: "number",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "product",
+        label: "Product",
+        type: "text",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "activeLeads",
+        label: "Active Leads",
+        type: "number",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "email",
+        label: "Email",
+        type: "email",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
+    {
+        accessorKey: "detail",
+        label: "View",
+        type: "text",
+        date_created: "2025-01-01",
+        status: "shown",
+    },
 ];
 
 function RouteComponent() {
-	const [editable, setEditable] = useState(false);
-	const handleAddRecord = async (data: any) => {
-		try {
-			// Add your API call here to save the new record
-			console.log('Adding new record:', data);
-		} catch (error) {
-			console.error('Failed to add record:', error);
-		}
-	};
+    const [columnSettings, setColumnSettings] = useState<ColumnSetting[]>(defaultColumnSettings);
+    const [draggedKey, setDraggedKey] = useState<string | null>(null);
 
-	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
-		try {
-			console.log('Saving updates:', updatedData);
-			// Add your API call here
-			setEditable(false); // Turn off edit mode after saving
-		} catch (error) {
-			console.error('Failed to save updates:', error);
-		}
-	}, []);
-	return (
-		<div className="flex-1 h-full">
-			<Tabs defaultValue="data-field">
-				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
-					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-						value="data-field">
-						Data Field
-					</TabsTrigger>
-					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-						value="data-category">
-						Data Category
-					</TabsTrigger>
-				</TabsList>
-				<TabsContent
-					className="m-0"
-					value="data-field">
-					<div className="flex justify-end flex-none w-full bg-white">
-						<AddRecordDialog
-							columns={dataFieldColumns}
-							onSave={handleAddRecord}
-							nonEditableColumns={['action*', 'dateAdded*', 'dateCreated*']}
-						/>
-						<Button
-							onClick={() => setEditable((prev) => !prev)}
-							className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-							EDIT+
-						</Button>
-					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							enableColumnDragAndDrop={true}
-							columns={dataFieldColumns}
-							data={dataFieldData}
-							loading={false}
-							isEditable={editable}
-							onSave={handleSaveEdits}
-							nonEditableColumns={['action*']}
-						/>
-					</div>
-				</TabsContent>
-				<TabsContent
-					className="m-0"
-					value="data-category">
-					<div className="flex justify-end flex-none w-full bg-white">
-						<AddRecordDialog
-							columns={categoryColumns}
-							onSave={handleAddRecord}
-							nonEditableColumns={['action*']}
-						/>
-						<Button
-							onClick={() => setEditable((prev) => !prev)}
-							className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-							EDIT+
-						</Button>
-					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							columns={categoryColumns}
-							data={categoryData}
-							loading={false}
-							isEditable={editable}
-							onSave={handleSaveEdits}
-							nonEditableColumns={['action*']}
-						/>
-					</div>
-				</TabsContent>
-			</Tabs>
-		</div>
-	);
+    // Load settings from localStorage on mount
+    useEffect(() => {
+        const savedSettings = localStorage.getItem("companyColumnSettings");
+        if (savedSettings) {
+            setColumnSettings(JSON.parse(savedSettings));
+        }
+    }, []);
+
+    // Save settings to localStorage whenever they change
+    const saveColumnSettings = useCallback((newSettings: ColumnSetting[]) => {
+        localStorage.setItem("companyColumnSettings", JSON.stringify(newSettings));
+    }, []);
+
+    useEffect(() => {
+        saveColumnSettings(columnSettings);
+    }, [columnSettings]); // Removed saveColumnSettings from dependencies
+
+     // Memoized function to generate columns for the settings table
+     const generateSettingColumns = useMemo(() => {
+        return (
+            setColumnSettings: React.Dispatch<React.SetStateAction<ColumnSetting[]>>
+        ): ColumnDef<ColumnSetting>[] => {
+            return [
+                {
+                    accessorKey: "label",
+                    header: "Data field shown in the Company",
+                },
+                {
+                    accessorKey: "type",
+                    header: "Type",
+                },
+                {
+                    accessorKey: "date_created",
+                    header: "Date Created",
+                },
+                {
+                    accessorKey: "status",
+                    header: "Status",
+                    cell: ({ row }) => (
+                        // <Switch
+                        //     id={row.original.accessorKey}
+                        //     checked={row.original.status === "shown"}
+                        //     onCheckedChange={(checked) => {
+                        //         const newStatus = checked ? "shown" : "hidden";
+                        //         setColumnSettings((prevSettings) =>
+                        //             prevSettings.map((setting) =>
+                        //                 setting.accessorKey === row.original.accessorKey
+                        //                     ? { ...setting, status: newStatus }
+                        //                     : setting
+                        //             )
+                        //         );
+                        //     }}
+                        // />
+                        <span>{row.original.status}</span>
+                    ),
+                },
+            ];
+        };
+    }, []);
+
+    const orderedColumns = useMemo(() => generateSettingColumns(setColumnSettings), [generateSettingColumns]);
+
+    const handleDragStart = useCallback((e: React.DragEvent<HTMLDivElement>, key: string) => {
+        setDraggedKey(key);
+        e.dataTransfer.effectAllowed = "move";
+    }, []);
+
+    const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    }, []);
+
+    const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>, dropKey: string) => {
+        e.preventDefault();
+        if (!draggedKey || draggedKey === dropKey) return;
+
+        setColumnSettings((prevSettings) => {
+            const newOrder = [...prevSettings];
+            const fromIndex = newOrder.findIndex((col) => col.accessorKey === draggedKey);
+            const toIndex = newOrder.findIndex((col) => col.accessorKey === dropKey);
+
+            const [removed] = newOrder.splice(fromIndex, 1);
+            newOrder.splice(toIndex, 0, removed);
+            return newOrder;
+        });
+        setDraggedKey(null);
+    }, [draggedKey]);
+
+    const handleResetToDefault = () => {
+        setColumnSettings(defaultColumnSettings);
+    };
+
+    return (
+        <div className="flex flex-col flex-1 w-full h-full">
+            <TitleWrapper>
+                <Link to="/company/setting" className="text-xs">
+                    Company
+                </Link>
+            </TitleWrapper>
+            <div className="px-8 py-4 bg-white border-b border-r">
+      
+            </div>
+
+            <div className="flex-1 overflow-auto">
+                <div className="max-w-full overflow-x-auto">
+                    <DataTable
+                        columns={orderedColumns}
+                        data={columnSettings}
+                        // enableRowDragAndDrop={true}
+                        // rowDragProps={{
+                        //     onDragStart: handleDragStart,
+                        //     onDragOver: handleDragOver,
+                        //     onDrop: handleDrop,
+                        //     draggedKey: draggedKey,
+                        // }}
+                        // isEditable={true}
+                    />
+                </div>
+            </div>
+        </div>
+    );
 }

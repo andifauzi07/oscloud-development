@@ -1,17 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataTable } from "@/components/ui/data-table";
-import { projectsColumns } from "@/components/companyPersonnelProjectsDataTable";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Link } from "@tanstack/react-router";
 import AdvancedFilterPopover from "@/components/search/advanced-search";
 import ScheduleTable from "@/components/EmployeTimeLine";
 import { TitleWrapper } from "@/components/wrapperElement";
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 import { AddRecordDialog } from "@/components/AddRecordDialog";
 import { useProjects } from "@/hooks/useProject";
+import { Project, type Costs } from "@/store/slices/projectSlice";
+import { ColumnDef } from "@tanstack/react-table";
+import { Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useDebounce } from "@uidotdev/usehooks";
 
 export const Route = createFileRoute("/projects/")({
     component: RouteComponent,
@@ -22,29 +25,48 @@ function RouteComponent() {
     const [filters, setFilters] = useState({
         startDate: "",
         endDate: "",
-        status: "active",
+        status: "",
         keyword: "",
     });
+    const debouncedKeyword = useDebounce(filters.keyword, 500);
 
     // Memoize filters for useProjects hook to prevent infinite updates
-    const projectFilters = useMemo(() => ({
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
-        // status: filters.status,
-    }), [filters.startDate, filters.endDate,]);
+    const projectFilters = useMemo(
+        () => ({
+            startDate: filters.startDate || undefined,
+            endDate: filters.endDate || undefined,
+            status: filters.status === "" ? undefined : filters.status,
+            search: debouncedKeyword || undefined,
+        }),
+        [filters.startDate, filters.endDate, filters.status, debouncedKeyword]
+    );
 
-    const { projects, loading, addProject } = useProjects(projectFilters);
+    const { projects, loading, addProject } =
+        useProjects(projectFilters);
 
     // Debounce filter changes
     const handleFilterChange = useCallback((key: string, value: string) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
+        setFilters((prev) => ({ ...prev, [key]: value }));
+    }, []);
+
+    //handle status change
+    const handleStatusChange = useCallback((newStatus: string) => {
+        setFilters((prevFilters) => {
+            return {
+                ...prevFilters,
+                status: newStatus,
+            };
+        });
     }, []);
 
     const handleAddRecord = async (data: any) => {
         try {
             await addProject({
                 ...data,
-                assignedStaff: [], // Initialize with empty staff array
+                assignedStaff: [], 
+                status: "In Progress", 
+                city: "New York", 
+                product: "Marketing Automation", 
             });
         } catch (error) {
             console.error("Failed to add record:", error);
@@ -60,6 +82,106 @@ function RouteComponent() {
             console.error("Failed to save updates:", error);
         }
     }, []);
+
+    const projectsColumns: ColumnDef<Project>[] = useMemo(
+        () => [
+            {
+                header: "Project Name",
+                accessorKey: "name",
+            },
+            {
+                header: "Manager",
+                accessorKey: "manager.name",
+            },
+            {
+                header: "Starting",
+                accessorKey: "startDate",
+                cell: ({ row }) =>
+                    row.original.startDate
+                        ? new Date(row.original.startDate).toLocaleDateString()
+                        : row.original.startDate ? new Date(row.original.startDate).toLocaleDateString():'N/A',
+            },
+            {
+                header: "End",
+                accessorKey: "endDate",
+                cell: ({ row }) =>
+                    row.original.endDate
+                        ? new Date(row.original.endDate).toLocaleDateString()
+                        : row.original.endDate ? new Date(row.original.endDate).toLocaleDateString(): 'N/A',
+            },
+            {
+                header: "Client Name",
+                accessorKey: "company.name",
+            },
+            {
+                header: "Category",
+                accessorKey: "categoryGroup", // Assuming you have this field in your Project type
+            },
+            {
+                header: "Members",
+                accessorKey: "assignedStaff",
+                cell: ({ row }) => {
+                    const personnelCount = Array.isArray(row.original.assignedStaff)
+                        ? row.original.assignedStaff.length
+                        : 0;
+                    return (
+                        <div className="flex items-center gap-2 text-xs whitespace-nowrap">
+                            <span>{personnelCount}</span>
+                        </div>
+                    );
+                },
+            },
+            {
+                header: "Break Cost",
+                accessorKey: "costs.break",
+                cell: ({ row }) => {
+                    const cost = row.original.costs?.break || 0;
+                    return `${cost}$`;
+                },
+            },
+            {
+                header: "Food Cost",
+                accessorKey: "costs.food",
+                cell: ({ row }) => {
+                    const cost = row.original.costs?.food || 0;
+                    return `${cost}$`;
+                },
+            },
+            {
+                header: "Rental Cost",
+                accessorKey: "costs.rental",
+                cell: ({ row }) => {
+                    const cost = row.original.costs?.rental || 0;
+                    return `${cost}$`;
+                },
+            },
+            {
+                header: "Other Cost",
+                accessorKey: "costs.other_cost",
+                cell: ({ row }) => {
+                    const cost = row.original.costs?.other_cost || 0;
+                    return `${cost}$`;
+                },
+            },
+            {
+                header: "",
+                accessorKey: "projectId",
+                cell: ({ row }) => {
+                    return (
+                        <Button variant="outline">
+                            <Link
+                                to={`/projects/$projectId`}
+                                params={{ projectId: row.original.projectId.toString() }}
+                            >
+                                View
+                            </Link>
+                        </Button>
+                    );
+                },
+            },
+        ],
+        []
+    );
 
     return (
         <div className="">
@@ -88,7 +210,7 @@ function RouteComponent() {
                     <AddRecordDialog
                         columns={projectsColumns}
                         onSave={handleAddRecord}
-                        nonEditableColumns={["id*"]}
+                        nonEditableColumns={["projectId*", "id*", "financials*", "assignedStaff*","costs*"]}
                     />
                     <Button
                         onClick={() => setEditable((prev) => !prev)}
@@ -150,13 +272,14 @@ function RouteComponent() {
                             <div className="flex">
                                 <Button
                                     size="default"
-                                    className={`w-full rounded-none md:w-20 ${
-                                        filters.status === "active" ?
-                                            "bg-black"
-                                        :   "bg-transparent text-black"
-                                    }`}
+                                    variant="outline"
+                                    className={cn(
+                                        "w-20 rounded-none",
+                                        filters.status == "Active" &&
+                                            "bg-black text-white"
+                                    )}
                                     onClick={() =>
-                                        handleFilterChange("status", "active")
+                                        handleStatusChange("Active")
                                     }
                                 >
                                     Active
@@ -164,14 +287,12 @@ function RouteComponent() {
                                 <Button
                                     size="default"
                                     variant="outline"
-                                    className={`w-full rounded-none md:w-20 ${
-                                        filters.status === "all" ?
+                                    className={cn(
+                                        "w-20 rounded-none",
+                                        filters.status == "" &&
                                             "bg-black text-white"
-                                        :   ""
-                                    }`}
-                                    onClick={() =>
-                                        handleFilterChange("status", "all")
-                                    }
+                                    )}
+                                    onClick={() => handleStatusChange("")}
                                 >
                                     All
                                 </Button>
@@ -179,7 +300,7 @@ function RouteComponent() {
                         </div>
 
                         <div className="flex-col space-y-2 fflex">
-                            <Label>‎ </Label>
+                            <Label>{" "} </Label>
                             <AdvancedFilterPopover />
                         </div>
                     </div>
@@ -190,7 +311,7 @@ function RouteComponent() {
                             loading={loading}
                             isEditable={editable}
                             onSave={handleSaveEdits}
-                            nonEditableColumns={["id*"]}
+                            nonEditableColumns={["projectId*", "id*", "financials*", "assignedStaff*","costs*"]}
                         />
                     </div>
                 </TabsContent>
