@@ -87,7 +87,7 @@ function RouteComponent() {
 
 	// Column definitions for members
 	const memberColumns = [
-		{ header: () => <span className="pl-4">Name</span>, accessorKey: 'name', cell: ({ row }: any) => <span className="pl-4">{row.original.name}</span> },
+		{ header: () => <span className="pl-8">Name</span>, accessorKey: 'name', cell: ({ row }: any) => <span className="pl-8">{row.original.name}</span> },
 		{
 			header: 'ID',
 			accessorKey: 'id',
@@ -103,37 +103,46 @@ function RouteComponent() {
 			header: '',
 			accessorKey: 'id',
 			cell: (props: any) => (
-				<Button
-					variant="outline"
-					onClick={() => handleRemove(props.row.original.id)}>
-					Remove
-				</Button>
+				<div className="w-full flex justify-end">
+					<Button
+						variant="outline"
+						className="border-t-0 border-b-0"
+						onClick={() => handleRemove(props.row.original.id)}>
+						Remove
+					</Button>
+				</div>
 			),
 		},
 	];
 
 	const subDepartments = [
 		{
-			header: 'Department Name',
+			header: () => <h1 className="pl-4">Department Name</h1>,
 			accessorKey: 'departmentname',
+			cell: ({ row }: any) => <h1 className="pl-4">{row.original.departmentname}</h1>,
 		},
 		{
 			header: 'Employee',
 			accessorKey: 'employeeCount',
+			cell: ({ row }: any) => row.original.employeeCount || '-',
 		},
 		{
 			header: 'Manager',
 			accessorKey: 'managerCount',
+			cell: ({ row }: any) => row.original.managerCount || '-',
 		},
 		{
 			header: '',
 			accessorKey: 'departmentid',
 			cell: (props: any) => (
-				<Button
-					variant="outline"
-					onClick={() => handleRemove(props.row.original.id)}>
-					Remove
-				</Button>
+				<div className="w-full flex justify-end">
+					<Button
+						variant="outline"
+						className="border-b-0 border-t-0"
+						onClick={() => handleRemove(props.row.original.id)}>
+						Remove
+					</Button>
+				</div>
 			),
 		},
 	];
@@ -171,16 +180,14 @@ function RouteComponent() {
 			</div>
 
 			{/* Members Table */}
-			<div className=" border-r border-b">
-				<TitleWrapper>
-					<h2>Manager</h2>
-				</TitleWrapper>
-				<DataTable
-					columns={memberColumns}
-					data={memberData}
-					loading={false}
-				/>
-			</div>
+			<TitleWrapper className="border-b-0">
+				<h2>Manager</h2>
+			</TitleWrapper>
+			<DataTable
+				columns={memberColumns}
+				data={memberData}
+				loading={false}
+			/>
 
 			{/* Search Section */}
 			<div className="">
@@ -219,19 +226,19 @@ function RouteComponent() {
 							<h1>Sub Department</h1>
 						</div>
 
-						<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border md:flex-row">
-							<div className="flex flex-col space-y-2 bg-white md:w-auto">
+						<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border border-b-0 md:flex-row">
+							<div className="flex flex-col space-y-2 w-[350px] bg-white">
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
 									type="text"
 									id="keyword"
 									placeholder="Search by name, email, etc."
-									className="border rounded-none w-[400px]"
+									className="border rounded-none"
 								/>
 							</div>
 
 							{/* Status Toggle */}
-							<div className="flex flex-row gap-2 ">
+							<div className="flex flex-row gap-2">
 								<div className="flex flex-col space-y-2">
 									<Label>Status</Label>
 									<div className="flex">
@@ -255,7 +262,7 @@ function RouteComponent() {
 								</div>
 							</div>
 						</div>
-						<div className="border-l border-r">
+						<div className="border-l">
 							<DataTable
 								columns={subDepartments}
 								data={department?.subDepartments || []}

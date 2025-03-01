@@ -13,7 +13,7 @@ export const Route = createFileRoute('/employee/setting/')({
 });
 
 const dataFieldColumns = [
-	{ id: 'field', header: 'Data Field', accessorKey: 'field' },
+	{ id: 'field', header: () => <h1 className="pl-8 py-2">Data Field</h1>, accessorKey: 'field', cell: ({ row }: any) => <h1 className="pl-4 py-2">{row.original.field}</h1> },
 	{ id: 'type', header: 'Type', accessorKey: 'type' },
 	{ id: 'category', header: 'Category', accessorKey: 'category' },
 	{ id: 'dateCreated', header: 'Date Created', accessorKey: 'dateCreated' },
@@ -21,14 +21,16 @@ const dataFieldColumns = [
 	{ id: 'status', header: 'Status', accessorKey: 'status' },
 	{
 		id: 'actions',
-		header: 'Actions',
+		header: '',
 		accessorKey: 'actions',
 		cell: ({ row }: any) => (
-			<button
-				className="p-2 border hover:underline"
-				onClick={() => console.log('Removing:', row.original.actions)}>
-				REMOVE
-			</button>
+			<div className="w-full flex justify-end items-center">
+				<Button
+					variant={'outline'}
+					onClick={() => console.log('Removing:', row.original.actions)}>
+					REMOVE
+				</Button>
+			</div>
 		),
 	},
 ];
@@ -39,20 +41,8 @@ const dataFieldData = [
 ];
 
 const categoryColumns = [
-	{ accessorKey: 'categoryName', header: 'Category' },
+	{ accessorKey: 'categoryName', header: () => <h1 className="pl-8 py-2">Category Name</h1>, cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.categoryName}</h1> },
 	{ accessorKey: 'parentCategory', header: 'Parent Category' },
-	{
-		id: 'action',
-		accessorKey: 'action',
-		header: 'Actions',
-		cell: ({ row }: any) => (
-			<Link
-				to={`/employee/setting/category/$categoryName`}
-				params={{ categoryName: row.original.categoryName }}>
-				<Button className="w-20 text-black bg-transparent border rounded-none link">VIEW</Button>
-			</Link>
-		),
-	},
 ];
 
 const categoryData = [{ id: 1, categoryName: 'Basic information', type: 'Category', parentCategory: 'Basic information', action: 'VIEW' }];
@@ -76,26 +66,29 @@ const employeeCategory = [
 ];
 
 const employeeCategoryColumns = [
-	{ id: 'category', accessorKey: 'category', header: 'Category' },
+	{ id: 'category', accessorKey: 'category', header: () => <h1 className="pl-4">Category</h1>, cell: ({ row }: any) => <h1 className="pl-8">{row.original.category}</h1> },
 	{ id: 'parentCategory', accessorKey: 'parenCategory', header: 'Parent Category' },
 	{
 		id: 'action',
 		accessorKey: 'action',
 		header: 'Actions',
 		cell: ({ row }: any) => (
-			<Link
-				to={`/employee/setting/category/$categoryName`}
-				params={{ categoryName: row.original.categoryName }}>
-				<Button className="w-20 text-black bg-transparent border rounded-none link">VIEW</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link
+					to={`/employee/setting/category/$categoryName`}
+					params={{ categoryName: row.original.categoryName }}>
+					<Button className="w-20 text-black bg-transparent border border-t-0 border-b-0 rounded-none link">VIEW</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
 
 const departmentColumns = [
 	{
-		header: 'Department Name',
+		header: () => <h1 className="pl-8">Category</h1>,
 		accessorKey: 'departmentname',
+		cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.departmentname}</h1>,
 	},
 	{
 		header: 'Parent Department',
@@ -114,12 +107,13 @@ const departmentColumns = [
 		header: '',
 		accessorKey: 'departmentid',
 		cell: ({ row }: any) => (
-			<Link
-				to={`/employee/setting/department/$departmentName`}
-				params={{ departmentName: row.original.departmentid }}
-				className="w-20 px-4 py-2 text-black transition bg-transparent border rounded-none link hover:bg-gray-100">
-				VIEW
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link
+					to={`/employee/setting/department/$departmentName`}
+					params={{ departmentName: row.original.departmentid }}>
+					<Button className="w-20 text-black bg-transparent border border-t-0 border-b-0 rounded-none link">VIEW</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
@@ -148,7 +142,7 @@ async function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			<Tabs defaultValue="data-field">
-				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 					<TabsTrigger
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 						value="data-field">
@@ -185,17 +179,15 @@ async function RouteComponent() {
 							EDIT+
 						</Button>
 					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							enableColumnDragAndDrop={true}
-							columns={dataFieldColumns}
-							data={dataFieldData}
-							loading={false}
-							isEditable={editable}
-							onSave={handleSaveEdits}
-							nonEditableColumns={['action*']}
-						/>
-					</div>
+					<DataTable
+						enableColumnDragAndDrop={true}
+						columns={dataFieldColumns}
+						data={dataFieldData}
+						loading={false}
+						isEditable={editable}
+						onSave={handleSaveEdits}
+						nonEditableColumns={['action*']}
+					/>
 				</TabsContent>
 				<TabsContent
 					className="m-0"
@@ -212,16 +204,14 @@ async function RouteComponent() {
 							EDIT+
 						</Button>
 					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							columns={categoryColumns}
-							data={categoryData}
-							loading={false}
-							isEditable={editable}
-							onSave={handleSaveEdits}
-							nonEditableColumns={['action*']}
-						/>
-					</div>
+					<DataTable
+						columns={categoryColumns}
+						data={categoryData}
+						loading={false}
+						isEditable={editable}
+						onSave={handleSaveEdits}
+						nonEditableColumns={['action*']}
+					/>
 				</TabsContent>
 				<TabsContent
 					className="m-0"
@@ -238,17 +228,15 @@ async function RouteComponent() {
 							EDIT+
 						</Button>
 					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							enableRowDragAndDrop={editable ? false : true}
-							columns={employeeCategoryColumns}
-							data={employeeCategory}
-							loading={false}
-							onSave={handleSaveEdits}
-							nonEditableColumns={['action*']}
-							isEditable={editable}
-						/>
-					</div>
+					<DataTable
+						enableRowDragAndDrop={editable ? false : true}
+						columns={employeeCategoryColumns}
+						data={employeeCategory}
+						loading={false}
+						onSave={handleSaveEdits}
+						nonEditableColumns={['action*']}
+						isEditable={editable}
+					/>
 				</TabsContent>
 
 				<TabsContent
@@ -266,16 +254,14 @@ async function RouteComponent() {
 							EDIT+
 						</Button>
 					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							columns={departmentColumns}
-							data={flatDepartments}
-							loading={loading}
-							onSave={handleSaveEdits}
-							nonEditableColumns={['action*', 'employees', 'manager']}
-							isEditable={editable}
-						/>
-					</div>
+					<DataTable
+						columns={departmentColumns}
+						data={flatDepartments}
+						loading={loading}
+						onSave={handleSaveEdits}
+						nonEditableColumns={['action*', 'employees', 'manager']}
+						isEditable={editable}
+					/>
 				</TabsContent>
 			</Tabs>
 		</div>
