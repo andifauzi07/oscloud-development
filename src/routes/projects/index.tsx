@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import AdvancedFilterPopover from "@/components/search/advanced-search";
-import ScheduleTable from "@/components/EmployeTimeLine";
 import { TitleWrapper } from "@/components/wrapperElement";
 import { useCallback, useState, useMemo, useEffect } from "react";
 import { AddRecordDialog } from "@/components/AddRecordDialog";
@@ -15,6 +14,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@uidotdev/usehooks";
+import ScheduleTable from "@/components/ScheduleTimeLine";
 
 export const Route = createFileRoute("/projects/")({
     component: RouteComponent,
@@ -41,8 +41,7 @@ function RouteComponent() {
         [filters.startDate, filters.endDate, filters.status, debouncedKeyword]
     );
 
-    const { projects, loading, addProject } =
-        useProjects(projectFilters);
+    const { projects, loading, addProject } = useProjects(projectFilters);
 
     // Debounce filter changes
     const handleFilterChange = useCallback((key: string, value: string) => {
@@ -63,10 +62,10 @@ function RouteComponent() {
         try {
             await addProject({
                 ...data,
-                assignedStaff: [], 
-                status: "In Progress", 
-                city: "New York", 
-                product: "Marketing Automation", 
+                assignedStaff: [],
+                status: "In Progress",
+                city: "New York",
+                product: "Marketing Automation",
             });
         } catch (error) {
             console.error("Failed to add record:", error);
@@ -97,17 +96,21 @@ function RouteComponent() {
                 header: "Starting",
                 accessorKey: "startDate",
                 cell: ({ row }) =>
-                    row.original.startDate
-                        ? new Date(row.original.startDate).toLocaleDateString()
-                        : row.original.startDate ? new Date(row.original.startDate).toLocaleDateString():'N/A',
+                    row.original.startDate ?
+                        new Date(row.original.startDate).toLocaleDateString()
+                    : row.original.startDate ?
+                        new Date(row.original.startDate).toLocaleDateString()
+                    :   "N/A",
             },
             {
                 header: "End",
                 accessorKey: "endDate",
                 cell: ({ row }) =>
-                    row.original.endDate
-                        ? new Date(row.original.endDate).toLocaleDateString()
-                        : row.original.endDate ? new Date(row.original.endDate).toLocaleDateString(): 'N/A',
+                    row.original.endDate ?
+                        new Date(row.original.endDate).toLocaleDateString()
+                    : row.original.endDate ?
+                        new Date(row.original.endDate).toLocaleDateString()
+                    :   "N/A",
             },
             {
                 header: "Client Name",
@@ -121,9 +124,10 @@ function RouteComponent() {
                 header: "Members",
                 accessorKey: "assignedStaff",
                 cell: ({ row }) => {
-                    const personnelCount = Array.isArray(row.original.assignedStaff)
-                        ? row.original.assignedStaff.length
-                        : 0;
+                    const personnelCount =
+                        Array.isArray(row.original.assignedStaff) ?
+                            row.original.assignedStaff.length
+                        :   0;
                     return (
                         <div className="flex items-center gap-2 text-xs whitespace-nowrap">
                             <span>{personnelCount}</span>
@@ -171,7 +175,10 @@ function RouteComponent() {
                         <Button variant="outline">
                             <Link
                                 to={`/projects/$projectId`}
-                                params={{ projectId: row.original.projectId.toString() }}
+                                params={{
+                                    projectId:
+                                        row.original.projectId.toString(),
+                                }}
                             >
                                 View
                             </Link>
@@ -210,7 +217,13 @@ function RouteComponent() {
                     <AddRecordDialog
                         columns={projectsColumns}
                         onSave={handleAddRecord}
-                        nonEditableColumns={["projectId*", "id*", "financials*", "assignedStaff*","costs*"]}
+                        nonEditableColumns={[
+                            "projectId*",
+                            "id*",
+                            "financials*",
+                            "assignedStaff*",
+                            "costs*",
+                        ]}
                     />
                     <Button
                         onClick={() => setEditable((prev) => !prev)}
@@ -251,9 +264,11 @@ function RouteComponent() {
                                         )
                                     }
                                     className="w-[150px] border rounded-none"
+                                    enableEmoji={false}
                                 />
                                 <span className="text-gray-500">-</span>
                                 <Input
+                                    enableEmoji={false}
                                     type="date"
                                     value={filters.endDate}
                                     onChange={(e) =>
@@ -278,9 +293,7 @@ function RouteComponent() {
                                         filters.status == "Active" &&
                                             "bg-black text-white"
                                     )}
-                                    onClick={() =>
-                                        handleStatusChange("Active")
-                                    }
+                                    onClick={() => handleStatusChange("Active")}
                                 >
                                     Active
                                 </Button>
@@ -299,10 +312,12 @@ function RouteComponent() {
                             </div>
                         </div>
 
-                        <div className="flex-col space-y-2 fflex">
-                            <Label>{" "} </Label>
-                            <AdvancedFilterPopover />
-                        </div>
+                <div className="flex flex-col items-end space-y-2">
+                    <Label>‎</Label>
+                    <div className="flex items-center gap-4">
+                        <AdvancedFilterPopover />
+                    </div>
+                </div>
                     </div>
                     <div className="border-b border-r">
                         <DataTable
@@ -311,13 +326,19 @@ function RouteComponent() {
                             loading={loading}
                             isEditable={editable}
                             onSave={handleSaveEdits}
-                            nonEditableColumns={["projectId*", "id*", "financials*", "assignedStaff*","costs*"]}
+                            nonEditableColumns={[
+                                "projectId*",
+                                "id*",
+                                "financials*",
+                                "assignedStaff*",
+                                "costs*",
+                            ]}
                         />
                     </div>
                 </TabsContent>
 
                 <TabsContent className="m-0" value="timeline">
-                    <ScheduleTable />
+                    <ScheduleTable data={projects} />
                 </TabsContent>
             </Tabs>
         </div>
