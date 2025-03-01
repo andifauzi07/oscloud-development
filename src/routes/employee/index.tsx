@@ -16,7 +16,7 @@ const columns = [
 		header: '',
 		cell: ({ row }: any) => (
 			<img
-				className="object-cover w-16 h-16"
+				className="object-cover w-10 h-10"
 				src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 				alt={`${row.original.name}'s profile`}
 			/>
@@ -62,34 +62,22 @@ const columns = [
 		header: 'Department',
 		cell: ({ row }: any) => row.original.department?.departmentname || '-',
 	},
-	// {
-	//     accessorKey: 'status',
-	//     header: 'Status',
-	//     cell: ({ row }) => row.original.status || 'Active'
-	// },
-	// {
-	//     accessorKey: 'position',
-	//     header: 'Position',
-	//     cell: ({ row }) => row.original.position || '-'
-	// },
-	// {
-	//     accessorKey: 'phone',
-	//     header: 'Phone',
-	//     cell: ({ row }) => row.original.phone || '-'
-	// },
 	{
 		id: 'actions',
 		header: '',
 		cell: ({ row }: any) => (
-			<Link
-				to={'/employee/$userId'}
-				params={{ userId: row.original.employeeid.toString() }}>
-				<Button
-					variant="outline"
-					className="w-20">
-					DETAIL
-				</Button>
-			</Link>
+			<div className="flex w-full justify-end">
+				<Link
+					to={'/employee/$userId'}
+					className="sticky"
+					params={{ userId: row.original.employeeid.toString() }}>
+					<Button
+						variant="outline"
+						className="border-t-0 border-b-0 w-20">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
