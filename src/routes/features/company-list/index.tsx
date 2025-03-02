@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TitleWrapper } from '@/components/wrapperElement';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 
@@ -164,7 +165,8 @@ const dataBreakdown: BreakdownRow[] = [
 const columBreakdown: ColumnDef<BreakdownRow>[] = [
 	{
 		accessorKey: 'project',
-		header: 'Projects',
+		header: () => <h1 className="pl-8">Projects</h1>,
+		cell: ({ row }) => <h1 className="pl-8 py-2">{row.original.project}</h1>,
 	},
 	{
 		accessorKey: 'start',
@@ -210,15 +212,15 @@ const columBreakdown: ColumnDef<BreakdownRow>[] = [
 		accessorKey: 'action',
 		header: '',
 		cell: () => (
-			<Link
-				to="/projects"
-				className="w-full h-full">
-				<Button
-					variant="outline"
-					className="w-20 h-full">
-					VIEW
-				</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link to="/projects">
+					<Button
+						variant="outline"
+						className="w-20 h-full border-b-0 border-t-0 border-r-0">
+						VIEW
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
@@ -226,10 +228,10 @@ const columBreakdown: ColumnDef<BreakdownRow>[] = [
 function RouteComponent() {
 	return (
 		<div className="flex flex-col">
-			<div className="bg-white border-b">
-				<h2 className="container px-4 py-3 ">Payment List</h2>
-			</div>
-			<div className="flex p-4 border-b flex-row flex-wrap gap-4">
+			<TitleWrapper>
+				<h2>Payment List</h2>
+			</TitleWrapper>
+			<div className="flex px-8 py-2 border-b flex-row flex-wrap gap-4 border-r">
 				<div className="flex flex-col w-full space-y-2 md:w-auto">
 					<Label htmlFor="keyword">Staff Name</Label>
 					<Input
@@ -259,17 +261,17 @@ function RouteComponent() {
 			</div>
 
 			<div className="flex justify-end flex-none w-full bg-white">
-				<Button className="text-black bg-transparent border md:w-20 link border-r-none min-h-14">ADD+</Button>
-				<Button className="text-black bg-transparent border md:w-20 link min-h-14">EDIT</Button>
+				<Button className="text-black bg-transparent border md:w-20 link border-r-0 border-t-0 border-b-0 min-h-10">ADD+</Button>
+				<Button className="text-black bg-transparent border md:w-20 link border-t-0 border-r border-b-0 min-h-10">EDIT</Button>
 			</div>
 			<DataTable
 				columns={columnsEmployee}
 				data={dataEmployee}
-				laoding={false}
+				loading={false}
 			/>
-			<div className="flex w-full bg-white px-6 py-4">
-				<h2 className="text-xl">Breakdown</h2>
-			</div>
+			<TitleWrapper className="border-b-0">
+				<h2>Breakdown</h2>
+			</TitleWrapper>
 			<DataTable
 				columns={columBreakdown}
 				data={dataBreakdown}

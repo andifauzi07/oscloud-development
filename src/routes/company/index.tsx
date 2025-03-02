@@ -166,7 +166,7 @@ function RouteComponent() {
 						columnDef.header = () => <h1 className="pl-8">Company Profile Picture</h1>;
 						columnDef.cell = ({ row }) => (
 							<div className="flex items-center justify-start h-full">
-								<figure className="w-16 h-16 overflow-hidden">
+								<figure className="w-10 h-10 overflow-hidden">
 									<img
 										className="object-cover w-full h-full"
 										src={row.original.logo || '/default-avatar.png'}
@@ -234,7 +234,7 @@ function RouteComponent() {
 									}}>
 									<Button
 										variant="outline"
-										className="w-20 h-full border-r-0">
+										className="w-20 h-full border-r-0 border-b-0 border-t-0">
 										DETAIL
 									</Button>
 								</Link>

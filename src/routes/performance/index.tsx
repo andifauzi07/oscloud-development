@@ -55,7 +55,7 @@ function RouteComponent() {
 				header: '',
 				cell: ({ row }: any) => (
 					<img
-						className="object-cover w-16 h-16"
+						className="object-cover w-10 h-10"
 						src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 						alt={`${row.original.name}'s profile`}
 					/>
@@ -100,15 +100,17 @@ function RouteComponent() {
 				id: 'actions',
 				header: '',
 				cell: ({ row }: any) => (
-					<Link
-						to={`/performance/$employeeId`}
-						params={{ employeeId: row.original.employeeid }}>
-						<Button
-							variant="outline"
-							className="w-20">
-							DETAIL
-						</Button>
-					</Link>
+					<div className="w-full flex justify-end">
+						<Link
+							to={`/performance/$employeeId`}
+							params={{ employeeId: row.original.employeeid }}>
+							<Button
+								variant="outline"
+								className="w-20 border-t-0 border-b-0 border-r-0">
+								DETAIL
+							</Button>
+						</Link>
+					</div>
 				),
 			},
 		],

@@ -5,6 +5,7 @@ import MenuList from '@/components/menuList';
 import { DataTable } from '@/components/ui/data-table'; // Import the new DataTable component
 import { mockEmployees } from '@/config/mockData/employees';
 import { mockCompanies } from '@/config/mockData/companies';
+import { TitleWrapper } from '@/components/wrapperElement';
 
 // Define the data structure
 interface PersonnelData {
@@ -42,7 +43,7 @@ function RouteComponent() {
 
 	// Define columns for the new DataTable
 	const columns = [
-		{ header: 'ID', accessorKey: 'id' },
+		{ header: () => <h1 className="pl-8">ID</h1>, accessorKey: 'id', cell: ({ row }: any) => <h1 className="pl-8">{row.original.id}</h1> },
 		{ header: 'Personnel Name', accessorKey: 'name' },
 		{ header: 'Company', accessorKey: 'company' },
 		{ header: 'Manager', accessorKey: 'manager' },
@@ -54,13 +55,15 @@ function RouteComponent() {
 			header: '',
 			accessorKey: 'id', // Use 'id' as the accessorKey for actions
 			cell: () => (
-				// <Link to={`/company/$companyId/personnel/$companyPersonnelId`}>
-				<Button
-					variant="outline"
-					className="w-20">
-					VIEW
-				</Button>
-				// </Link>
+				<div className="w-full flex justify-end">
+					{/* // <Link to={`/company/$companyId/personnel/$companyPersonnelId`}> */}
+					<Button
+						variant="outline"
+						className="w-20 border-r-0 border-b-0 border-t-0">
+						VIEW
+					</Button>
+					{/* // </Link> */}
+				</div>
 			),
 		},
 	];
@@ -91,9 +94,9 @@ function RouteComponent() {
 			</div> */}
 
 			{/* Title Section */}
-			<div className="flex items-center justify-start px-8 bg-white border-r border-b border-l-0 min-h-14">
-				<h2 className="text-base font-semibold">All Employees</h2>
-			</div>
+			<TitleWrapper>
+				<h2>All Employees</h2>
+			</TitleWrapper>
 
 			{/* Action Buttons */}
 			<div className="flex justify-end flex-none w-full bg-white">
@@ -102,13 +105,11 @@ function RouteComponent() {
 			</div>
 
 			{/* Data Table */}
-			<div className="border-t">
-				<DataTable
-					columns={columns}
-					data={data}
-					loading={false}
-				/>
-			</div>
+			<DataTable
+				columns={columns}
+				data={data}
+				loading={false}
+			/>
 		</div>
 	);
 }

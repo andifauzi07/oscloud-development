@@ -85,8 +85,9 @@ function RouteComponent() {
 	const projectsColumns: ColumnDef<Project>[] = useMemo(
 		() => [
 			{
-				header: 'Project Name',
+				header: () => <h1 className="pl-8">Project Name</h1>,
 				accessorKey: 'name',
+				cell: ({ row }) => <h1 className="pl-8">{row.original.name}</h1>,
 			},
 			{
 				header: 'Manager',
@@ -159,15 +160,19 @@ function RouteComponent() {
 				accessorKey: 'projectId',
 				cell: ({ row }) => {
 					return (
-						<Button variant="outline">
-							<Link
-								to={`/projects/$projectId`}
-								params={{
-									projectId: row.original.projectId.toString(),
-								}}>
-								View
-							</Link>
-						</Button>
+						<div className="w-full flex justify-end">
+							<Button
+								variant="outline"
+								className="border-r-0 border-t-0 border-b-0">
+								<Link
+									to={`/projects/$projectId`}
+									params={{
+										projectId: row.original.projectId.toString(),
+									}}>
+									View
+								</Link>
+							</Button>
+						</div>
 					);
 				},
 			},
@@ -179,11 +184,15 @@ function RouteComponent() {
 		<div className="">
 			<TitleWrapper>
 				<h2 className="text-base">Project List</h2>
-				<Link to="/projects/setting">Settings</Link>
+				<Link
+					to="/projects/setting"
+					className="text-xs">
+					Settings
+				</Link>
 			</TitleWrapper>
 
 			<Tabs defaultValue="list">
-				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+				<TabsList className="justify-start w-full gap-8 bg-white border-b border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 					<TabsTrigger
 						value="list"
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
@@ -212,15 +221,15 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0"
 					value="list">
-					<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-t border-b border-r md:flex-row">
-						<div className="flex flex-col space-y-2 bg-white md:w-auto">
+					<div className="flex flex-row flex-wrap items-center justify-between w-full p-8 pt-4 bg-white border-t border-r md:flex-row">
+						<div className="flex flex-col space-y-2 bg-white">
 							<Label htmlFor="keyword">Keyword</Label>
 							<Input
 								type="keyword"
 								id="keyword"
 								value={filters.keyword}
 								onChange={(e) => handleFilterChange('keyword', e.target.value)}
-								className="border rounded-none w-[400px]"
+								className="border rounded-none w-[250px]"
 							/>
 						</div>
 
@@ -272,16 +281,14 @@ function RouteComponent() {
 							</div>
 						</div>
 					</div>
-					<div className="border-b border-r">
-						<DataTable
-							columns={projectsColumns}
-							data={projects}
-							loading={loading}
-							isEditable={editable}
-							onSave={handleSaveEdits}
-							nonEditableColumns={['projectId*', 'id*', 'financials*', 'assignedStaff*', 'costs*']}
-						/>
-					</div>
+					<DataTable
+						columns={projectsColumns}
+						data={projects}
+						loading={loading}
+						isEditable={editable}
+						onSave={handleSaveEdits}
+						nonEditableColumns={['projectId*', 'id*', 'financials*', 'assignedStaff*', 'costs*']}
+					/>
 				</TabsContent>
 
 				<TabsContent

@@ -36,8 +36,8 @@ const columns: ColumnDef<PayrollRow>[] = [
 		accessorKey: 'image',
 		header: '',
 		cell: ({ row }) => (
-			<div className="flex items-center justify-center h-full">
-				<figure className="w-16 h-16 overflow-hidden ">
+			<div className="flex items-center justify-start h-full">
+				<figure className="w-10 h-10 overflow-hidden">
 					<img
 						className="object-cover w-full h-full"
 						src={row.original.image || '/default-avatar.png'}
@@ -83,16 +83,17 @@ const columns: ColumnDef<PayrollRow>[] = [
 		header: '',
 
 		cell: ({ row }) => (
-			<Link
-				to={'/payroll/$employeeId'}
-				params={{ employeeId: row.original.id }}
-				className="w-full h-full">
-				<Button
-					variant="outline"
-					className="w-20 h-full">
-					DETAIL
-				</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link
+					to={'/payroll/$employeeId'}
+					params={{ employeeId: row.original.id }}>
+					<Button
+						variant="outline"
+						className="w-20 h-full border-r-0 border-t-0 border-b-0">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
@@ -109,9 +110,11 @@ function RouteComponent() {
 
 	const { loading, employees, error } = usePayrollEmployees();
 
-	console.log('Ini employeess => ', employees);
-
 	const [editable, setEditable] = useState(false);
+
+	console.log('INI EMPLOYEES => ', employees);
+	console.log('INI LOADING => ', loading);
+	console.log('INI ERROR => ', error);
 
 	const handleAddRecord = async (data: any) => {
 		try {
@@ -147,14 +150,13 @@ function RouteComponent() {
 		hourlyRateB: employee.rates[1] ? `¥${employee.rates[1].ratevalue.toFixed(2)}` : '-',
 		totalPayment: `¥${employee.totalPayment}`,
 		numberOfPayment: employee.numberOfPayments.toString(),
-		joinedOn: employee.joinedDate.toISOString().split('T')[0],
+		joinedOn: employee?.joinedDate?.toISOString().split('T')[0],
 	}));
-	console.log(tableData);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
 			<Tabs defaultValue="employeeList">
-				<div className="flex items-center justify-between px-4 bg-white border-b border-r">
+				<div className="flex items-center justify-between pl-5 bg-white border-b border-r">
 					<TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="employeeList"
@@ -219,43 +221,41 @@ function RouteComponent() {
 							EDIT+
 						</Button>
 					</div>
-					<div className="border-t border-r">
-						<DataTable
-							columns={columns}
-							data={tableData}
-							loading={loading}
-							isEditable={editable}
-							nonEditableColumns={['image', 'joinedOn', 'numberOfPayment', 'id', 'action*']}
-							onSave={handleSaveEdits}
-						/>
-					</div>
+					<DataTable
+						columns={columns}
+						data={tableData}
+						loading={loading}
+						isEditable={editable}
+						nonEditableColumns={['image', 'joinedOn', 'numberOfPayment', 'id', 'action*']}
+						onSave={handleSaveEdits}
+					/>
 				</TabsContent>
 
 				{/* Payment List Tab */}
 				<TabsContent
-					className="m-0"
+					className="m-0 text-xs"
 					value="paymentList">
 					<div className="w-full bg-gray-100">
-						<div className="px-10 py-2">
+						<div className="px-8 font-bold py-2">
 							<h1>Rate Type</h1>
 						</div>
 					</div>
 					<div className="flex items-center justify-between w-full bg-white border-t border-r">
-						<div className="flex justify-between w-1/3 px-10 ">
+						<div className="flex justify-between w-1/3 px-8 ">
 							<h1>Hourly RateA</h1>
 							<h1> Active</h1>
 						</div>
 						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
 					</div>
 					<div className="flex items-center justify-between w-full bg-white border-t border-r">
-						<div className="flex justify-between w-1/3 px-10 ">
+						<div className="flex justify-between w-1/3 px-8 ">
 							<h1>Hourly RateB</h1>
 							<h1> Active</h1>
 						</div>
 						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
 					</div>
 					<div className="flex items-center justify-between w-full bg-white border-t border-b border-r">
-						<div className="flex justify-between w-1/3 px-10 ">
+						<div className="flex justify-between w-1/3 px-8 ">
 							<h1>Hourly RateC</h1>
 							<h1> Active</h1>
 						</div>

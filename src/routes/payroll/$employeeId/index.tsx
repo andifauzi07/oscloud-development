@@ -78,7 +78,8 @@ const dataBreakdown: BreakdownRow[] = [
 const columBreakdown: ColumnDef<BreakdownRow>[] = [
 	{
 		accessorKey: 'project',
-		header: 'Projects',
+		header: () => <h1 className="pl-8">Projects</h1>,
+		cell: ({ row }) => <h1 className="pl-8 py-2">{row.original.project}</h1>,
 	},
 	{
 		accessorKey: 'start',
@@ -124,15 +125,15 @@ const columBreakdown: ColumnDef<BreakdownRow>[] = [
 		accessorKey: 'action',
 		header: '',
 		cell: () => (
-			<Link
-				to="/"
-				className="w-full h-full">
-				<Button
-					variant="outline"
-					className="w-20 h-full">
-					VIEW
-				</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link to="/">
+					<Button
+						variant="outline"
+						className="w-20 h-full border-b-0 border-r-0 border-t-0">
+						VIEW
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
@@ -251,7 +252,8 @@ type PaymentTab = {
 const paymentDataEmployeeColumn: ColumnDef<PaymentTab>[] = [
 	{
 		accessorKey: 'id',
-		header: 'ID',
+		header: () => <h1 className="pl-8">ID</h1>,
+		cell: ({ row }) => <h1 className="pl8 py-2">{row.original.id}</h1>,
 		// cell: ({ row }) => (
 		// 	<Input
 		// 		enableEmoji={false}
@@ -386,8 +388,8 @@ function RouteComponent() {
 	}));
 
 	const basicInfo = [
-		{ label: 'UserID', value: employeeData?.id || '' },
-		{ label: '名前', value: employeeData?.name || '' },
+		{ label: 'UserID', key: 'userid', value: employeeData?.id || '' },
+		{ label: '名前', key: 'name', value: employeeData?.name || '' },
 		// ...rest of your basicInfo items...
 	];
 
@@ -405,7 +407,7 @@ function RouteComponent() {
 			{/* Tabs Section */}
 			<Tabs defaultValue="profile">
 				<div className="flex items-center justify-between bg-white border-b border-r">
-					<TabsList className="justify-start gap-8 px-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
+					<TabsList className="justify-start gap-8 pl-5 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="profile"
 							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
@@ -477,6 +479,8 @@ function RouteComponent() {
 									<InfoSection
 										items={basicInfo}
 										title="Basic Information"
+										// isEditing={isEditing}
+										// onValueChange={handleValueChange}
 									/>
 									<InfoSection
 										items={contractInfo}
@@ -499,7 +503,7 @@ function RouteComponent() {
 								type="keyword"
 								id="keyword"
 								placeholder=""
-								className="border rounded-none w-[400px]"
+								className="border rounded-none w-[250px]"
 							/>
 						</div>
 
@@ -548,28 +552,24 @@ function RouteComponent() {
 							params={{ employeeId: employeeId }}>
 							<Button
 								variant="outline"
-								className="w-20 h-full">
+								className="w-20 h-full border-t-0 border-b-0 border-r-0">
 								CREATE
 							</Button>
 						</Link>
 					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							columns={columnsEmployee}
-							data={joinedProjectsData}
-							loading={loading}
-						/>
-					</div>
-					<TitleWrapper>
-						<h2 className="text-xl">Breakdown</h2>
+					<DataTable
+						columns={columnsEmployee}
+						data={joinedProjectsData}
+						loading={false}
+					/>
+					<TitleWrapper className="border-b-0">
+						<h2 className="text-base">Breakdown</h2>
 					</TitleWrapper>
-					<div className="border-t border-b border-r">
-						<DataTable
-							columns={columBreakdown}
-							data={breakdownData}
-							loading={loading}
-						/>
-					</div>
+					<DataTable
+						columns={columBreakdown}
+						data={breakdownData}
+						loading={false}
+					/>
 				</TabsContent>
 
 				{/* Payment List Tab */}
@@ -583,7 +583,7 @@ function RouteComponent() {
 								type="keyword"
 								id="keyword"
 								placeholder=""
-								className="border rounded-none w-[400px]"
+								className="border rounded-none w-[250px]"
 							/>
 						</div>
 
@@ -627,7 +627,7 @@ function RouteComponent() {
 						</div>
 					</div>
 					<div className="flex justify-between w-full bg-white border-r">
-						<h2 className="text-xl px-8">Payment</h2>
+						<h2 className="text-base px-8 py-2">Payment</h2>
 						<div className="flex w-full justify-end">
 							<AddRecordDialog
 								columns={paymentDataEmployeeColumn}
@@ -641,16 +641,14 @@ function RouteComponent() {
 							</Button>
 						</div>
 					</div>
-					<div className="border-t border-b border-r">
-						<DataTable
-							columns={paymentDataEmployeeColumn}
-							data={paymentDataEmployeeRow}
-							loading={loading}
-							onSave={handleSaveEdits}
-							isEditable={editable}
-							nonEditableColumns={['id', 'status']}
-						/>
-					</div>
+					<DataTable
+						columns={paymentDataEmployeeColumn}
+						data={paymentDataEmployeeRow}
+						loading={false}
+						onSave={handleSaveEdits}
+						isEditable={editable}
+						nonEditableColumns={['id', 'status']}
+					/>
 				</TabsContent>
 			</Tabs>
 		</div>
