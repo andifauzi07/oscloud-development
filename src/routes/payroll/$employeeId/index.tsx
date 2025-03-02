@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { createFileRoute, Link, useParams } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 import { formatUrlString, revertUrlString } from '@/lib/utils';
-import { usePayroll } from '@/hooks/usePayroll'; // Import the usePayroll hook
+import { usePayrollEmployees, usePayrollPayments } from '@/hooks/usePayroll'; // Import the usePayroll hook
 import { useUserData } from '@/hooks/useUserData';
 import Loading from '@/components/Loading';
 import { InfoSection, TitleWrapper } from '@/components/wrapperElement';
@@ -310,8 +310,7 @@ const paymentDataEmployeeColumn: ColumnDef<PaymentTab>[] = [
 
 function RouteComponent() {
 	const { employeeId } = Route.useParams();
-	const { workspaceid } = useUserData();
-	const { payments, loading, error } = usePayroll({ workspaceId: Number(workspaceid), employeeId: employeeId });
+	const { payments, loading, error } = usePayrollPayments({ employeeId: Number(employeeId) });
 	const [editable, setEditable] = useState(false);
 
 	const handleAddRecord = async (data: any) => {
@@ -558,7 +557,7 @@ function RouteComponent() {
 						<DataTable
 							columns={columnsEmployee}
 							data={joinedProjectsData}
-							loading={loading || error}
+							loading={loading}
 						/>
 					</div>
 					<TitleWrapper>
@@ -568,7 +567,7 @@ function RouteComponent() {
 						<DataTable
 							columns={columBreakdown}
 							data={breakdownData}
-							loading={loading || error}
+							loading={loading}
 						/>
 					</div>
 				</TabsContent>
@@ -646,7 +645,7 @@ function RouteComponent() {
 						<DataTable
 							columns={paymentDataEmployeeColumn}
 							data={paymentDataEmployeeRow}
-							loading={loading || error}
+							loading={loading}
 							onSave={handleSaveEdits}
 							isEditable={editable}
 							nonEditableColumns={['id', 'status']}
