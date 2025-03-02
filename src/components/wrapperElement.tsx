@@ -1,11 +1,11 @@
 import React from 'react';
 
 export const TitleWrapper: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {
-	return <div className={`container ${className} flex justify-between items-center bg-white px-8 flex-none min-h-10 py-2 border-b border-r`}>{children}</div>;
+	return <div className={`${className} flex justify-between items-center bg-white px-8 flex-none min-h-10 py-2 border-b border-r`}>{children}</div>;
 };
 
 export const InfoSection = ({ title, items }: { title: React.ReactNode; items: { label: string; value: string }[] }) => (
-	<div className="flex flex-col border-l border-r">
+	<div className="flex flex-col w-full border-l border-r">
 		{title && <h2 className="px-4 py-4 text-sm font-medium bg-gray-100 border-b">{title}</h2>}
 		<div className="">
 			{items.map((item, index) => (
