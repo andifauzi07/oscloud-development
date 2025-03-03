@@ -131,12 +131,12 @@ export const mockPaymentStaff: PaymentStaff[] = [
 const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 	{
 		accessorKey: 'image',
-		header: 'ID',
+		header: () => <h1 className="pl-4"></h1>,
 		cell: ({ row }) => (
 			<img
 				src={row.original.image}
 				alt="Profile"
-				className="w-16 h-16 rounded-full"
+				className="w-10 h-10 rounded-full"
 			/>
 		),
 	},
@@ -146,7 +146,7 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 	},
 	{
 		accessorKey: 'status',
-		header: 'Status',
+		header: 'Availability',
 	},
 	{
 		accessorKey: 'money',
@@ -160,7 +160,21 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 	},
 	{
 		accessorKey: 'grade',
-		header: 'Grade',
+		header: 'Total Score',
+	},
+	{
+		id: 'actions',
+		accessorKey: 'id',
+		header: '',
+		cell: () => (
+			<div className=" w-full flex justify-end">
+				<Button
+					variant="outline"
+					className="text-xs border-r-0 border-t-0 border-b-0">
+					ASSIGN
+				</Button>
+			</div>
+		),
 	},
 ];
 
@@ -168,12 +182,12 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 const paymentStaffColumns: ColumnDef<PaymentStaff>[] = [
 	{
 		accessorKey: 'image',
-		header: 'Image',
+		header: '',
 		cell: ({ row }) => (
 			<img
 				src={row.original.image}
 				alt="Profile"
-				className="w-16 h-16"
+				className="w-10 h-10 object-cover"
 			/>
 		),
 	},
@@ -214,8 +228,17 @@ const paymentStaffColumns: ColumnDef<PaymentStaff>[] = [
 		header: 'Total Fee',
 	},
 	{
-		header: 'EDIT ALL',
-		cell: ({ row }: any) => <button className="w-20 font-bold hover:cursor-pointer pr-8">EDIT</button>,
+		id: 'actions',
+		header: '',
+		cell: ({ row }: any) => (
+			<div className="w-full flex justify-end">
+				<Button
+					className="w-20 border-t-0 border-b-0 border-r-0"
+					variant="outline">
+					EDIT
+				</Button>
+			</div>
+		),
 	},
 ];
 
@@ -233,7 +256,7 @@ function ProjectView() {
 			</TitleWrapper>
 
 			<Tabs defaultValue="description">
-				<TabsList className="justify-start w-full gap-8 bg-white border-r border-b [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+				<TabsList className="justify-start w-full gap-8 bg-white border-r border-b [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 					<TabsTrigger
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 						value="description">
@@ -261,21 +284,21 @@ function ProjectView() {
 				<TabsContent
 					className="m-0"
 					value="description">
-					<div className="flex flex-col border-r">
-						<div className="flex justify-between">
+					<div className="flex flex-col">
+						<div className="flex justify-between border-r">
 							<div className="h-10 flex items-center px-8">
 								<h1 className="text-sm">Description</h1>
 							</div>
 							<Button className="w-20 text-black bg-transparent link h-10">PRINT</Button>
 							{/* </Link> */}
 						</div>
-						<div className="flex items-center justify-between bg-gray-100 border-t border-b">
+						<div className="flex items-center justify-between bg-gray-100 border-t border-b border-r">
 							<div className="px-8">
 								<h1 className="text-base">一般情報</h1>
 							</div>
 							<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 						</div>
-						<div className="flex text-xs flex-col">
+						<div className="flex text-xs flex-col border-r">
 							<Input
 								className="px-8 border-none"
 								placeholder="Project Name"></Input>
@@ -334,7 +357,7 @@ function ProjectView() {
 							<Input
 								className="px-8 rounded-none"
 								placeholder="Bla bla bla bla"></Input>
-							<div className="flex items-center justify-between bg-gray-100 border-b border-t">
+							<div className="flex items-center justify-between bg-gray-100 border-t">
 								<div className="px-8">
 									<h1>Assigned staffs</h1>
 								</div>
@@ -343,14 +366,12 @@ function ProjectView() {
 									<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
 								</div>
 							</div>
-							<div className="p-0 px-0 m-0">
-								<DataTable
-									columns={assignedStaffColumns}
-									data={mockAssignedStaff}
-									loading={false}
-								/>
-							</div>
 						</div>
+						<DataTable
+							columns={assignedStaffColumns}
+							data={mockAssignedStaff}
+							loading={false}
+						/>
 					</div>
 				</TabsContent>
 
@@ -393,14 +414,14 @@ function ProjectView() {
 								<h1>Members</h1>
 							</div>
 
-							<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border md:flex-row">
+							<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border border-b-0 md:flex-row">
 								<div className="flex flex-col space-y-2 bg-white md:w-auto">
 									<Label htmlFor="keyword">Keyword</Label>
 									<Input
 										type="text"
 										id="keyword"
 										placeholder="Search by name, email, etc."
-										className="border rounded-none w-[400px]"
+										className="border rounded-none w-[250px]"
 									/>
 								</div>
 
@@ -429,7 +450,7 @@ function ProjectView() {
 									</div>
 								</div>
 							</div>
-							<div className="border-l border-r">
+							<div className="border-l">
 								<DataTable
 									columns={assignedStaffColumns}
 									data={mockAssignedStaff}
@@ -447,9 +468,9 @@ function ProjectView() {
 					<TitleWrapper>
 						<h1>Member adjustment</h1>
 					</TitleWrapper>
-					<div className="flex flex-row bg-white border-r ">
+					<div className="flex flex-row bg-white">
 						<div className="w-full">
-							<div className="flex flex-row items-center gap-4 px-8 py-4">
+							<div className="flex flex-row items-center border-r gap-4 px-8 py-4">
 								<div className="flex flex-col space-y-2">
 									<Label htmlFor="keyword">Keyword</Label>
 									<Input
@@ -482,13 +503,11 @@ function ProjectView() {
 									<AdvancedFilterPopover />
 								</div>
 							</div>
-							<div className="border-t border-b">
-								<DataTable
-									columns={paymentStaffColumns}
-									data={mockPaymentStaff}
-									loading={false}
-								/>
-							</div>
+							<DataTable
+								columns={paymentStaffColumns}
+								data={mockPaymentStaff}
+								loading={false}
+							/>
 						</div>
 					</div>
 				</TabsContent>

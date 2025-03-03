@@ -1,36 +1,26 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DataTable } from "@/components/ui/data-table";
-import { useCallback, useState } from "react";
-import {
-    useEmployeeProfile,
-    useEmployeeProjects,
-    useEmployeePayments,
-    useUpdatePaymentStatus,
-} from "@/hooks/usePayroll";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { InfoSection, TitleWrapper } from "@/components/wrapperElement";
-import { Label } from "@/components/ui/label";
-import AdvancedFilterPopover from "@/components/search/advanced-search";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { createFileRoute, Link, useParams } from '@tanstack/react-router';
+import { ColumnDef } from '@tanstack/react-table';
+import { format } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DataTable } from '@/components/ui/data-table';
+import { useCallback, useState } from 'react';
+import { useEmployeeProfile, useEmployeeProjects, useEmployeePayments, useUpdatePaymentStatus } from '@/hooks/usePayroll';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { InfoSection, TitleWrapper } from '@/components/wrapperElement';
+import { Label } from '@/components/ui/label';
+import AdvancedFilterPopover from '@/components/search/advanced-search';
 
-export const Route = createFileRoute("/payroll/$employeeId/")({
-    component: RouteComponent,
+export const Route = createFileRoute('/payroll/$employeeId/')({
+	component: RouteComponent,
 });
 
 const breakdowncolumns = [
 	{
 		accessorKey: 'project',
-		header: 'Projects',
+		header: () => <h1 className="pl-8">Projects</h1>,
+		cell: ({ row }: any) => <h1>{row.original.project}</h1>,
 	},
 	{
 		accessorKey: 'start',
@@ -65,18 +55,19 @@ const breakdowncolumns = [
 		header: 'Total fee',
 	},
 	{
+		id: 'actions',
 		accessorKey: 'action',
 		header: '',
 		cell: () => (
-			<Link
-				to="/"
-				className="w-full h-full">
-				<Button
-					variant="outline"
-					className="w-20 h-full">
-					VIEW
-				</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link to="/">
+					<Button
+						variant="outline"
+						className="w-20 border-t-0 border-r-0 border-b-0">
+						VIEW
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
@@ -146,210 +137,171 @@ const columnsEmployee = [
 ];
 
 function RouteComponent() {
-    const { employeeId } = useParams({ strict: false });
-    const {
-        profile,
-        loading: profileLoading,
-        error: profileError,
-    } = useEmployeeProfile(Number(employeeId));
+	const { employeeId } = useParams({ strict: false });
+	const { profile, loading: profileLoading, error: profileError } = useEmployeeProfile(Number(employeeId));
 
-    console.log(profile)
+	console.log(profile);
 
-    const {
-        projects,
-        loading: projectsLoading,
-        error: projectsError,
-    } = useEmployeeProjects(Number(employeeId));
-    const {
-        payments,
-        loading: paymentsLoading,
-        error: paymentsError,
-    } = useEmployeePayments(Number(employeeId));
-    const { updatePaymentStatus } = useUpdatePaymentStatus();
-    const [editable, setEditable] = useState(false);
-    const [updatedPayments, setUpdatedPayments] = useState<
-        Record<number, string>
-    >({});
+	const { projects, loading: projectsLoading, error: projectsError } = useEmployeeProjects(Number(employeeId));
+	const { payments, loading: paymentsLoading, error: paymentsError } = useEmployeePayments(Number(employeeId));
+	const { updatePaymentStatus } = useUpdatePaymentStatus();
+	const [editable, setEditable] = useState(false);
+	const [updatedPayments, setUpdatedPayments] = useState<Record<number, string>>({});
 
-    const handleStatusChange = (paymentId: number, newStatus: string) => {
-        setUpdatedPayments((prev) => ({ ...prev, [paymentId]: newStatus }));
-    };
+	const handleStatusChange = (paymentId: number, newStatus: string) => {
+		setUpdatedPayments((prev) => ({ ...prev, [paymentId]: newStatus }));
+	};
 
-    const handleSaveEdits = useCallback(async () => {
-        try {
-            await Promise.all(
-                Object.entries(updatedPayments).map(
-                    async ([paymentId, status]) => {
-                        await updatePaymentStatus(Number(paymentId), status);
-                    }
-                )
-            );
-            setUpdatedPayments({});
-            setEditable(false);
-        } catch (error) {
-            console.error("Failed to save updates:", error);
-        }
-    }, [updatedPayments, updatePaymentStatus]);
+	const handleSaveEdits = useCallback(async () => {
+		try {
+			await Promise.all(
+				Object.entries(updatedPayments).map(async ([paymentId, status]) => {
+					await updatePaymentStatus(Number(paymentId), status);
+				})
+			);
+			setUpdatedPayments({});
+			setEditable(false);
+		} catch (error) {
+			console.error('Failed to save updates:', error);
+		}
+	}, [updatedPayments, updatePaymentStatus]);
 
-    const basicInfo = [
-        {
-            label: "Employee ID",
-            value: profile?.employeeId?.toString() || "-",
-        },
-        {
-            label: "Name",
-            value: profile?.name || "-",
-        },
-        {
-            label: "Department",
-            value: profile?.department || "-",
-        },
-        {
-            label: "Category",
-            value: profile?.category || "-",
-        },
-    ] as { label: string; value: string }[];
+	const basicInfo = [
+		{
+			label: 'Employee ID',
+			value: profile?.employeeId?.toString() || '-',
+		},
+		{
+			label: 'Name',
+			value: profile?.name || '-',
+		},
+		{
+			label: 'Department',
+			value: profile?.department || '-',
+		},
+		{
+			label: 'Category',
+			value: profile?.category || '-',
+		},
+	] as { label: string; value: string }[];
 
-    const rateInfo = [
-        {
-            label: "Hourly Rates",
-            value:
-                profile?.rates
-                    ?.map(
-                        (rate) =>
-                            `${rate.type}: ¥${rate.ratevalue.toLocaleString()}`
-                    )
-                    .join(", ") || "-",
-        },
-        {
-            label: "Joined Date",
-            value:
-                profile?.joinedDate ?
-                    format(new Date(profile.joinedDate), "MMM dd, yyyy")
-                :   "-",
-        },
-    ];
+	const rateInfo = [
+		{
+			label: 'Hourly Rates',
+			value: profile?.rates?.map((rate) => `${rate.type}: ¥${rate.ratevalue.toLocaleString()}`).join(', ') || '-',
+		},
+		{
+			label: 'Joined Date',
+			value: profile?.joinedDate ? format(new Date(profile.joinedDate), 'MMM dd, yyyy') : '-',
+		},
+	];
 
-    const projectColumns: ColumnDef<any>[] = [
-        { accessorKey: "projectName", header: "Project Name" },
-        {
-            accessorKey: "startDate",
-            header: "Start Date",
-            cell: ({ row }) =>
-                format(new Date(row.original.startDate), "MMM dd, yyyy"),
-        },
-        {
-            accessorKey: "endDate",
-            header: "End Date",
-            cell: ({ row }) =>
-                row.original.endDate ?
-                    format(new Date(row.original.endDate), "MMM dd, yyyy")
-                :   "Ongoing",
-        },
-        {
-            accessorKey: "hourlyRate",
-            header: "Hourly Rate",
-            cell: ({ row }) => `¥${row.original.hourlyRate.toLocaleString()}`,
-        },
-        {
-            accessorKey: "totalFee",
-            header: "Total Fee",
-            cell: ({ row }) => `¥${row.original.totalFee.toLocaleString()}`,
-        },
-    ];
+	const projectColumns: ColumnDef<any>[] = [
+		{ accessorKey: 'projectName', header: 'Project Name' },
+		{
+			accessorKey: 'startDate',
+			header: 'Start Date',
+			cell: ({ row }) => format(new Date(row.original.startDate), 'MMM dd, yyyy'),
+		},
+		{
+			accessorKey: 'endDate',
+			header: 'End Date',
+			cell: ({ row }) => (row.original.endDate ? format(new Date(row.original.endDate), 'MMM dd, yyyy') : 'Ongoing'),
+		},
+		{
+			accessorKey: 'hourlyRate',
+			header: 'Hourly Rate',
+			cell: ({ row }) => `¥${row.original.hourlyRate.toLocaleString()}`,
+		},
+		{
+			accessorKey: 'totalFee',
+			header: 'Total Fee',
+			cell: ({ row }) => `¥${row.original.totalFee.toLocaleString()}`,
+		},
+	];
 
-    const paymentColumns: ColumnDef<any>[] = [
-        { accessorKey: "paymentId", header: "Payment ID" },
-        {
-            accessorKey: "created_at",
-            header: "Date",
-            cell: ({ row }) =>
-                format(new Date(row.original.created_at), "MMM dd, yyyy"),
-        },
-        {
-            accessorKey: "totalPayment",
-            header: "Amount",
-            cell: ({ row }) => `¥${row.original.totalPayment.toLocaleString()}`,
-        },
-        {
-            accessorKey: "status",
-            header: "Status",
-            cell: ({ row }) =>
-                editable ?
-                    <Select
-                        value={
-                            updatedPayments[row.original.paymentId] ||
-                            row.original.status
-                        }
-                        onValueChange={(value) =>
-                            handleStatusChange(row.original.paymentId, value)
-                        }
-                    >
-                        <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Review">Review</SelectItem>
-                            <SelectItem value="Paid">Paid</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                        </SelectContent>
-                    </Select>
-                :   <p>{row.original.status}</p>,
-        },
-        {
-            accessorKey: "details",
-            header: "Projects",
-            cell: ({ row }) =>
-                row.original.details
-                    ?.map((d: any) => d.projectName)
-                    .join(", ") || "-",
-        },
-        {
-            accessorKey: "action",
-            header: "",
-            cell: ({ row }) => (
-                <Link
-                    to="/payroll/$employeeId/$paymentId"
-                    params={{
-                        paymentId: row.original.paymentId.toString(),
-                        employeeId: employeeId!,
-                    }}
-                >
-                    <Button variant="outline" className="w-20">
-                        Details
-                    </Button>
-                </Link>
-            ),
-        },
-    ];
+	const paymentColumns: ColumnDef<any>[] = [
+		{ accessorKey: 'paymentId', header: 'Payment ID' },
+		{
+			accessorKey: 'created_at',
+			header: 'Date',
+			cell: ({ row }) => format(new Date(row.original.created_at), 'MMM dd, yyyy'),
+		},
+		{
+			accessorKey: 'totalPayment',
+			header: 'Amount',
+			cell: ({ row }) => `¥${row.original.totalPayment.toLocaleString()}`,
+		},
+		{
+			accessorKey: 'status',
+			header: 'Status',
+			cell: ({ row }) =>
+				editable ? (
+					<Select
+						value={updatedPayments[row.original.paymentId] || row.original.status}
+						onValueChange={(value) => handleStatusChange(row.original.paymentId, value)}>
+						<SelectTrigger className="w-[120px]">
+							<SelectValue placeholder="Status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="Review">Review</SelectItem>
+							<SelectItem value="Paid">Paid</SelectItem>
+							<SelectItem value="Pending">Pending</SelectItem>
+						</SelectContent>
+					</Select>
+				) : (
+					<p>{row.original.status}</p>
+				),
+		},
+		{
+			accessorKey: 'details',
+			header: 'Projects',
+			cell: ({ row }) => row.original.details?.map((d: any) => d.projectName).join(', ') || '-',
+		},
+		{
+			accessorKey: 'action',
+			header: '',
+			cell: ({ row }) => (
+				<Link
+					to="/payroll/$employeeId/$paymentId"
+					params={{
+						paymentId: row.original.paymentId.toString(),
+						employeeId: employeeId!,
+					}}>
+					<Button
+						variant="outline"
+						className="w-20">
+						Details
+					</Button>
+				</Link>
+			),
+		},
+	];
 
-    return (
-        <div className="flex flex-col flex-1 h-full">
-            <Tabs defaultValue="profile">
-                <div className="flex items-center justify-between bg-white border-b border-r">
-                    <TabsList className="justify-start gap-8 px-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
-                        <TabsTrigger
-                            value="profile"
-                            className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-                        >
-                            Profile
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="joinedprojects"
-                            className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-                        >
-                            Joined Projects
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="payment"
-                            className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-                        >
-                            Payment
-                        </TabsTrigger>
-                    </TabsList>
-                </div>
+	return (
+		<div className="flex flex-col flex-1 h-full">
+			<Tabs defaultValue="profile">
+				<div className="flex items-center justify-between bg-white border-b border-r">
+					<TabsList className="justify-start gap-8 pl-5 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
+						<TabsTrigger
+							value="profile"
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
+							Profile
+						</TabsTrigger>
+						<TabsTrigger
+							value="joinedprojects"
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
+							Joined Projects
+						</TabsTrigger>
+						<TabsTrigger
+							value="payments"
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
+							Payment
+						</TabsTrigger>
+					</TabsList>
+				</div>
 
-                {/* Profile Tab */}
+				{/* Profile Tab */}
 				<TabsContent
 					value="profile"
 					className="m-0">
@@ -412,7 +364,7 @@ function RouteComponent() {
 						</div>
 					</div>
 				</TabsContent>
-                {/* <TabsContent value="profile" className="m-0">
+				{/* <TabsContent value="profile" className="m-0">
                     <div className="h-full p-6">
                         <TitleWrapper>
                             <h1 className="text-2xl font-semibold">
@@ -437,8 +389,8 @@ function RouteComponent() {
                     </div>
                 </TabsContent> */}
 
-                {/* Projects Tab */}
-                <TabsContent
+				{/* Projects Tab */}
+				<TabsContent
 					className="m-0"
 					value="joinedprojects">
 					<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
@@ -491,7 +443,7 @@ function RouteComponent() {
 							<AdvancedFilterPopover />
 						</div>
 					</div>
-					<div className="flex justify-end w-full bg-white border-r">
+					<div className="flex justify-end w-full bg-white border-r border-b">
 						<Link
 							to="/payroll/$employeeId/joined-projects"
 							params={{ employeeId: employeeId! }}>
@@ -502,59 +454,48 @@ function RouteComponent() {
 							</Button>
 						</Link>
 					</div>
-					<div className="border-t border-b border-r">
-						{/* <DataTable
+					{/* <DataTable
 							columns={columnsEmployee}
 							data={profile}
 							loading={profileLoading}
 						/> */}
-					</div>
-					<TitleWrapper>
-						<h2 className="text-xl">Breakdown</h2>
+					<TitleWrapper className="border-t-0 border-b-0">
+						<h2 className="">Breakdown</h2>
 					</TitleWrapper>
-					<div className="border-t border-b border-r">
-						<DataTable
-							columns={breakdowncolumns}
-							data={projects}
-							loading={projectsLoading}
-						/>
-					</div>
+					<DataTable
+						columns={breakdowncolumns}
+						data={projects}
+						loading={projectsLoading}
+					/>
 				</TabsContent>
 
-                {/* Payments Tab */}
-                <TabsContent value="payments" className="m-0">
-                    <div className="p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold">
-                                Payment History
-                            </h2>
-                            <div className="flex gap-2">
-                                {editable && (
-                                    <Button onClick={handleSaveEdits}>
-                                        Save Changes
-                                    </Button>
-                                )}
-                                <Button
-                                    variant={
-                                        editable ? "destructive" : "outline"
-                                    }
-                                    onClick={() => setEditable(!editable)}
-                                >
-                                    {editable ? "Cancel" : "Edit Payments"}
-                                </Button>
-                            </div>
-                        </div>
+				{/* Payments Tab */}
+				<TabsContent
+					value="payments"
+					className="m-0">
+					<div className="p-6">
+						<div className="flex items-center justify-between mb-6">
+							<h2 className="text-xl font-semibold">Payment History</h2>
+							<div className="flex gap-2">
+								{editable && <Button onClick={handleSaveEdits}>Save Changes</Button>}
+								<Button
+									variant={editable ? 'destructive' : 'outline'}
+									onClick={() => setEditable(!editable)}>
+									{editable ? 'Cancel' : 'Edit Payments'}
+								</Button>
+							</div>
+						</div>
 
-                        <div className="p-6 bg-white rounded-lg shadow-sm">
-                            <DataTable
-                                columns={paymentColumns}
-                                data={payments}
-                                loading={paymentsLoading}
-                            />
-                        </div>
-                    </div>
-                </TabsContent>
-            </Tabs>
-        </div>
-    );
+						<div className="p-6 bg-white rounded-lg shadow-sm">
+							<DataTable
+								columns={paymentColumns}
+								data={payments}
+								loading={paymentsLoading}
+							/>
+						</div>
+					</div>
+				</TabsContent>
+			</Tabs>
+		</div>
+	);
 }

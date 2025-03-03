@@ -225,6 +225,7 @@ function RouteComponent() {
 						break;
 					case 'detail':
 						columnDef.header = '';
+						columnDef.id = 'actions';
 						columnDef.cell = ({ row }) => (
 							<div className="w-full flex justify-end">
 								<Link

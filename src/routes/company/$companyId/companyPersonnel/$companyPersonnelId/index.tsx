@@ -7,8 +7,6 @@ import { mockCompanies } from '@/config/mockData/companies';
 import MenuList from '@/components/menuList';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { DndContext, DragEndEvent, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -113,7 +111,7 @@ function RouteComponent() {
 		<div className="flex-1 h-full">
 			{/* Menus */}
 			<div className="flex-none">
-				<div className="flex items-center justify-between border-r">
+				<div className="flex items-center justify-between pl-4 border-r">
 					<MenuList
 						items={tabs.map((tab) => ({
 							label: tab.label,
@@ -123,7 +121,7 @@ function RouteComponent() {
 					<div className="pr-4">
 						<Link
 							to={`/company/setting`}
-							className="">
+							className="text-xs">
 							Setting
 						</Link>
 					</div>
@@ -145,7 +143,7 @@ function RouteComponent() {
 				defaultValue="profile"
 				className="w-full bg-white border-t [&>*]:p-0 [&>*]:m-0 rounded-none [&>*]:rounded-none">
 				<div className="px-8">
-					<TabsList className=" justify-start w-full gap-8 bg-gray-100 [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+					<TabsList className=" justify-start border-r w-full gap-8 bg-gray-100 [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 						<TabsTrigger
 							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 							value="profile">
@@ -204,7 +202,7 @@ function RouteComponent() {
 					className="m-0 overflow-x-hidden"
 					value="leads">
 					<div>
-						<div className="flex flex-col gap-4 px-8 pt-4 border-t border-b md:flex-row md:gap-16">
+						<div className="flex flex-col gap-4 px-8 pt-4 border-t border-r border-b md:flex-row md:gap-16">
 							<div className="flex flex-col w-full space-y-2 md:w-auto">
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
@@ -238,7 +236,7 @@ function RouteComponent() {
 						</div>
 						<div>
 							<Tabs defaultValue="kanban">
-								<TabsList className="justify-start w-full gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 px-8">
+								<TabsList className="justify-start w-full border-r gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 									<TabsTrigger
 										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
 										value="kanban">
@@ -250,7 +248,9 @@ function RouteComponent() {
 										List
 									</TabsTrigger>
 								</TabsList>
-								<TabsContent value="kanban">
+								<TabsContent
+									value="kanban"
+									className="border-r m-0">
 									<DndContext
 										sensors={sensors}
 										collisionDetection={closestCenter}
@@ -283,7 +283,9 @@ function RouteComponent() {
 										</KanbanBoard>
 									</DndContext>
 								</TabsContent>
-								<TabsContent value="list">
+								<TabsContent
+									value="list"
+									className="m-0">
 									<DataTable
 										columns={leadsColumns}
 										data={
@@ -365,7 +367,7 @@ function RouteComponent() {
 								<TabsContent
 									value="timeline"
 									className="m-0">
-									<ScheduleTable />
+									{/* <ScheduleTable /> */}
 								</TabsContent>
 							</Tabs>
 						</div>

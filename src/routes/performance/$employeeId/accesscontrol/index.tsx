@@ -75,11 +75,11 @@ function RouteComponent() {
 						items={[
 							{
 								label: 'Sheet List',
-								path: `/dashboard/performance/${employeeId}`,
+								path: `/performance/${employeeId}`,
 							},
 							{
 								label: 'Access Control',
-								path: `/dashboard/performance/${employeeId}/accesscontrol`,
+								path: `/performance/${employeeId}/accesscontrol`,
 							},
 						]}
 					/>

@@ -156,6 +156,7 @@ function RouteComponent() {
 				},
 			},
 			{
+				id: 'actions',
 				header: '',
 				accessorKey: 'projectId',
 				cell: ({ row }) => {
