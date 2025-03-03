@@ -258,23 +258,23 @@ function ProjectView() {
 			<Tabs defaultValue="description">
 				<TabsList className="justify-start w-full gap-8 bg-white border-r border-b [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
 						value="description">
 						Description
 					</TabsTrigger>
 					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
 						value="members">
 						Members
 					</TabsTrigger>
 					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
 						value="payment">
 						Payment
 					</TabsTrigger>
 
 					<TabsTrigger
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
 						value="P/L">
 						P/L
 					</TabsTrigger>
