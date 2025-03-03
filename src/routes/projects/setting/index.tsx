@@ -103,7 +103,8 @@ const rowDataField: DataFieldRow[] = [
 const columnsDataField: ColumnDef<DataFieldRow>[] = [
 	{
 		accessorKey: 'dataField',
-		header: 'Data field shown in project',
+		header: () => <h1 className="pl-8">Data field shown in project</h1>,
+		cell: ({ row }) => <h1 className="pl-8 py-2">{row.original.dataField}</h1>,
 	},
 	{
 		accessorKey: 'type',
@@ -150,7 +151,8 @@ const rowDataCategory: DataCategoryRow[] = [
 const columnsDataCategory: ColumnDef<DataCategoryRow>[] = [
 	{
 		accessorKey: 'category',
-		header: 'Category',
+		header: () => <h1 className="pl-8">Category</h1>,
+		cell: ({ row }) => <h1 className="pl-8 py-2">{row.original.category}</h1>,
 	},
 	{
 		accessorKey: 'parentCategory',
@@ -160,10 +162,14 @@ const columnsDataCategory: ColumnDef<DataCategoryRow>[] = [
 		id: 'actions',
 		header: '',
 		cell: () => (
-			<Button variant="outline">
-				{/* Example action: View details of the staff member */}
-				View
-			</Button>
+			<div className="w-full flex justify-end">
+				<Button
+					variant="outline"
+					className="border-b-0 border-t-0 border-r-0">
+					{/* Example action: View details of the staff member */}
+					View
+				</Button>
+			</div>
 		),
 	},
 ];
@@ -199,24 +205,21 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0 rounded-none"
 					value="dataField">
-					<div className="border-r border-t border-b">
-						<DataTable
-							columns={columnsDataField}
-							data={rowDataField}
-						/>
-					</div>
+					<DataTable
+						columns={columnsDataField}
+						data={rowDataField}
+					/>
 				</TabsContent>
 
 				{/* DataCategory Tab */}
 				<TabsContent
 					className="m-0 rounded-none"
 					value="dataCategory">
-					<div className="border-r border-t border-b">
-						<DataTable
-							columns={columnsDataCategory}
-							data={rowDataCategory}
-						/>
-					</div>
+					<DataTable
+						columns={columnsDataCategory}
+						data={rowDataCategory}
+						loading={false}
+					/>
 				</TabsContent>
 			</Tabs>
 		</div>

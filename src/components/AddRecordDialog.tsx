@@ -59,7 +59,7 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns }: AddReco
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
-				className="w-[400px] p-4 rounded-none"
+				className="w-[400px] p-4 rounded-none absolute -top-[200px] right-0"
 				align="end">
 				<form onSubmit={handleSubmit}>
 					<div className="grid gap-4">

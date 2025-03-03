@@ -1,102 +1,102 @@
-import { AddRecordDialog } from "@/components/AddRecordDialog";
-import AdvancedFilterPopover from "@/components/search/advanced-search";
-import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    useCreatePayment,
-    usePayrollEmployees,
-    useUpdatePaymentStatus,
-} from "@/hooks/usePayroll";
-import { useUserData } from "@/hooks/useUserData";
-import { Employee } from "@/types/employee";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ColumnDef } from "@tanstack/react-table";
-import { useCallback, useState } from "react";
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+import AdvancedFilterPopover from '@/components/search/advanced-search';
+import { Label } from '@/components/ui/label';
+import { useUserData } from '@/hooks/useUserData';
+import { useCallback, useEffect, useState } from 'react';
+import { AddRecordDialog } from '@/components/AddRecordDialog';
+import { Employee } from '@/types/payroll';
+import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
 
-export const Route = createFileRoute("/payroll/")({
+export const Route = createFileRoute('/payroll/')({
     component: RouteComponent,
 });
 
 // Define the data row type
 type PayrollRow = {
-    image: string;
-    id: string;
-    name: string;
-    employeeCategory: string;
-    hourlyRateA: string;
-    hourlyRateB: string;
-    totalPayment: string;
-    numberOfPayment: string;
-    joinedOn: string;
+	image: string;
+	id: string;
+	name: string;
+	employeeCategory: string;
+	hourlyRateA: string;
+	hourlyRateB: string;
+	totalPayment: string;
+	numberOfPayment: string;
+	joinedOn: string;
 };
 
-// Define columns
+/// Define columns
 const columns: ColumnDef<PayrollRow>[] = [
-    {
-        accessorKey: "image",
-        header: "",
-        cell: ({ row }: any) => (
-            <div className="flex items-center justify-center h-full">
-                <figure className="w-16 h-16 overflow-hidden ">
-                    <img
-                        className="object-cover w-full h-full"
-                        src={row.original.image || "/default-avatar.png"}
-                    />
-                </figure>
-            </div>
-        ),
-    },
-    {
-        accessorKey: "id",
-        header: "ID",
-    },
-    {
-        accessorKey: "name",
-        header: "Name",
-    },
-    {
-        accessorKey: "employeeCategory",
-        header: "Employee Category",
-    },
-    {
-        accessorKey: "hourlyRateA",
-        header: "Hourly Rate A",
-    },
-    {
-        accessorKey: "hourlyRateB",
-        header: "Hourly Rate B",
-    },
-    {
-        accessorKey: "totalPayment",
-        header: "Total Payment",
-    },
-    {
-        accessorKey: "numberOfPayment",
-        header: "No. of Payment",
-    },
-    {
-        accessorKey: "joinedOn",
-        header: "Joined on",
-    },
-    {
-        accessorKey: "action",
-        header: "",
+	{
+		accessorKey: 'image',
+		header: '',
+		cell: ({ row }) => (
+			<div className="flex items-center justify-start h-full">
+				<figure className="w-10 h-10 overflow-hidden">
+					<img
+						className="object-cover w-full h-full"
+						src={row.original.image || '/default-avatar.png'}
+					/>
+				</figure>
+			</div>
+		),
+	},
+	{
+		accessorKey: 'id',
+		header: 'ID',
+	},
+	{
+		accessorKey: 'name',
+		header: 'Name',
+	},
+	{
+		accessorKey: 'employeeCategory',
+		header: 'Employee Category',
+	},
+	{
+		accessorKey: 'hourlyRateA',
+		header: 'Hourly Rate A',
+	},
+	{
+		accessorKey: 'hourlyRateB',
+		header: 'Hourly Rate B',
+	},
+	{
+		accessorKey: 'totalPayment',
+		header: 'Total Payment',
+	},
+	{
+		accessorKey: 'numberOfPayment',
+		header: 'No. of Payment',
+	},
+	{
+		accessorKey: 'joinedOn',
+		header: 'Joined on',
+	},
+	{
+		accessorKey: 'action',
+		header: '',
 
-        cell: ({ row }) => (
-            <Link
-                to={`/payroll/$employeeId`}
-                params={{ employeeId: row.original.id }}
-            >
-                <Button variant="outline" className="w-20">
-                    DETAIL
-                </Button>
-            </Link>
-        ),
-    },
+		cell: ({ row }) => (
+			<div className="flex justify-end w-full">
+				<Link
+					to={'/payroll/$employeeId'}
+					params={{ employeeId: row.original.id }}>
+					<Button
+						variant="outline"
+						className="w-20 h-full border-t-0 border-b-0 border-r-0">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
+		),
+	},
 ];
+
 
 function RouteComponent() {
     const { workspaceid } = useUserData();
@@ -188,25 +188,25 @@ function RouteComponent() {
     return (
         <div className="flex flex-col flex-1 h-full">
             <Tabs defaultValue="employeeList">
-                <div className="flex items-center justify-between px-4 bg-white border-b border-r">
+                <div className="flex items-center justify-between pl-4 bg-white border-b border-r">
                     <TabsList className="justify-start gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
                         <TabsTrigger
                             value="employeeList"
-                            className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-                        >
+                            className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
                             Employee List
                         </TabsTrigger>
                         <TabsTrigger
                             value="paymentList"
-                            className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
-                        >
+                            className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
                             Settings
                         </TabsTrigger>
                     </TabsList>
                 </div>
 
                 {/* Employee List Tab */}
-                <TabsContent className="m-0" value="employeeList">
+                <TabsContent
+                    className="m-0"
+                    value="employeeList">
                     <div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
                         <div className="flex gap-8">
                             <div className="flex flex-col space-y-2 bg-white md:w-auto">
@@ -227,15 +227,13 @@ function RouteComponent() {
                                 <div className="flex">
                                     <Button
                                         size="default"
-                                        className="w-full bg-black rounded-none md:w-20"
-                                    >
+                                        className="w-full bg-black rounded-none md:w-20">
                                         Active
                                     </Button>
                                     <Button
                                         size="default"
                                         variant="outline"
-                                        className="w-full rounded-none md:w-20"
-                                    >
+                                        className="w-full rounded-none md:w-20">
                                         All
                                     </Button>
                                 </div>
@@ -267,7 +265,7 @@ function RouteComponent() {
                         </Button>
                     </div>
                     <div className="border-t border-r">
-                        <DataTable
+                    <DataTable
                             columns={columns}
                             data={tableData}
                             loading={
@@ -287,42 +285,38 @@ function RouteComponent() {
                     </div>
                 </TabsContent>
 
-                {/* Payment List Tab */}
-                <TabsContent className="m-0" value="paymentList">
-                    <div className="w-full bg-gray-100">
-                        <div className="px-10 py-2">
-                            <h1>Rate Type</h1>
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-between w-full bg-white border-t border-r">
-                        <div className="flex justify-between w-1/3 px-10 ">
-                            <h1>Hourly RateA</h1>
-                            <h1> Active</h1>
-                        </div>
-                        <Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">
-                            REMOVE
-                        </Button>
-                    </div>
-                    <div className="flex items-center justify-between w-full bg-white border-t border-r">
-                        <div className="flex justify-between w-1/3 px-10 ">
-                            <h1>Hourly RateB</h1>
-                            <h1> Active</h1>
-                        </div>
-                        <Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">
-                            REMOVE
-                        </Button>
-                    </div>
-                    <div className="flex items-center justify-between w-full bg-white border-t border-b border-r">
-                        <div className="flex justify-between w-1/3 px-10 ">
-                            <h1>Hourly RateC</h1>
-                            <h1> Active</h1>
-                        </div>
-                        <Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">
-                            REMOVE
-                        </Button>
-                    </div>
-                </TabsContent>
-            </Tabs>
-        </div>
+            {/* Payment List Tab */}
+				<TabsContent
+					className="m-0 text-xs"
+					value="paymentList">
+					<div className="w-full bg-gray-100">
+						<div className="px-8 py-2 font-bold">
+							<h1>Rate Type</h1>
+						</div>
+					</div>
+					<div className="flex items-center justify-between w-full bg-white border-t border-r">
+						<div className="flex justify-between w-1/3 px-8 ">
+							<h1>Hourly RateA</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
+					</div>
+					<div className="flex items-center justify-between w-full bg-white border-t border-r">
+						<div className="flex justify-between w-1/3 px-8 ">
+							<h1>Hourly RateB</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
+					</div>
+					<div className="flex items-center justify-between w-full bg-white border-t border-b border-r">
+						<div className="flex justify-between w-1/3 px-8 ">
+							<h1>Hourly RateC</h1>
+							<h1> Active</h1>
+						</div>
+						<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link border-r-none">REMOVE</Button>
+					</div>
+				</TabsContent>
+			</Tabs>
+		</div>
     );
 }

@@ -107,8 +107,8 @@ const Sidebar: React.FC<{ isMinimized: boolean; setIsMinimized: any }> = ({ isMi
 	const hasMoreFeatures = currentFeatures.length > initialFeatureCount;
 
 	// const { workspace_id } = useUserData()
-	const workspace_id = 1;
-	const { selectedWorkspace, loading: workspacesLoading } = useWorkspace(Number(workspace_id));
+	const { workspaceid } = useUserData();
+	const { selectedWorkspace, loading: workspacesLoading } = useWorkspace(Number(workspaceid));
 
 	useEffect(() => {
 		setShowMoreFeatures(false);
@@ -128,11 +128,10 @@ const Sidebar: React.FC<{ isMinimized: boolean; setIsMinimized: any }> = ({ isMi
 	];
 
 	const packagedApps = [
-		{ id: 'employee', icon: LogoBlue, label: 'Employee', to: '/employee' },
-		{ id: 'performance', icon: LogoBlue, label: 'Performance', to: '/performance' },
-		{ id: 'crm', icon: LogoBlue, label: 'CRM', to: '/company' },
-		{ id: 'project', icon: LogoBlue, label: 'Project', to: '/projects' },
-		{ id: 'payroll', icon: LogoBlue, label: 'Payroll', to: '/payroll' },
+		{ id: 'employee', icon: Logo, label: 'Employee', to: '/employee' },
+		{ id: 'crm', icon: Logo, label: 'CRM', to: '/company' },
+		{ id: 'project', icon: Logo, label: 'Project', to: '/projects' },
+		{ id: 'payroll', icon: Logo, label: 'Payroll', to: '/payroll' },
 	];
 
 	const categories = ['All employees', 'Employee Category A', ...(showMoreCategory ? ['UI Designer', 'Full Time', 'Temporary'] : [])];

@@ -12,8 +12,9 @@ export const Route = createFileRoute('/performance/setting/')({
 });
 const columns = [
 	{
-		header: 'Template',
+		header: () => <h1 className="pl-8">Template</h1>,
 		accessorKey: 'name',
+		cell: ({ row }: any) => <h1 className="pl-8">{row.original.name}</h1>,
 	},
 	{
 		header: 'Created At',
@@ -28,15 +29,17 @@ const columns = [
 		header: '',
 		accessorKey: 'id',
 		cell: ({ row }: any) => (
-			<Link
-				to={`/performance/setting/$templateId`}
-				params={{ templateId: row.original.id }}>
-				<Button
-					variant="outline"
-					className="w-20">
-					DETAIL
-				</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link
+					to={`/performance/setting/$templateId`}
+					params={{ templateId: row.original.id }}>
+					<Button
+						variant="outline"
+						className="w-20 border-t-0 border-b-0">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
@@ -68,12 +71,11 @@ function RouteComponent() {
 			</div>
 
 			{/* Data Table */}
-			<div className="border-t">
-				<DataTable
-					columns={columns}
-					data={mockTemplates}
-				/>
-			</div>
+			<DataTable
+				columns={columns}
+				data={mockTemplates}
+				loading={false}
+			/>
 		</div>
 	);
 }

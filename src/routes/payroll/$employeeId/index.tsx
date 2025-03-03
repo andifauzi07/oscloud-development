@@ -503,11 +503,11 @@ function RouteComponent() {
 						</Link>
 					</div>
 					<div className="border-t border-b border-r">
-						<DataTable
+						{/* <DataTable
 							columns={columnsEmployee}
 							data={profile}
 							loading={profileLoading}
-						/>
+						/> */}
 					</div>
 					<TitleWrapper>
 						<h2 className="text-xl">Breakdown</h2>
