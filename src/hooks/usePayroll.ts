@@ -1,4 +1,3 @@
-// usePayroll.ts
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
@@ -13,7 +12,6 @@ import {
   fetchEmployeePayments,
   clearEmployeeData,
 } from "@/store/slices/payrollSlice";
-import { CompanyPersonnelLeadsListDataTable } from "@/components/companyPersonnelLeadsListDataTable";
 
 export const usePayrollEmployees = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -73,7 +71,7 @@ export const useEmployeeProfile = (employeeId: number) => {
     if (workspaceid && employeeId) {
       dispatch(fetchEmployeeProfile({
         workspaceId: Number(workspaceid),
-        employeeId
+        employeeId,
       }));
     }
 
@@ -81,7 +79,6 @@ export const useEmployeeProfile = (employeeId: number) => {
       dispatch(clearEmployeeData());
     };
   }, [dispatch, workspaceid, employeeId]);
-
 
   return { profile: employeeProfile, loading, error };
 };
@@ -97,7 +94,7 @@ export const useEmployeeProjects = (employeeId: number) => {
     if (workspaceid && employeeId) {
       dispatch(fetchEmployeeProjects({
         workspaceId: Number(workspaceid),
-        employeeId
+        employeeId,
       }));
     }
   }, [dispatch, workspaceid, employeeId]);
@@ -116,7 +113,7 @@ export const useEmployeePayments = (employeeId: number) => {
     if (workspaceid && employeeId) {
       dispatch(fetchEmployeePayments({
         workspaceId: Number(workspaceid),
-        employeeId
+        employeeId,
       }));
     }
   }, [dispatch, workspaceid, employeeId]);
@@ -129,10 +126,10 @@ export const useUpdatePaymentStatus = () => {
   const { workspaceid } = useUserData();
   const { loading, error } = useSelector((state: RootState) => state.payroll);
 
-  const handleUpdatePaymentStatus = async (paymentId: number, status: string) => {
+  const handleUpdatePaymentStatus = async (paymentId: number, data: any) => {
     if (!workspaceid) throw new Error("No workspace ID available");
     return dispatch(
-      updatePaymentStatus({ workspaceId: Number(workspaceid), paymentId, status })
+      updatePaymentStatus({ workspaceId: Number(workspaceid), paymentId, data })
     ).unwrap();
   };
 

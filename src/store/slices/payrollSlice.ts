@@ -1,9 +1,14 @@
-// payrollSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 import { AppDispatch, RootState } from "@/store/store";
-import { EmployeeProfile, EmployeeProject, EmployeePayment } from "@/types/payroll";
-import { ResponsiveContainer } from "recharts";
+import {
+  EmployeeProfile,
+  EmployeeProject,
+  EmployeePayment,
+  PaymentDetailResponse,
+  PaymentCreate,
+  PaymentUpdate,
+} from "@/types/payroll";
 
 interface PayrollState {
   employees: any[];
@@ -16,13 +21,13 @@ interface PayrollState {
 }
 
 const initialState: PayrollState = {
-	employees: [],
-	payments: [],
-	employeeProfile: null,
-	employeeProjects: [],
-	employeePayments: [],
-	loading: false,
-	error: null,
+  employees: [],
+  payments: [],
+  employeeProfile: null,
+  employeeProjects: [],
+  employeePayments: [],
+  loading: false,
+  error: null,
 };
 
 // Async Thunks
@@ -58,7 +63,7 @@ export const fetchPayments = createAsyncThunk(
 export const createPayment = createAsyncThunk(
   "payroll/createPayment",
   async (
-    { workspaceId, data }: { workspaceId: number; data: any },
+    { workspaceId, data }: { workspaceId: number; data: PaymentCreate },
     { rejectWithValue }
   ) => {
     try {
@@ -76,13 +81,13 @@ export const createPayment = createAsyncThunk(
 export const updatePaymentStatus = createAsyncThunk(
   "payroll/updatePaymentStatus",
   async (
-    { workspaceId, paymentId, status }: { workspaceId: number; paymentId: number; status: string },
+    { workspaceId, paymentId, data }: { workspaceId: number; paymentId: number; data: PaymentUpdate },
     { rejectWithValue }
   ) => {
     try {
       const response = await apiClient.patch(
         `/workspaces/${workspaceId}/payroll/payments/${paymentId}`,
-        { status }
+        data
       );
       return response.data;
     } catch (error: any) {
@@ -101,7 +106,6 @@ export const fetchEmployeeProfile = createAsyncThunk(
       const response = await apiClient.get(
         `/workspaces/${workspaceId}/payroll/employees/${employeeId}/profile`
       );
-      console.log(response.data)
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch profile");
@@ -144,112 +148,114 @@ export const fetchEmployeePayments = createAsyncThunk(
 );
 
 const payrollSlice = createSlice({
-	name: 'payroll',
-	initialState,
-	reducers: {
-		clearEmployeeData: (state) => {
-			state.employeeProfile = null;
-			state.employeeProjects = [];
-			state.employeePayments = [];
-		},
-	},
-	extraReducers: (builder) => {
-		builder
-			// Fetch Employees
-			.addCase(fetchPayrollEmployees.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(fetchPayrollEmployees.fulfilled, (state, action) => {
-				state.loading = false;
-				state.employees = action.payload;
-			})
-			.addCase(fetchPayrollEmployees.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			})
-			// Fetch Payments
-			.addCase(fetchPayments.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(fetchPayments.fulfilled, (state, action) => {
-				state.loading = false;
-				state.payments = action.payload;
-			})
-			.addCase(fetchPayments.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			})
-			// Create Payment
-			.addCase(createPayment.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(createPayment.fulfilled, (state, action) => {
-				state.loading = false;
-				state.payments.push(action.payload);
-			})
-			.addCase(createPayment.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			})
-			// Update Payment Status
-			.addCase(updatePaymentStatus.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(updatePaymentStatus.fulfilled, (state, action) => {
-				state.loading = false;
-				const index = state.payments.findIndex((p) => p.paymentId === action.payload.paymentId);
-				if (index !== -1) {
-					state.payments[index] = action.payload;
-				}
-			})
-			.addCase(updatePaymentStatus.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			})
-			// Fetch Employee Profile
-			.addCase(fetchEmployeeProfile.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(fetchEmployeeProfile.fulfilled, (state, action) => {
-				state.loading = false;
-				state.employeeProfile = action.payload;
-			})
-			.addCase(fetchEmployeeProfile.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			})
-			// Fetch Employee Projects
-			.addCase(fetchEmployeeProjects.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(fetchEmployeeProjects.fulfilled, (state, action) => {
-				state.loading = false;
-				state.employeeProjects = action.payload;
-			})
-			.addCase(fetchEmployeeProjects.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			})
-			// Fetch Employee Payments
-			.addCase(fetchEmployeePayments.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(fetchEmployeePayments.fulfilled, (state, action) => {
-				state.loading = false;
-				state.employeePayments = action.payload;
-			})
-			.addCase(fetchEmployeePayments.rejected, (state, action) => {
-				state.loading = false;
-				state.error = action.payload as string;
-			});
-	},
+  name: "payroll",
+  initialState,
+  reducers: {
+    clearEmployeeData: (state) => {
+      state.employeeProfile = null;
+      state.employeeProjects = [];
+      state.employeePayments = [];
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch Employees
+      .addCase(fetchPayrollEmployees.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPayrollEmployees.fulfilled, (state, action) => {
+        state.loading = false;
+        state.employees = action.payload;
+      })
+      .addCase(fetchPayrollEmployees.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Payments
+      .addCase(fetchPayments.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPayments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.payments = action.payload;
+      })
+      .addCase(fetchPayments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Create Payment
+      .addCase(createPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createPayment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.payments.push(action.payload);
+      })
+      .addCase(createPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update Payment Status
+      .addCase(updatePaymentStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePaymentStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.payments.findIndex(
+          (p) => p.paymentId === action.payload.paymentId
+        );
+        if (index !== -1) {
+          state.payments[index] = action.payload;
+        }
+      })
+      .addCase(updatePaymentStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Employee Profile
+      .addCase(fetchEmployeeProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchEmployeeProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.employeeProfile = action.payload;
+      })
+      .addCase(fetchEmployeeProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Employee Projects
+      .addCase(fetchEmployeeProjects.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchEmployeeProjects.fulfilled, (state, action) => {
+        state.loading = false;
+        state.employeeProjects = action.payload;
+      })
+      .addCase(fetchEmployeeProjects.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Employee Payments
+      .addCase(fetchEmployeePayments.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchEmployeePayments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.employeePayments = action.payload;
+      })
+      .addCase(fetchEmployeePayments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
 export const { clearEmployeeData } = payrollSlice.actions;

@@ -59,11 +59,11 @@ const breakdowncolumns = [
 		accessorKey: 'action',
 		header: '',
 		cell: () => (
-			<div className="w-full flex justify-end">
+			<div className="flex justify-end w-full">
 				<Link to="/">
 					<Button
 						variant="outline"
-						className="w-20 border-t-0 border-r-0 border-b-0">
+						className="w-20 border-t-0 border-b-0 border-r-0">
 						VIEW
 					</Button>
 				</Link>
@@ -443,7 +443,7 @@ function RouteComponent() {
 							<AdvancedFilterPopover />
 						</div>
 					</div>
-					<div className="flex justify-end w-full bg-white border-r border-b">
+					<div className="flex justify-end w-full bg-white border-b border-r">
 						<Link
 							to="/payroll/$employeeId/joined-projects"
 							params={{ employeeId: employeeId! }}>
