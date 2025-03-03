@@ -26,3 +26,36 @@ export interface EmployeeFilters {
     limit?: number;
     id?: number; // Add this to support single employee fetching
 }
+
+type EmployeeProfile = {
+    employeeId: number;
+    name: string;
+    department: string;
+    category: string;
+    joinedDate: string;
+    rates: Array<{
+      type: string;
+      ratevalue: number;
+    }>;
+  };
+  
+  type EmployeeProject = {
+    projectId: number;
+    projectName: string;
+    startDate: string;
+    endDate: string;
+    hourlyRate: number;
+    totalFee: number;
+  };
+  
+  type EmployeePayment = {
+    paymentId: number;
+    status: string;
+    totalPayment: number;
+    created_at: string;
+    details: Array<{
+      projectName: string;
+      hoursWorked: number;
+      transportFee: number;
+    }>;
+  };

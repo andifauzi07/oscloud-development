@@ -5,7 +5,7 @@ export interface Employee {
     rates: { type: string; ratevalue: number }[];
     totalPayment: number;
     numberOfPayments: number;
-    joinedDate: Date
+    joinedDate: Date;
 }
 
 export interface User {
@@ -71,41 +71,44 @@ export interface EmployeePaymentResponse {
     createdDate: string;
 }
 export interface PaymentDetailResponse {
-    detailId: number
-    projectId: number
-    projectName: string
-    hoursWorked: number
-    transportFee: number
-    totalAmount: number
+    detailId: number;
+    projectId: number;
+    projectName: string;
+    hoursWorked: number;
+    transportFee: number;
+    totalAmount: number;
 }
 
 export interface EmployeeProfile {
-    employeeId: number
-    name: string
-    joinedDate: Date
-    category: string
-    department: string
-    rates: { type: string, ratevalue: number }[]
+    employeeId: number;
+    name: string;
+    joinedDate: string;
+    category: string;
+    department: string;
+    rates: Array<{
+        type: string;
+        ratevalue: number;
+    }>;
 }
 
 export interface EmployeeProject {
-    projectId: number
-    projectName: string
-    startDate: Date
-    endDate: Date
-    break_hours: number
-    duration: number
-    hourlyRate: number
-    transportFee: number
-    totalFee: number
-}
-export interface EmployeePayment {
-    paymentId: number
-    name: string
-    category: string
-    totalPayment: number
-    totalHours: number
-    hourlyRate: number
-    transportFee: number
-    createdDate: string
-}
+    projectId: number;
+    projectName: string;
+    startDate: string;
+    endDate: string;
+    break_hours: number;
+    duration: number;
+    hourlyRate: number;
+    transportFee: number;
+    totalFee: number;
+  }
+  export interface EmployeePayment {
+    paymentId: number;
+    name: string;
+    category: string;
+    totalPayment: number;
+    totalHours: number;
+    hourlyRate: number;
+    transportFee: number;
+    createdDate: string;
+  }

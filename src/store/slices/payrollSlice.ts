@@ -2,13 +2,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 import { AppDispatch, RootState } from "@/store/store";
+import { EmployeeProfile, EmployeeProject, EmployeePayment } from "@/types/payroll";
+import { ResponsiveContainer } from "recharts";
 
 interface PayrollState {
   employees: any[];
   payments: any[];
-  employeeProfile: any | null;
-  employeeProjects: any[];
-  employeePayments: any[];
+  employeeProfile: EmployeeProfile | null;
+  employeeProjects: EmployeeProject[];
+  employeePayments: EmployeePayment[];
   loading: boolean;
   error: string | null;
 }
@@ -28,9 +30,7 @@ export const fetchPayrollEmployees = createAsyncThunk(
   "payroll/fetchEmployees",
   async (workspaceId: number, { rejectWithValue }) => {
     try {
-      const response = await apiClient.get("/payroll/employees", {
-        params: { workspace_id: workspaceId },
-      });
+      const response = await apiClient.get(`/workspaces/${workspaceId}/payroll/employees`);
       return response.data.employees;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch employees");
@@ -41,30 +41,12 @@ export const fetchPayrollEmployees = createAsyncThunk(
 export const fetchPayments = createAsyncThunk(
   "payroll/fetchPayments",
   async (
-    {
-      workspaceId,
-      status,
-      employeeId,
-      startDate,
-      endDate,
-    }: {
-      workspaceId: number;
-      status?: string;
-      employeeId?: number;
-      startDate?: string;
-      endDate?: string;
-    },
+    { workspaceId, filters }: { workspaceId: number; filters?: Record<string, any> },
     { rejectWithValue }
   ) => {
     try {
-      const response = await apiClient.get("/payroll/payments", {
-        params: {
-          workspace_id: workspaceId,
-          status,
-          employeeId,
-          startDate,
-          endDate,
-        },
+      const response = await apiClient.get(`/workspaces/${workspaceId}/payroll/payments`, {
+        params: filters,
       });
       return response.data.payments;
     } catch (error: any) {
@@ -76,22 +58,13 @@ export const fetchPayments = createAsyncThunk(
 export const createPayment = createAsyncThunk(
   "payroll/createPayment",
   async (
-    {
-      workspaceId,
-      createdby,
-      data,
-    }: {
-      workspaceId: number;
-      createdby: number;
-      data: any;
-    },
+    { workspaceId, data }: { workspaceId: number; data: any },
     { rejectWithValue }
   ) => {
     try {
       const response = await apiClient.post(
-        "/payroll/payments",
-        { ...data, createdby },
-        { params: { workspace_id: workspaceId } }
+        `/workspaces/${workspaceId}/payroll/payments`,
+        data
       );
       return response.data;
     } catch (error: any) {
@@ -103,22 +76,13 @@ export const createPayment = createAsyncThunk(
 export const updatePaymentStatus = createAsyncThunk(
   "payroll/updatePaymentStatus",
   async (
-    {
-      workspaceId,
-      paymentId,
-      status,
-    }: {
-      workspaceId: number;
-      paymentId: number;
-      status: string;
-    },
+    { workspaceId, paymentId, status }: { workspaceId: number; paymentId: number; status: string },
     { rejectWithValue }
   ) => {
     try {
       const response = await apiClient.patch(
-        `/payroll/payments/${paymentId}`,
-        { status },
-        { params: { workspace_id: workspaceId } }
+        `/workspaces/${workspaceId}/payroll/payments/${paymentId}`,
+        { status }
       );
       return response.data;
     } catch (error: any) {
@@ -135,9 +99,9 @@ export const fetchEmployeeProfile = createAsyncThunk(
   ) => {
     try {
       const response = await apiClient.get(
-        `/payroll/employees/${employeeId}/profile`,
-        { params: { workspace_id: workspaceId } }
+        `/workspaces/${workspaceId}/payroll/employees/${employeeId}/profile`
       );
+      console.log(response.data)
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch profile");
@@ -153,8 +117,7 @@ export const fetchEmployeeProjects = createAsyncThunk(
   ) => {
     try {
       const response = await apiClient.get(
-        `/payroll/employees/${employeeId}/projects`,
-        { params: { workspace_id: workspaceId } }
+        `/workspaces/${workspaceId}/payroll/employees/${employeeId}/projects`
       );
       return response.data;
     } catch (error: any) {
@@ -171,8 +134,7 @@ export const fetchEmployeePayments = createAsyncThunk(
   ) => {
     try {
       const response = await apiClient.get(
-        `/payroll/employees/${employeeId}/payments`,
-        { params: { workspace_id: workspaceId } }
+        `/workspaces/${workspaceId}/payroll/employees/${employeeId}/payments`
       );
       return response.data;
     } catch (error: any) {
