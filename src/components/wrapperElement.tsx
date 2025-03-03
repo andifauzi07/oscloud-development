@@ -15,28 +15,28 @@ export const InfoSection = ({
 	title: React.ReactNode;
 	items: {
 		label: string;
-		value: string;
+		value: string | number;
 		key?: string;
-		options?: { value: string; label: string }[];
+		options?: any[];
 	}[];
 	isEditing?: boolean;
-	onValueChange?: (key: string, value: string) => void;
+	onValueChange?: (key: string, value: string | number) => void;
 }) => (
 	<div className="flex flex-col border-l">
 		<h2 className="px-4 py-4 text-sm font-medium bg-gray-100 border-b border-r">{title}</h2>
-		<div className=" bg-white">
+		<div className="bg-white ">
 			{items.map((item, index) => (
 				<div
 					key={index}
 					className="flex gap-8 border-b border-r">
-					<div className="w-32 px-4 py-2 text-sm font-medium bg-white text-gray-600">
+					<div className="w-32 px-4 py-2 text-sm font-medium text-gray-600 bg-white">
 						<span>{item.label}</span>
 					</div>
 					<div className="flex-1 px-4 py-2 text-sm bg-white">
 						{isEditing && item.key && onValueChange ? (
 							item.options ? (
 								<Select
-									value={item.value}
+									value={item.value.toString()}
 									onValueChange={(value) => onValueChange(item.key!, value)}>
 									<SelectTrigger>
 										<SelectValue placeholder={`Select ${item.label}`} />

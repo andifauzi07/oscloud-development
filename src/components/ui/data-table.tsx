@@ -45,6 +45,7 @@ const EditableCell = <TData,>({ value: initialValue, row: { index, original }, c
 		setValue(initialValue?.toString() || '');
 	}, [initialValue]);
 
+
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			const newValue = e.target.value;
@@ -69,8 +70,8 @@ const EditableCell = <TData,>({ value: initialValue, row: { index, original }, c
 };
 
 export function DataTable<TData, TValue>({ columns, data, loading = false, enableRowDragAndDrop = false, enableColumnDragAndDrop = false, isEditable = false, nonEditableColumns = [], onSave, rowDragProps }: DataTableProps<TData, TValue>) {
-	const [tableData, setTableData] = useState<TData[]>(data);
-	const [tableColumns, setTableColumns] = useState(columns);
+    const [tableData, setTableData] = useState<TData[]>(data);
+    const [tableColumns, setTableColumns] = useState(() => columns);
 
 	// Update tableData when data prop changes
 	useEffect(() => {

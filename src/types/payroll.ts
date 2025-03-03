@@ -6,6 +6,7 @@ export interface Employee {
     totalPayment: number;
     numberOfPayments: number;
     joinedDate: Date;
+    profileimage: string;
 }
 
 export interface User {
@@ -21,7 +22,7 @@ export interface PaymentDetail {
     hoursWorked: number;
     transportFee: number;
     totalAmount: number;
-}
+  }
 
 export interface Payment {
     paymentid: number;
@@ -82,6 +83,7 @@ export interface PaymentDetailResponse {
 export interface EmployeeProfile {
     employeeId: number;
     name: string;
+    profileimage: string;
     joinedDate: string;
     category: string;
     department: string;
@@ -104,11 +106,15 @@ export interface EmployeeProject {
   }
   export interface EmployeePayment {
     paymentId: number;
-    name: string;
-    category: string;
+    employeeId: number;
+    employeeName: string;
+    profileimage: string;
+    status: string;
+    details: PaymentDetail[];
     totalPayment: number;
-    totalHours: number;
-    hourlyRate: number;
-    transportFee: number;
+    createdBy: {
+      userid: number;
+      name: string;
+    };
     createdDate: string;
   }
