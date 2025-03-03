@@ -285,17 +285,17 @@ function RouteComponent() {
 					<TabsList className="justify-start gap-8 pl-5 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12">
 						<TabsTrigger
 							value="profile"
-							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none">
 							Profile
 						</TabsTrigger>
 						<TabsTrigger
 							value="joinedprojects"
-							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none">
 							Joined Projects
 						</TabsTrigger>
 						<TabsTrigger
 							value="payments"
-							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2">
+							className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none">
 							Payment
 						</TabsTrigger>
 					</TabsList>

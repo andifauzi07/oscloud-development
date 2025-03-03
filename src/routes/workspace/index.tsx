@@ -64,7 +64,9 @@ function RouteComponent() {
 			<DataTable
 				columns={usersColumn}
 				data={selectedWorkspace?.users || []}
-				loading={loading}
+				loading={false}
+				isEditable={false}
+				nonEditableColumns={['']}
 			/>
 		</>
 	);
