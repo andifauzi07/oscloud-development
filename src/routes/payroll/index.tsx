@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { Employee } from '@/types/payroll';
 import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
+import { useCreatePayment, usePayrollEmployees, useUpdatePaymentStatus } from '@/hooks/usePayroll';
 
 export const Route = createFileRoute('/payroll/')({
     component: RouteComponent,
@@ -112,10 +113,10 @@ function RouteComponent() {
 
     const handleAddRecord = async (data: Partial<Employee>) => {
         try {
-            if (!data.employeeid) throw new Error("Invalid employee data");
+            if (!data.employeeId) throw new Error("Invalid employee data");
 
             await createPayment({
-                employeeId: Number(data.employeeid),
+                employeeId: Number(data.employeeId),
                 details: [
                     {
                         projectid: 1, // Should be replaced with actual project selection
