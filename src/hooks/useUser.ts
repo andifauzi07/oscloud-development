@@ -17,8 +17,23 @@ export const useUsers = (workspaceId: number) => {
         users,
         loading,
         error,
-        createUser: (userData: { email: string; role: string; status: string }) => dispatch(createUser({ workspaceId, userData })),
-        updateUser: (userId: number, status: string) => dispatch(updateUser({ workspaceId, userId, status })),
+        createUser: (userData: {
+            name: string;
+            email: string;
+            image?: string;
+            phone_number?: string;
+            backup_email?: string;
+        }) => dispatch(createUser({ workspaceId, userData })),
+        updateUser: (
+            userId: number,
+            updateData: {
+                name?: string;
+                email?: string;
+                image?: string;
+                phone_number?: string;
+                backup_email?: string;
+            }
+        ) => dispatch(updateUser({ workspaceId, userId, updateData })),
         deleteUser: (userId: number) => dispatch(deleteUser({ workspaceId, userId })),
     };
 };
