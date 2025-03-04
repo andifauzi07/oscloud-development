@@ -4,14 +4,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { SelectField } from './select-field';
 
 interface AddRecordDialogProps {
 	columns: any[];
 	onSave: (data: any) => void;
 	nonEditableColumns?: string[];
+	selectFields?: {
+		[key: string]: {
+			options: { value: string | number; label: string }[];
+		};
+	};
 }
 
-export function AddRecordDialog({ columns, onSave, nonEditableColumns }: AddRecordDialogProps) {
+export function AddRecordDialog({ columns, onSave, nonEditableColumns, selectFields }: AddRecordDialogProps) {
 	const [formData, setFormData] = React.useState<Record<string, any>>({});
 	const [isOpen, setIsOpen] = React.useState(false);
 
@@ -65,29 +71,48 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns }: AddReco
 					<div className="grid gap-4">
 						<h3 className="font-medium leading-none">Add New Record</h3>
 						<div className="grid gap-3">
-							{editableColumns.map((column) => (
-								<div
-									key={column.accessorKey}
-									className="grid gap-2">
-									<Label
-										htmlFor={column.accessorKey}
-										className="text-sm font-medium">
-										{column.header}
-									</Label>
-									<Input
-										id={column.accessorKey}
-										className={cn('h-8 w-full rounded-none', column.accessorKey === 'name' && 'font-medium')}
-										value={formData[column.accessorKey] || ''}
-										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												[column.accessorKey]: e.target.value,
-											}))
-										}
-										placeholder={`...`}
-									/>
-								</div>
-							))}
+							{editableColumns.map((column) => {
+								const isSelectField = selectFields && selectFields[column.accessorKey];
+								return (
+									<div
+										key={column.accessorKey}
+										className="grid gap-2">
+										{isSelectField ? (
+											<SelectField
+												label={column.header}
+												options={selectFields[column.accessorKey].options}
+												value={formData[column.accessorKey]}
+												onChange={(newValue: any) => {
+													setFormData((prev) => ({
+														...prev,
+														[column.accessorKey]: newValue,
+													}));
+												}}
+											/>
+										) : (
+											<>
+												<Label
+													htmlFor={column.accessorKey}
+													className="text-sm font-medium">
+													{column.header}
+												</Label>
+												<Input
+													id={column.accessorKey}
+													className={cn('h-8 w-full rounded-none', column.accessorKey === 'name' && 'font-medium')}
+													value={formData[column.accessorKey] || ''}
+													onChange={(e) =>
+														setFormData((prev) => ({
+															...prev,
+															[column.accessorKey]: e.target.value,
+														}))
+													}
+													placeholder={`...`}
+												/>
+											</>
+										)}
+									</div>
+								);
+							})}
 						</div>
 						<div className="flex justify-end mt-4">
 							<Button

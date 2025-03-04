@@ -137,16 +137,20 @@ const departmentSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
+            // .addCase(fetchDepartmentById.fulfilled, (state, action) => {
+            //     state.loading = false;
+            //     state.currentDepartment = action.payload;
+            //     // Also update departments array if needed
+            //     const index = state.departments.findIndex(
+            //         (d: any) => d.departmentId === action.payload.departmentId
+            //     );
+            //     if (index !== -1) {
+            //         state.departments[index] = action.payload;
+            //     }
+            // })
             .addCase(fetchDepartmentById.fulfilled, (state, action) => {
                 state.loading = false;
                 state.currentDepartment = action.payload;
-                // Also update departments array if needed
-                const index = state.departments.findIndex(
-                    (d: any) => d.departmentId === action.payload.departmentId
-                );
-                if (index !== -1) {
-                    state.departments[index] = action.payload;
-                }
             })
             .addCase(fetchDepartmentById.rejected, (state, action) => {
                 state.loading = false;

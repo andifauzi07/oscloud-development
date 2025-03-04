@@ -54,38 +54,17 @@ export const useDepartments = (): UseDepartmentsReturn => {
 		}
 	};
 
-	const updateDepartment = async (departmentId: number, data: DepartmentUpdateData) => {
-		if (!workspaceid) throw new Error('No workspace ID available');
-		try {
-			const result = await dispatch(
-				updateDepartmentAction({
-					workspaceId: Number(workspaceid),
-					departmentId,
-					data,
-				})
-			).unwrap();
-
-			// Refetch departments to get the updated tree
-			await dispatch(fetchDepartments(Number(workspaceid)));
-
-			return result;
-		} catch (error) {
-			throw new Error(error instanceof Error ? error.message : 'Failed to update department');
-		}
-	};
-
 	return {
 		departments,
 		loading,
 		error,
 		getDepartmentById,
 		createDepartment,
-		updateDepartment,
 	};
 };
 
 // Hook for accessing a single department by ID
-export const useDepartment = (departmentId?: number): UseDepartmentReturn => {
+export const useDepartment = (departmentId: number): UseDepartmentReturn => {
 	const dispatch = useDispatch<AppDispatch>();
 	const { workspaceid } = useUserData();
 	const { currentDepartment, loading, error } = useSelector((state: RootState) => state.department);
@@ -106,11 +85,28 @@ export const useDepartment = (departmentId?: number): UseDepartmentReturn => {
 		};
 	}, [dispatch, workspaceid, departmentId]);
 
-	return {
-		department: currentDepartment,
-		loading,
-		error,
-	};
+    const updateDepartment = async (data: DepartmentUpdateData) => {
+        if (!workspaceid || !departmentId) throw new Error("Workspace ID or Department ID missing");
+        try {
+            await dispatch(updateDepartmentAction({
+                workspaceId: Number(workspaceid),
+                departmentId,
+                data
+            })).unwrap();
+            // Refetch updated data
+            dispatch(fetchDepartmentById({ workspaceId: Number(workspaceid), departmentId }));
+            dispatch(fetchDepartments(Number(workspaceid)));
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    return {
+        department: currentDepartment,
+        loading,
+        error,
+        updateDepartment,
+    };
 };
 
 // Helper hook to get a flat list of departments from the tree

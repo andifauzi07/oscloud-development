@@ -59,3 +59,10 @@ type EmployeeProfile = {
       transportFee: number;
     }>;
   };
+
+  export type EmployeeCategory = {
+    categoryid: number;
+    categoryname: string;
+    parentcategoryid?: number | null;
+    subCategories?: EmployeeCategory[];
+  };

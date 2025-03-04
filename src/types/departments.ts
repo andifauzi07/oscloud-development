@@ -1,12 +1,12 @@
 // Define types for the Department module
 export interface Department {
-    departmentId: number;
-    departmentName: string;
-    parentDepartmentId: number | null;
+    departmentid: number;
+    departmentname: string;
+    parentdepartmentid: number | null;
     subDepartments: Department[];
     employeeCount: number;
     managerCount: number;
-    workspaceId?: number;
+    workspaceid?: number;
   }
   
   export interface DepartmentCreateData {
@@ -15,6 +15,7 @@ export interface Department {
   }
   
   export interface DepartmentUpdateData {
+    departmentId?: string;
     departmentName?: string;
     parentDepartmentId?: number | null;
   }
@@ -32,13 +33,13 @@ export interface Department {
     error: string | null;
     getDepartmentById: (id: number) => Department | undefined;
     createDepartment: (data: DepartmentCreateData) => Promise<Department>;
-    updateDepartment: (departmentId: number, data: DepartmentUpdateData) => Promise<Department>;
   }
   
   export interface UseDepartmentReturn {
     department: Department | null;
     loading: boolean;
     error: string | null;
+    updateDepartment: (data: DepartmentUpdateData) => Promise<void>;
   }
   
   // Added to handle flat to hierarchical conversion if needed

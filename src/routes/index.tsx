@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { useDepartment, useDepartments } from '@/hooks/useDepartment'
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,
@@ -8,7 +9,6 @@ export const Route = createFileRoute('/')({
 function HomeComponent() {
   return (
     <div className="p-2">
-      {/* <h3>Hi there!</h3> */}
     </div>
   )
 }

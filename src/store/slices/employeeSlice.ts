@@ -135,18 +135,18 @@ export const updateEmployee = createAsyncThunk(
     }
 );
 
-// Fetch employee categories
-// export const fetchEmployeeCategories = createAsyncThunk(
-//     "employee/fetchCategories",
-//     async (workspaceId: number, { rejectWithValue }) => {
-//         try {
-//             const response = await apiClient.get(`/workspaces/${workspaceId}/employee-categories`);
-//             return response.data.categories;
-//         } catch (error: any) {
-//             return rejectWithValue(error.response?.data || "Failed to fetch categories");
-//         }
-//     }
-// );
+export const fetchEmployeeCategories = createAsyncThunk(
+    "employee/fetchCategories",
+    async (workspaceId: number, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.get(`/workspaces/${workspaceId}/employees/employee-categories`);
+            return response.data.categories;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || "Failed to fetch categories");
+        }
+    }
+);
+
 
 const employeeSlice = createSlice({
     name: "employee",
@@ -200,19 +200,19 @@ const employeeSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            // // Fetch employee categories
-            // .addCase(fetchEmployeeCategories.pending, (state) => {
-            //     state.loading = true;
-            //     state.error = null;
-            // })
-            // .addCase(fetchEmployeeCategories.fulfilled, (state, action) => {
-            //     state.loading = false;
-            //     state.categories = action.payload;
-            // })
-            // .addCase(fetchEmployeeCategories.rejected, (state, action) => {
-            //     state.loading = false;
-            //     state.error = action.payload as string;
-            // });
+            // Fetch employee categories
+            .addCase(fetchEmployeeCategories.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchEmployeeCategories.fulfilled, (state, action) => {
+                state.loading = false;
+                state.categories = action.payload;
+            })
+            .addCase(fetchEmployeeCategories.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            });
     },
 });
 
