@@ -223,7 +223,6 @@ const columBreakdown: ColumnDef<BreakdownRow>[] = [
 		),
 	},
 ];
-
 function RouteComponent() {
 	const { employeeId, paymentId } = Route.useParams();
 
