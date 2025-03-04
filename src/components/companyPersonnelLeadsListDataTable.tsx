@@ -51,6 +51,7 @@ export const leadsColumns = [
 	},
 	{
 		header: '',
+		id: 'actions',
 		accessorKey: 'actions', // Use 'id' as the accessorKey for actions
 		cell: () => (
 			<div className="w-full flex justify-end">

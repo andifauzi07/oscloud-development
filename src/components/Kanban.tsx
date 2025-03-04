@@ -49,8 +49,7 @@ export const KanbanColumn = ({ id, title, color, children, renameBoard, addItem,
 					<PopoverTrigger asChild>
 						<Button
 							variant="outline"
-							className="w-8 h-8 p-2 border-2 border-white/50"
-							style={{ backgroundColor: newColor }}
+							className={`w-8 h-8 p-2 border ${newColor}`}
 						/>
 					</PopoverTrigger>
 					<PopoverContent className="w-80">

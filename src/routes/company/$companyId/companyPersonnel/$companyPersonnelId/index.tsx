@@ -8,20 +8,113 @@ import MenuList from '@/components/menuList';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { DndContext, DragEndEvent, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { KanbanBoard, KanbanCard, KanbanColumn } from '@/components/Kanban';
 import { DataTable } from '@/components/ui/data-table';
 import { leadsColumns } from '@/components/companyPersonnelLeadsListDataTable';
 import ScheduleTable from '@/components/EmployeTimeLine';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
+import { KanbanColumnTypes, Lead } from '@/components/kanban/types';
+import { KanbanBoard } from '@/components/kanban/kanban-board';
 
 export const Route = createFileRoute('/company/$companyId/companyPersonnel/$companyPersonnelId/')({
 	component: RouteComponent,
 });
 
+const sampleData: Lead[] = [
+	{
+		id: '1',
+		company: 'COMPANY A',
+		personnel: 'Personnel A',
+		title: 'Web dev for their corp site',
+		addedOn: '2024.12.11',
+		manager: 'John Brown',
+		contractValue: '300,000 USD',
+		status: 'active',
+	},
+	{
+		id: '2',
+		company: 'COMPANY B',
+		personnel: 'Personnel B',
+		title: 'Mobile app development',
+		addedOn: '2024.11.15',
+		manager: 'Jane Smith',
+		contractValue: '450,000 USD',
+		status: 'completed',
+	},
+	{
+		id: '3',
+		company: 'COMPANY C',
+		personnel: 'Personnel C',
+		title: 'E-commerce platform',
+		addedOn: '2024.12.01',
+		manager: 'Robert Johnson',
+		contractValue: '275,000 USD',
+		status: 'pending',
+	},
+	{
+		id: '4',
+		company: 'COMPANY D',
+		personnel: 'Personnel D',
+		title: 'CRM integration',
+		addedOn: '2024.12.10',
+		manager: 'Sarah Williams',
+		contractValue: '180,000 USD',
+		status: 'active',
+	},
+];
+
 function RouteComponent() {
 	const { companyId, companyPersonnelId } = useParams({ strict: false });
+
+	//mockData, you can replace it the value of leads to be function that calls the data
+	const [personnels, setPersonnel] = useState({
+		leads: sampleData, //you can drop here the variable that return the data that you want to show in this pages,
+	});
+
+	// Create columns based on the data structure provided
+	const kanbanColumns: KanbanColumnTypes[] = [
+		{
+			id: 'active',
+			title: 'Active',
+			color: 'bg-blue-500',
+			leads: personnels?.leads.filter((lead) => lead.status === 'active') || [],
+		},
+		{
+			id: 'pending',
+			title: 'Pending',
+			color: 'bg-green-500',
+			leads: personnels?.leads.filter((lead) => lead.status === 'completed') || [],
+		},
+		{
+			id: 'completed',
+			title: 'Completed',
+			color: 'bg-yellow-500',
+			leads: personnels?.leads.filter((lead) => lead.status === 'pending') || [],
+		},
+	];
+
+	// Handle column updates
+	const handleColumnUpdate = (updatedColumns: KanbanColumnTypes[]) => {
+		// Extract all leads from all columns
+		const allLeads = updatedColumns.flatMap((column) => column.leads);
+
+		// Compare if leads have actually changed to prevent unnecessary updates
+		const currentLeadIds = personnels.leads
+			.map((lead) => lead.id)
+			.sort()
+			.join(',');
+		const newLeadIds = allLeads
+			.map((lead) => lead.id)
+			.sort()
+			.join(',');
+
+		// Only update if the leads have actually changed
+		if (currentLeadIds !== newLeadIds || JSON.stringify(personnels.leads) !== JSON.stringify(allLeads)) {
+			setPersonnel({
+				...personnel,
+				leads: allLeads,
+			});
+		}
+	};
 
 	if (!companyPersonnelId) {
 		console.error('Company Personnel ID is missing');
@@ -42,69 +135,6 @@ function RouteComponent() {
 	const [advancedSearchFilter, setAdvancedSearchFilter] = useState('');
 	const handleAdvSearchSelect = (filter: string) => {
 		setAdvancedSearchFilter(filter);
-	};
-
-	// Kanban Board State
-	const [boards, setBoards] = useState([
-		{
-			id: 'active',
-			title: 'Active',
-			color: 'bg-blue-500',
-			leads: personnel?.leads.filter((lead) => lead.status === 'active') || [],
-		},
-		{
-			id: 'completed',
-			title: 'Completed',
-			color: 'bg-green-500',
-			leads: personnel?.leads.filter((lead) => lead.status === 'completed') || [],
-		},
-		{
-			id: 'pending',
-			title: 'Pending',
-			color: 'bg-yellow-500',
-			leads: personnel?.leads.filter((lead) => lead.status === 'pending') || [],
-		},
-	]);
-
-	const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
-
-	const handleDragEnd = (event: DragEndEvent) => {
-		const { active, over } = event;
-
-		if (!over) return; // Exit if no target
-
-		if (active.id !== over.id) {
-			setBoards((currentBoards) => {
-				// Find the source and target boards
-				const activeBoard = currentBoards.find((board) => board.leads?.some((lead) => lead.id === active.id));
-				const overBoard = currentBoards.find((board) => board.leads?.some((lead) => lead.id === over.id));
-
-				// If either board is not found, return current state
-				if (!activeBoard || !overBoard) return currentBoards;
-
-				// Create new array of boards
-				return currentBoards.map((board) => {
-					// Remove from source board
-					if (board.id === activeBoard.id) {
-						return {
-							...board,
-							leads: board.leads.filter((lead) => lead.id !== active.id),
-						};
-					}
-					// Add to target board
-					if (board.id === overBoard.id) {
-						const draggedLead = activeBoard.leads.find((lead) => lead.id === active.id);
-						if (!draggedLead) return board;
-
-						return {
-							...board,
-							leads: [...board.leads, draggedLead],
-						};
-					}
-					return board;
-				});
-			});
-		}
 	};
 
 	return (
@@ -248,41 +278,18 @@ function RouteComponent() {
 										List
 									</TabsTrigger>
 								</TabsList>
+
+								{/* Tab Kanban */}
 								<TabsContent
 									value="kanban"
 									className="border-r border-t m-0 pl-4">
-									<DndContext
-										sensors={sensors}
-										collisionDetection={closestCenter}
-										onDragEnd={handleDragEnd}>
-										<KanbanBoard>
-											{boards.map((board) => (
-												<KanbanColumn
-													key={board.id}
-													id={board.id}
-													title={board.title}
-													color={board.color}>
-													<SortableContext
-														items={board.leads}
-														strategy={verticalListSortingStrategy}>
-														{board.leads.map((lead) => (
-															<KanbanCard
-																key={lead.id}
-																id={lead.id}
-																companyName={company?.name || 'Unknown'}
-																personnelName={personnel?.name || 'Unknown'}
-																projectName={lead.projectName}
-																startDate={lead.startDate}
-																manager={personnel?.companyRole || 'Unknown'}
-																contractValue={lead.value}
-															/>
-														))}
-													</SortableContext>
-												</KanbanColumn>
-											))}
-										</KanbanBoard>
-									</DndContext>
+									<KanbanBoard
+										columns={kanbanColumns}
+										onColumnUpdate={handleColumnUpdate}
+									/>
 								</TabsContent>
+
+								{/* Tab list */}
 								<TabsContent
 									value="list"
 									className="m-0">
@@ -297,6 +304,8 @@ function RouteComponent() {
 											})) || []
 										}
 										loading={false}
+										isEditable={false}
+										nonEditableColumns={['']}
 									/>
 								</TabsContent>
 							</Tabs>
