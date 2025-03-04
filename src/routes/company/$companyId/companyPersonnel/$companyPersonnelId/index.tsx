@@ -167,7 +167,7 @@ function RouteComponent() {
 					className="m-0 overflow-x-hidden"
 					value="profile">
 					<div className="flex flex-col text-xs">
-						<div className="flex justify-start w-full px-6 border-t">
+						<div className="flex justify-start w-full pl-4 border-t">
 							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>Name</h1>
 							</div>
@@ -175,7 +175,7 @@ function RouteComponent() {
 								<h1>COMPANY A</h1>
 							</div>
 						</div>
-						<div className="flex justify-start w-full px-6 border-t">
+						<div className="flex justify-start w-full pl-4 border-t">
 							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>Email</h1>
 							</div>
@@ -183,7 +183,7 @@ function RouteComponent() {
 								<h1>Johnson.white@companya.com</h1>
 							</div>
 						</div>
-						<div className="flex justify-start w-full px-6 border-t">
+						<div className="flex justify-start w-full pl-4 border-t">
 							<div className="flex justify-start p-4 w-1/8 gap-14">
 								<h1>Manager</h1>
 							</div>
@@ -191,7 +191,7 @@ function RouteComponent() {
 								<h1>John Brown</h1>
 							</div>
 						</div>
-						<div className="flex justify-start w-full h-24 px-6 border-t border-b">
+						<div className="flex justify-start w-full h-24 pl-4 border-t border-b">
 							<p className="px-4 py-4">Description</p>
 						</div>
 					</div>
@@ -238,19 +238,19 @@ function RouteComponent() {
 							<Tabs defaultValue="kanban">
 								<TabsList className="justify-start w-full border-r gap-8 bg-white [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 									<TabsTrigger
-										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
 										value="kanban">
 										Kanban
 									</TabsTrigger>
 									<TabsTrigger
-										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none py-2"
+										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
 										value="list">
 										List
 									</TabsTrigger>
 								</TabsList>
 								<TabsContent
 									value="kanban"
-									className="border-r m-0">
+									className="border-r border-t m-0 pl-4">
 									<DndContext
 										sensors={sensors}
 										collisionDetection={closestCenter}
