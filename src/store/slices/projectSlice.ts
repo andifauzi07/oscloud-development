@@ -2,42 +2,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 
-export interface Manager {
-    userId: number;
-    name: string;
-}
-
-export interface Company {
-    companyId: number;
-    name: string;
-    logo?: string;
-}
-
-export interface AssignedStaff {
-    employeeId: number;
-    name: string;
-    rateType: string;
-    rateValue: number;
-    breakHours: number;
-}
-export interface Financials {
-    totalLabourCost: number;
-    totalTransportFee: number;
-}
-
-export interface Costs {
-    food: number;
-    break: number;
-    rental: number;
-    revenue: number;
-    other_cost: number;
-    labour_cost: number;
-    manager_fee: number;
-    costume_cost: number;
-    sales_profit: number;
-    transport_cost: number;
-}
-
 export interface Project {
     projectId: number;
     name: string;
@@ -46,14 +10,41 @@ export interface Project {
     managerId: number;
     workspaceId: number;
     companyId: number;
-    status: string;
+    status: string | null;
     city?: string;
     product?: string;
-    costs: Costs;
-    manager: Manager;
-    company: Company;
-    assignedStaff: AssignedStaff[];
-    financials: Financials;
+    costs: {
+        food: number;
+        break: number;
+        rental: number;
+        revenue: number;
+        other_cost: number;
+        labour_cost: number;
+        manager_fee: number;
+        costume_cost: number;
+        sales_profit: number;
+        transport_cost: number;
+    };
+    manager: {
+        userId: number;
+        name: string;
+    };
+    company: {
+        companyId: number;
+        name: string;
+        logo?: string;
+    };
+    assignedStaff: {
+        employeeId: number;
+        name: string;
+        rateType: string;
+        rateValue: number;
+        breakHours: number;
+    }[];
+    financials: {
+        totalLabourCost: number;
+        totalTransportFee: number;
+    };
 }
 
 interface ProjectState {
@@ -65,54 +56,51 @@ interface ProjectState {
     perPage: number;
 }
 
-const initialState: ProjectState = {
-    projects: [],
-    loading: false,
-    error: null,
-    total: 0,
-    currentPage: 1,
-    perPage: 10
-};
-
-interface ProjectFilters {
+export interface ProjectFilters {
     managerId?: number;
     startDate?: string;
     endDate?: string;
     status?: string;
-    view?: "list" | "timeline";
     employeeId?: number;
-    projectId?: number;
     companyId?: number;
+    search?: string;
 }
 
-export const fetchProjects = createAsyncThunk(
-    "project/fetchAll",
-    async ({
-        workspaceId,
-        filters,
-        page = 1,
-        pageSize = 10
-    }: {
+// Update API response types
+interface ProjectsResponse {
+    projects: Project[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+interface SingleProjectResponse {
+    project: Project;
+}
+
+export const fetchProjects = createAsyncThunk<
+    ProjectsResponse,
+    {
         workspaceId: number;
         filters?: ProjectFilters;
         page?: number;
         pageSize?: number;
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.get(`/workspaces/${workspaceId}/projects/`, {
-                params: {
-                    workspaceid: workspaceId,
-                    ...filters,
-                    page,
-                    limit: pageSize
-                }
-            });
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || "Failed to fetch projects");
-        }
     }
-);
+>("project/fetchAll", async ({ workspaceId, filters, page = 1, pageSize = 10 }, { rejectWithValue }) => {
+    try {
+        const response = await apiClient.get<ProjectsResponse>(`/v1/workspaces/${workspaceId}/projects/`, {
+            params: {
+                workspaceid: workspaceId,
+                ...filters,
+                page,
+                limit: pageSize
+            }
+        });
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.response?.data?.message || "Failed to fetch projects");
+    }
+});
 
 export const fetchProjectById = createAsyncThunk(
     "project/fetchById",
@@ -224,7 +212,14 @@ export const deleteProject = createAsyncThunk(
 
 const projectSlice = createSlice({
     name: "project",
-    initialState,
+    initialState: {
+        projects: [],
+        loading: false,
+        error: null,
+        total: 0,
+        currentPage: 1,
+        perPage: 10
+    } as ProjectState,
     reducers: {},
     extraReducers: (builder) => {
         builder
