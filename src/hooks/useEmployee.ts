@@ -1,25 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { useUserData } from "@/hooks/useUserData";
 import {
     fetchWorkspaceEmployees,
-    // fetchEmployeeCategories,
+    fetchEmployeeById,
     createEmployee,
     updateEmployee,
+    deleteEmployee,
     fetchEmployeeCategories,
-    // type Employee,
+    clearSelectedEmployee
 } from "@/store/slices/employeeSlice";
-import { EmployeeFilters } from "@/types/employee";
-import { Employee } from "@/types/employee";
-
-// Update the EmployeeFilters interface
+import { Employee, EmployeeFilters } from "@/types/employee";
 
 export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { employees, total, currentPage, limit, loading, error } =
-        useSelector((state: RootState) => state.employee);
+    const { employees, total, currentPage, limit, loading, error } = useSelector(
+        (state: RootState) => state.employee
+    );
 
     useEffect(() => {
         if (workspaceid) {
@@ -29,7 +28,6 @@ export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
                     filters: {
                         page: currentPage,
                         limit,
-                        workspaceid: Number(workspaceid), // Add workspaceId to filters
                         ...filters,
                     },
                 })
@@ -37,164 +35,78 @@ export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
         }
     }, [dispatch, workspaceid, currentPage, limit, filters]);
 
-    const addEmployee = async (data: any) => {
+    const addEmployee = useCallback(async (data: {
+        name: string;
+        email: string;
+        employeeCategoryId: number;
+        departmentId: number;
+        profileImage?: string;
+    }) => {
         if (!workspaceid) throw new Error("No workspace ID available");
         return dispatch(
             createEmployee({ workspaceId: Number(workspaceid), data })
         ).unwrap();
-    };
+    }, [dispatch, workspaceid]);
 
-    const editEmployee = async (employeeId: number, data: any) => {
+    const removeEmployee = useCallback(async (employeeId: number) => {
         if (!workspaceid) throw new Error("No workspace ID available");
         return dispatch(
-            updateEmployee({
-                workspaceId: Number(workspaceid),
-                employeeId,
-                data,
-            })
+            deleteEmployee({ workspaceId: Number(workspaceid), employeeId })
         ).unwrap();
-    };
+    }, [dispatch, workspaceid]);
 
     return {
-        employees: employees.filter(
-            (emp) => emp.workspaceid === Number(workspaceid)
-        ), // Filter by workspace
+        employees,
         total,
         currentPage,
         limit,
         loading,
         error,
         addEmployee,
-        editEmployee,
-    };
-};
-
-// export const useEmployeeCategories = () => {
-//     const dispatch = useDispatch<AppDispatch>();
-//     const { workspaceid } = useUserData();
-//     const { categories, loading, error } = useSelector(
-//         (state: RootState) => state.employee
-//     );
-
-//     useEffect(() => {
-//         if (workspaceid) {
-//             dispatch(fetchEmployeeCategories(Number(workspaceid)));
-//         }
-//     }, [dispatch, workspaceid]);
-
-//     return {
-//         categories,
-//         loading,
-//         error,
-//     };
-// };
-
-export const usePaginatedEmployees = (pageSize = 10) => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
-    const { employees, total, currentPage, loading, error } = useSelector(
-        (state: RootState) => state.employee
-    );
-
-    const setPage = (page: number) => {
-        if (workspaceid) {
-            dispatch(
-                fetchWorkspaceEmployees({
-                    workspaceId: Number(workspaceid),
-                    filters: {
-                        page,
-                        limit: pageSize,
-                        workspaceid: Number(workspaceid),
-                    },
-                })
-            );
-        }
-    };
-
-    useEffect(() => {
-        if (workspaceid) {
-            dispatch(
-                fetchWorkspaceEmployees({
-                    workspaceId: Number(workspaceid),
-                    filters: {
-                        page: 1,
-                        limit: pageSize,
-                        workspaceid: Number(workspaceid),
-                    },
-                })
-            );
-        }
-    }, [dispatch, workspaceid, pageSize]);
-
-    return {
-        employees: employees.filter(
-            (emp) => emp.workspaceid === Number(workspaceid)
-        ),
-        total,
-        currentPage,
-        pageSize,
-        loading,
-        error,
-        setPage,
-        totalPages: Math.ceil(total / pageSize),
+        removeEmployee
     };
 };
 
 export const useEmployee = (employeeId: number) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { employees, loading, error } = useSelector(
+    const { selectedEmployee, loading, error } = useSelector(
         (state: RootState) => state.employee
     );
-    const [employee, setEmployee] = useState<Employee | null>(null);
 
     useEffect(() => {
-        const foundEmployee = employees.find(
-            (emp) =>
-                emp.employeeid === employeeId &&
-                emp.workspaceid === Number(workspaceid)
-        );
-
-        if (foundEmployee) {
-            setEmployee(foundEmployee);
-        } else if (workspaceid) {
+        if (workspaceid && employeeId) {
             dispatch(
-                fetchWorkspaceEmployees({
+                fetchEmployeeById({
                     workspaceId: Number(workspaceid),
-                    filters: {
-                        page: 1,
-                        limit: 1,
-                        workspaceid: Number(workspaceid),
-                    },
+                    employeeId
                 })
             );
         }
-    }, [dispatch, workspaceid, employeeId, employees]);
+        return () => {
+            dispatch(clearSelectedEmployee());
+        };
+    }, [dispatch, workspaceid, employeeId]);
 
-    const updateEmployeeData = async (data: Partial<Employee>) => {
+    const updateEmployeeData = useCallback(async (data: Partial<Employee>) => {
         if (!workspaceid) throw new Error("No workspace ID available");
-        try {
-            const result = await dispatch(
-                updateEmployee({
-                    workspaceId: Number(workspaceid),
-                    employeeId,
-                    data,
-                })
-            ).unwrap();
-            setEmployee(result);
-            return result;
-        } catch (error) {
-            throw error;
-        }
-    };
+        return dispatch(
+            updateEmployee({
+                workspaceId: Number(workspaceid),
+                employeeId,
+                data
+            })
+        ).unwrap();
+    }, [dispatch, workspaceid, employeeId]);
 
     return {
-        employee,
+        employee: selectedEmployee,
         loading,
         error,
-        updateEmployee: updateEmployeeData,
+        updateEmployee: updateEmployeeData
     };
 };
+
 export const useEmployeeCategories = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
@@ -208,7 +120,7 @@ export const useEmployeeCategories = () => {
         }
     }, [dispatch, workspaceid]);
 
-    const getCategoryById = (categoryId: number): any | undefined => {
+    const getCategoryById = useCallback((categoryId: number) => {
         const findCategory = (categories: any[]): any | undefined => {
             for (const category of categories) {
                 if (category.categoryId === categoryId) return category;
@@ -219,12 +131,12 @@ export const useEmployeeCategories = () => {
             }
         };
         return findCategory(categories);
-    };
+    }, [categories]);
 
     return {
         categories,
         loading,
         error,
-        getCategoryById,
+        getCategoryById
     };
 };

@@ -1,58 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
-
-interface EmployeeCategory {
-    categoryId: number;
-    name: string;
-    parentCategoryId: number | null;
-    subCategories?: EmployeeCategory[];
-}
-
-interface Department {
-    id: number;
-    name: string;
-}
-
-interface Employee {
-    employeeid: number;
-    name: string;
-    email: string;
-    profileimage: string;
-    employeecategoryid: number;
-    departmentid: number;
-    workspaceid: number;
-    employeeCategory: {
-        categoryid: number;
-        categoryname: string;
-        parentcategoryid: number;
-    };
-    department: {
-        departmentid: number;
-        departmentname: string;
-        parentdepartmentid: number | null;
-        workspaceid: number;
-    };
-}
-
-interface EmployeeFilters {
-    department?: number;
-    category?: number;
-    search?: string;
-    page?: number;
-    limit?: number;
-    workspaceid?: number;
-}
-
-interface EmployeeResponse {
-    employees: Employee[];
-    total: number;
-    page: number;
-    limit: number;
-}
+import { Employee, EmployeeFilters, EmployeeCategory } from "@/types/employee";
 
 interface EmployeeState {
     employees: Employee[];
     categories: EmployeeCategory[];
+    selectedEmployee: Employee | null;
     total: number;
     currentPage: number;
     limit: number;
@@ -63,6 +16,7 @@ interface EmployeeState {
 const initialState: EmployeeState = {
     employees: [],
     categories: [],
+    selectedEmployee: null,
     total: 0,
     currentPage: 1,
     limit: 10,
@@ -72,86 +26,88 @@ const initialState: EmployeeState = {
 
 export const fetchWorkspaceEmployees = createAsyncThunk(
     "employee/fetchByWorkspace",
-    async ({ workspaceId, filters }: { workspaceId: number; filters?: EmployeeFilters }, { rejectWithValue }) => {
-        try {
-            const queryParams = new URLSearchParams();
-            if (filters) {
-                Object.entries(filters).forEach(([key, value]) => {
-                    if (value !== undefined) {
-                        queryParams.append(key, value.toString());
-                    }
-                });
-            }
-            const url = `/workspaces/${workspaceId}/employees${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-            const response = await apiClient.get(url);
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to fetch employees");
+    async ({ workspaceId, filters }: { workspaceId: number; filters?: EmployeeFilters }) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined) {
+                    params.append(key, value.toString());
+                }
+            });
         }
+        const response = await apiClient.get(
+            `/v1/workspaces/${workspaceId}/employees${params.toString() ? `?${params}` : ''}`
+        );
+        return response.data;
     }
 );
 
-interface CreateEmployeeData {
-    name: string;
-    email: string;
-    profileImage: string;
-    employeeCategoryId: number;
-    departmentId: number;
-}
+export const fetchEmployeeById = createAsyncThunk(
+    "employee/fetchOne",
+    async ({ workspaceId, employeeId }: { workspaceId: number; employeeId: number }) => {
+        const response = await apiClient.get(`/v1/workspaces/${workspaceId}/employees/${employeeId}`);
+        return response.data;
+    }
+);
 
 export const createEmployee = createAsyncThunk(
     "employee/create",
-    async ({ workspaceId, data }: { workspaceId: number; data: CreateEmployeeData }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.post(`/workspaces/${workspaceId}/employees`, data);
-            return response.data as Employee;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to create employee");
-        }
+    async ({ workspaceId, data }: { 
+        workspaceId: number; 
+        data: { 
+            name: string; 
+            email: string; 
+            employeeCategoryId: number; 
+            departmentId: number;
+            profileImage?: string;
+        } 
+    }) => {
+        const response = await apiClient.post(`/v1/workspaces/${workspaceId}/employees`, data);
+        return response.data;
     }
 );
-
-interface UpdateEmployeeData {
-    name?: string;
-    email?: string;
-    profileImage?: string;
-    employeeCategoryId?: number;
-    departmentId?: number;
-}
 
 export const updateEmployee = createAsyncThunk(
     "employee/update",
     async ({ workspaceId, employeeId, data }: { 
         workspaceId: number; 
         employeeId: number; 
-        data: UpdateEmployeeData 
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.put(`/workspaces/${workspaceId}/employees/${employeeId}`, data);
-            return response.data as Employee;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to update employee");
-        }
+        data: Partial<Employee>;
+    }) => {
+        const response = await apiClient.put(
+            `/v1/workspaces/${workspaceId}/employees/${employeeId}`, 
+            data
+        );
+        return response.data;
+    }
+);
+
+export const deleteEmployee = createAsyncThunk(
+    "employee/delete",
+    async ({ workspaceId, employeeId }: { workspaceId: number; employeeId: number }) => {
+        await apiClient.delete(`/v1/workspaces/${workspaceId}/employees/${employeeId}`);
+        return employeeId;
     }
 );
 
 export const fetchEmployeeCategories = createAsyncThunk(
     "employee/fetchCategories",
-    async (workspaceId: number, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.get(`/workspaces/${workspaceId}/employees/employee-categories`);
-            return response.data.categories;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data || "Failed to fetch categories");
-        }
+    async (workspaceId: number) => {
+        const response = await apiClient.get(
+            `/v1/workspaces/${workspaceId}/employees/employee-categories`
+        );
+        return response.data.categories;
     }
 );
-
 
 const employeeSlice = createSlice({
     name: "employee",
     initialState,
-    reducers: {},
+    reducers: {
+        clearSelectedEmployee: (state) => {
+            state.selectedEmployee = null;
+        }
+    },
     extraReducers: (builder) => {
         builder
             // Fetch employees
@@ -168,52 +124,49 @@ const employeeSlice = createSlice({
             })
             .addCase(fetchWorkspaceEmployees.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload as string;
+                state.error = action.error.message || "Failed to fetch employees";
             })
-            // Create employee
-            .addCase(createEmployee.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(createEmployee.fulfilled, (state, action) => {
-                state.loading = false;
-                state.employees.push(action.payload);
-                state.total += 1;
-            })
-            .addCase(createEmployee.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
-            })
-            // Update employee
-            .addCase(updateEmployee.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(updateEmployee.fulfilled, (state, action) => {
-                state.loading = false;
-                const index = state.employees.findIndex(emp => emp.employeeid === action.payload.employeeid);
+            // Fetch single employee
+            .addCase(fetchEmployeeById.fulfilled, (state, action) => {
+                state.selectedEmployee = action.payload;
+                const index = state.employees.findIndex(
+                    emp => emp.employeeid === action.payload.employeeid
+                );
                 if (index !== -1) {
                     state.employees[index] = action.payload;
                 }
             })
-            .addCase(updateEmployee.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
+            // Create employee
+            .addCase(createEmployee.fulfilled, (state, action) => {
+                state.employees.push(action.payload);
             })
-            // Fetch employee categories
-            .addCase(fetchEmployeeCategories.pending, (state) => {
-                state.loading = true;
-                state.error = null;
+            // Update employee
+            .addCase(updateEmployee.fulfilled, (state, action) => {
+                const index = state.employees.findIndex(
+                    emp => emp.employeeid === action.payload.employeeid
+                );
+                if (index !== -1) {
+                    state.employees[index] = action.payload;
+                }
+                if (state.selectedEmployee?.employeeid === action.payload.employeeid) {
+                    state.selectedEmployee = action.payload;
+                }
             })
+            // Delete employee
+            .addCase(deleteEmployee.fulfilled, (state, action) => {
+                state.employees = state.employees.filter(
+                    emp => emp.employeeid !== action.payload
+                );
+                if (state.selectedEmployee?.employeeid === action.payload) {
+                    state.selectedEmployee = null;
+                }
+            })
+            // Fetch categories
             .addCase(fetchEmployeeCategories.fulfilled, (state, action) => {
-                state.loading = false;
                 state.categories = action.payload;
-            })
-            .addCase(fetchEmployeeCategories.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
             });
     },
 });
 
+export const { clearSelectedEmployee } = employeeSlice.actions;
 export default employeeSlice.reducer;

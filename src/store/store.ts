@@ -8,6 +8,7 @@ import payrollReducer from './slices/payrollSlice';
 import projectReducer from './slices/projectSlice';
 import companyReducer from './slices/companySlice';
 import departmentReducer from './slices/departmentSlice';
+import availabilityReducer from './slices/availabilitySlice';
 
 export const store = configureStore({
     reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
         project: projectReducer,
         company: companyReducer,
         department: departmentReducer,
+        availability: availabilityReducer,
     }
 
 })
