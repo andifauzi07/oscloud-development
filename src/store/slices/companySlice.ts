@@ -1,4 +1,3 @@
-// src/store/slices/companySlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 
@@ -15,11 +14,11 @@ export interface Company {
     personnel: Personnel[];
     activeLeads: number;
     totalContractValue: number;
-    city: string;
-    category_group: string;
+    city: string | null;
+    category_group: string | null;
     email: string;
-    product: string;
-    created_at?: string | null; // Change this to string | null
+    product: string | null;
+    created_at: string | null;
     managerid: number;
 }
 
@@ -36,31 +35,34 @@ export interface Lead {
         name: string;
     };
 }
+
 export interface TotalValue {
-    active: number,
-    closed: number
+    active: number;
+    closed: number;
 }
 
 interface CompanyState {
     companies: Company[];
+    selectedCompany: Company | null;
     leads: Lead[];
     total: number;
     loading: boolean;
     error: string | null;
     currentPage: number;
     perPage: number;
-    totalValue : TotalValue
+    totalValue: TotalValue;
 }
 
 const initialState: CompanyState = {
     companies: [],
+    selectedCompany: null,
     leads: [],
     total: 0,
     loading: false,
     error: null,
     currentPage: 1,
     perPage: 10,
-    totalValue:{active:0, closed: 0}
+    totalValue: { active: 0, closed: 0 }
 };
 
 // Thunks
@@ -78,20 +80,25 @@ export const fetchCompanies = createAsyncThunk(
         filters?: { category?: string };
         page?: number;
         limit?: number;
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.get(
-                `/workspaces/${workspaceId}/crm/companies`,
-                {
-                    params: { search, ...filters, page, limit },
-                }
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to fetch companies"
-            );
-        }
+    }) => {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (filters?.category) params.append('category', filters.category);
+        if (page) params.append('page', page.toString());
+        if (limit) params.append('limit', limit.toString());
+
+        const response = await apiClient.get(
+            `/v1/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ''}`
+        );
+        return response.data;
+    }
+);
+
+export const fetchCompanyById = createAsyncThunk(
+    "company/fetchOne",
+    async ({ workspaceId, companyId }: { workspaceId: number; companyId: number }) => {
+        const response = await apiClient.get(`/v1/workspaces/${workspaceId}/crm/companies/${companyId}`);
+        return response.data;
     }
 );
 
@@ -104,37 +111,39 @@ export const createCompany = createAsyncThunk(
         workspaceId: number;
         data: {
             name: string;
-            personnel: Personnel[];
-            city: string;
-            managerid: number;
-            product: string;
-            email: string;
-            category_group: string;
+            personnel: { name: string }[];
+            city?: string;
+            product?: string;
+            email?: string;
+            category_group?: string;
             logo?: string;
-            project: {
-                name: string;
-                startdate: string;
-                enddate: string;
-                managerid: number;
-                assignedStaff: {
-                    employeeId: number;
-                    rateType: string;
-                    rateValue: number;
-                }[];
-            }
+            managerid?: number;
         };
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.post(
-                `/workspaces/${workspaceId}/crm/companies`,
-                { company: { ...data }, project: data.project, personnel: data.personnel }
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to create company"
-            );
-        }
+    }) => {
+        const response = await apiClient.post(
+            `/v1/workspaces/${workspaceId}/crm/companies`,
+            data
+        );
+        return response.data;
+    }
+);
+
+export const updateCompany = createAsyncThunk(
+    "company/update",
+    async ({
+        workspaceId,
+        companyId,
+        data,
+    }: {
+        workspaceId: number;
+        companyId: number;
+        data: Partial<Company>;
+    }) => {
+        const response = await apiClient.patch(
+            `/v1/workspaces/${workspaceId}/crm/companies/${companyId}`,
+            data
+        );
+        return response.data;
     }
 );
 
@@ -151,20 +160,17 @@ export const fetchLeads = createAsyncThunk(
             minValue?: number;
             maxValue?: number;
         };
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.get(
-                `/workspaces/${workspaceId}/crm/leads`,
-                {
-                    params: filters,
-                }
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to fetch leads"
-            );
+    }) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined) params.append(key, value.toString());
+            });
         }
+        const response = await apiClient.get(
+            `/v1/workspaces/${workspaceId}/crm/leads${params.toString() ? `?${params.toString()}` : ''}`
+        );
+        return response.data;
     }
 );
 
@@ -181,18 +187,12 @@ export const createLead = createAsyncThunk(
             contractValue: number;
             status: string;
         };
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.post(
-                `/workspaces/${workspaceId}/crm/leads`,
-                data
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to create lead"
-            );
-        }
+    }) => {
+        const response = await apiClient.post(
+            `/v1/workspaces/${workspaceId}/crm/leads`,
+            data
+        );
+        return response.data;
     }
 );
 
@@ -206,61 +206,28 @@ export const updateLeadStatus = createAsyncThunk(
         workspaceId: number;
         leadId: number;
         status: string;
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.patch(
-                `/workspaces/${workspaceId}/crm/leads/${leadId}`,
-                { status }
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to update lead"
-            );
-        }
+    }) => {
+        const response = await apiClient.patch(
+            `/v1/workspaces/${workspaceId}/crm/leads/${leadId}`,
+            { status }
+        );
+        return response.data;
     }
 );
 
 export const deleteCompany = createAsyncThunk(
     "company/delete",
-    async ({
-        workspaceId,
-        companyId,
-    }: {
-        workspaceId: number;
-        companyId: number;
-    }, { rejectWithValue }) => {
-        try {
-            await apiClient.delete(
-                `/workspaces/${workspaceId}/crm/companies/${companyId}`
-            );
-            return companyId;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to delete company"
-            );
-        }
+    async ({ workspaceId, companyId }: { workspaceId: number; companyId: number }) => {
+        await apiClient.delete(`/v1/workspaces/${workspaceId}/crm/companies/${companyId}`);
+        return companyId;
     }
 );
+
 export const deleteLead = createAsyncThunk(
     "company/deleteLead",
-    async ({
-        workspaceId,
-        leadId,
-    }: {
-        workspaceId: number;
-        leadId: number;
-    }, { rejectWithValue }) => {
-        try {
-            await apiClient.delete(
-                `/workspaces/${workspaceId}/crm/leads/${leadId}`
-            );
-            return leadId;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to delete lead"
-            );
-        }
+    async ({ workspaceId, leadId }: { workspaceId: number; leadId: number }) => {
+        await apiClient.delete(`/v1/workspaces/${workspaceId}/crm/leads/${leadId}`);
+        return leadId;
     }
 );
 
@@ -284,11 +251,27 @@ const companySlice = createSlice({
             })
             .addCase(fetchCompanies.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload as string;
+                state.error = action.error.message || "Failed to fetch companies";
+            })
+            // Fetch Single Company
+            .addCase(fetchCompanyById.fulfilled, (state, action) => {
+                state.selectedCompany = action.payload;
             })
             // Create Company
             .addCase(createCompany.fulfilled, (state, action) => {
-                state.companies.unshift(action.payload); //add the new one to the top.
+                state.companies.unshift(action.payload);
+            })
+            // Update Company
+            .addCase(updateCompany.fulfilled, (state, action) => {
+                const index = state.companies.findIndex(
+                    (c) => c.companyId === action.payload.companyId
+                );
+                if (index !== -1) {
+                    state.companies[index] = action.payload;
+                }
+                if (state.selectedCompany?.companyId === action.payload.companyId) {
+                    state.selectedCompany = action.payload;
+                }
             })
             // Fetch Leads
             .addCase(fetchLeads.fulfilled, (state, action) => {
@@ -311,13 +294,16 @@ const companySlice = createSlice({
             // Delete Company
             .addCase(deleteCompany.fulfilled, (state, action) => {
                 state.companies = state.companies.filter(
-                    (c) => c.companyId !== action.payload
+                    (company) => company.companyId !== action.payload
                 );
+                if (state.selectedCompany?.companyId === action.payload) {
+                    state.selectedCompany = null;
+                }
             })
             // Delete Lead
             .addCase(deleteLead.fulfilled, (state, action) => {
                 state.leads = state.leads.filter(
-                    (l) => l.leadId !== action.payload
+                    (lead) => lead.leadId !== action.payload
                 );
             });
     },

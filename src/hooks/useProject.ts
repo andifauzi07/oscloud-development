@@ -3,148 +3,60 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { useUserData } from "@/hooks/useUserData";
-import {
-    fetchProjects,
-    createProject,
-    assignStaffToProject,
-    removeStaffFromProject,
-    fetchProjectById,
-    deleteProject,
-    type Project,
-} from "@/store/slices/projectSlice";
-import { fetchLeads, Lead } from "@/store/slices/companySlice";
 import { LeadFilters } from "@/types/company";
+import {
+    assignStaffToProject,
+    createProject,
+    deleteProject,
+    fetchProjectById,
+    fetchProjects,
+    removeStaffFromProject,
+    updateProject,
+} from "@/store/slices/projectSlice";
+import { fetchLeads } from "@/store/slices/companySlice";
+import { Lead } from "@/components/companyPersonnelLeadsListDataTable";
+
+interface ProjectFilters {
+    managerId?: number;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    view?: "list" | "timeline";
+    employeeId?: number;
+    projectId?: number;
+    companyId?: number;
+}
 
 export const useProjects = (
-    filters?: {
-        managerId?: number;
-        startDate?: string;
-        endDate?: string;
-        status?: string;
-        view?: "list" | "timeline";
-        employeeId?: number;
-        projectid?: number;
-        companyId?: number;
-    } | null,
+    filters?: ProjectFilters | null,
     page?: number,
-    pageSize?: number,
+    pageSize?: number
 ) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { projects, loading, error, total, currentPage, perPage } = useSelector(
-        (state: RootState) => state.project
-    );
+    const { projects, loading, error, total, currentPage, perPage } =
+        useSelector((state: RootState) => state.project);
 
     // Memoize filters to prevent unnecessary re-renders
     const memoizedFilters = useMemo(() => {
-        if (!filters) return null;
-        return {
-            ...filters,
-            // Only include non-empty values
-            startDate: filters.startDate || undefined,
-            endDate: filters.endDate || undefined,
-            status: filters.status || undefined,
-        };
+        if (!filters) return undefined;
+        return Object.fromEntries(
+            Object.entries(filters).filter(([_, value]) => value !== undefined)
+        );
     }, [filters]);
 
     useEffect(() => {
         if (workspaceid) {
             dispatch(
                 fetchProjects({
-                    workspaceid: Number(workspaceid),
-                    // filters: memoizedFilters,
+                    workspaceId: Number(workspaceid),
+                    filters: memoizedFilters,
                     page,
-                    page_size: pageSize,
+                    pageSize: pageSize,
                 })
             );
         }
     }, [dispatch, workspaceid, memoizedFilters, page, pageSize]);
-
-    const addProject = useCallback(
-        async (data: {
-            name: string;
-            startDate: string;
-            endDate: string;
-            managerId: number;
-            companyId: number;
-            status: string;
-            city: string;
-            product: string;
-            costs: {
-                food: number;
-                break: number;
-                rental: number;
-                revenue: number;
-                other_cost: number;
-                labour_cost: number;
-                manager_fee: number;
-                costume_cost: number;
-                sales_profit: number;
-                transport_cost: number;
-            };
-            assignedStaff: {
-                employeeId: number;
-                rateType: string;
-                breakHours: number;
-                rateValue?: number; // Add the rateValue
-            }[];
-        }) => {
-            if (!workspaceid) throw new Error("No workspace ID available");
-            return dispatch(
-                createProject({
-                    workspaceid: Number(workspaceid),
-                    data,
-                })
-            ).unwrap();
-        },
-        [dispatch, workspaceid]
-    );
-
-    const assignStaff = useCallback(
-        async (
-            projectId: number,
-            data: {
-                staff: {
-                    employeeId: number;
-                    rateType: string;
-                    breakHours: number;
-                }[];
-            }
-        ) => {
-            return dispatch(
-                assignStaffToProject({
-                    workspaceid: Number(workspaceid),
-                    projectId,
-                    data,
-                })
-            ).unwrap();
-        },
-        [dispatch, workspaceid]
-    );
-
-    const removeStaff = useCallback(
-        async (projectId: number, employeeIds: number[]) => {
-            return dispatch(
-                removeStaffFromProject({
-                    workspaceid: Number(workspaceid),
-                    projectId,
-                    employeeIds,
-                })
-            ).unwrap();
-        },
-        [dispatch, workspaceid]
-    );
-    const deleteProj = useCallback(
-        async (projectId: number) => {
-            return dispatch(
-                deleteProject({
-                    workspaceid: Number(workspaceid),
-                    projectId,
-                })
-            ).unwrap();
-        },
-        [dispatch, workspaceid]
-    );
 
     // Function to fetch active leads for a given project.
     const fetchActiveLeadsForProject = useCallback(
@@ -197,21 +109,37 @@ export const useProjects = (
         },
         [dispatch, workspaceid]
     );
+
+    const createNewProject = useCallback(async (data: {
+        name: string;
+        startDate: string;
+        endDate: string;
+        managerId: number;
+        companyId: number;
+        status: string;
+        city: string;
+        product: string;
+    }) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(createProject({
+            workspaceId: Number(workspaceid),
+            data
+        })).unwrap();
+    }, [dispatch, workspaceid]);
+
+
     //Add it here
     return {
-        projects: projects as Project[], // Assert projects as Project[]
+        projects: projects, // Assert projects as Project[]
         total, // added total
         loading,
         error,
-        addProject,
-        assignStaff,
-        removeStaff,
-        fetchActiveLeadsForProject, // Add it here
+        perPage,
+        createProject: createNewProject,
+        fetchActiveLeadsForProject,
         fetchOtherLeadsForProject,
-        deleteProject: deleteProj,
-        currentPage,
-        perPage
     };
+
 };
 
 export const useProject = (projectId: number) => {
@@ -220,18 +148,89 @@ export const useProject = (projectId: number) => {
     const { projects, loading, error } = useSelector(
         (state: RootState) => state.project
     );
-    const project = projects.find((p) => p.projectId === projectId);
+
+    const project = useMemo(() => 
+        projects.find(p => p.projectId === projectId),
+        [projects, projectId]
+    );
 
     useEffect(() => {
         if (workspaceid && projectId && !project) {
-            dispatch(
-                fetchProjectById({
-                    projectId,
-                    workspaceid: Number(workspaceid),
-                })
-            );
+            dispatch(fetchProjectById({
+                workspaceId: Number(workspaceid),
+                projectId
+            }));
         }
     }, [dispatch, workspaceid, projectId, project]);
 
-    return { project, loading, error };
+    const updateProjectDetails = useCallback(async (data: Partial<{
+        name: string;
+        startDate: string;
+        endDate: string;
+        managerId: number;
+        companyId: number;
+        status: string;
+        city: string;
+        product: string;
+    }>) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(updateProject({
+            workspaceId: Number(workspaceid),
+            projectId,
+            data
+        })).unwrap();
+    }, [dispatch, workspaceid, projectId]);
+
+    const assignStaff = useCallback(async (staff: Array<{
+        employeeId: number;
+        rateType: string;
+        breakHours: number;
+    }>) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(assignStaffToProject({
+            workspaceId: Number(workspaceid),
+            projectId,
+            data: { staff }
+        })).unwrap();
+    }, [dispatch, workspaceid, projectId]);
+
+    const removeStaff = useCallback(async (employeeIds: number[]) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(removeStaffFromProject({
+            workspaceId: Number(workspaceid),
+            projectId,
+            employeeIds
+        })).unwrap();
+    }, [dispatch, workspaceid, projectId]);
+
+
+    const deleteProjectById = useCallback(async () => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(deleteProject({
+            workspaceId: Number(workspaceid),
+            projectId
+        })).unwrap();
+    }, [dispatch, workspaceid, projectId]);
+
+    const refresh = useCallback(async () => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(fetchProjectById({
+            workspaceId: Number(workspaceid),
+            projectId
+        })).unwrap();
+    }, [dispatch, workspaceid, projectId]);
+
+    return {
+        project,
+        loading,
+        error,
+        updateProject: updateProjectDetails,
+        assignStaff: assignStaff,
+        removeStaff: removeStaff,
+        deleteProject: deleteProjectById,
+        refreshProject: refresh,
+        isLoading: loading,
+        hasError: !!error,
+        errorMessage: error,
+    };
 };

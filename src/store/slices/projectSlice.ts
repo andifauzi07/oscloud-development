@@ -3,14 +3,14 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 
 export interface Manager {
-    userId: number | null;
+    userId: number;
     name: string;
 }
 
 export interface Company {
-    companyId: number | null;
+    companyId: number;
     name: string;
-    logo?: string | null;
+    logo?: string;
 }
 
 export interface AssignedStaff {
@@ -43,14 +43,17 @@ export interface Project {
     name: string;
     startDate: string;
     endDate: string;
+    managerId: number;
+    workspaceId: number;
+    companyId: number;
     status: string;
+    city?: string;
+    product?: string;
+    costs: Costs;
     manager: Manager;
     company: Company;
     assignedStaff: AssignedStaff[];
     financials: Financials;
-    city?: string;
-    product?: string;
-    costs?: Costs;
 }
 
 interface ProjectState {
@@ -62,236 +65,159 @@ interface ProjectState {
     perPage: number;
 }
 
-// Initial state
 const initialState: ProjectState = {
     projects: [],
     loading: false,
     error: null,
     total: 0,
     currentPage: 1,
-    perPage: 50
+    perPage: 10
 };
 
-// Thunks
+interface ProjectFilters {
+    managerId?: number;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    view?: "list" | "timeline";
+    employeeId?: number;
+    projectId?: number;
+    companyId?: number;
+}
+
 export const fetchProjects = createAsyncThunk(
     "project/fetchAll",
-    async (
-        {
-            workspaceid,
-            filters,
-            page,
-            page_size
-        }: {
-            workspaceid: number;
-            filters?: {
-                managerId?: number;
-                startDate?: string;
-                endDate?: string;
-                status?: string;
-                view?: "list" | "timeline";
-                employeeId?: number;
-                projectid?: number;
-                companyId?: number;
-            };
-            page?: number;
-            page_size?: number;
-        },
-        { rejectWithValue }
-    ) => {
+    async ({
+        workspaceId,
+        filters,
+        page = 1,
+        pageSize = 10
+    }: {
+        workspaceId: number;
+        filters?: ProjectFilters;
+        page?: number;
+        pageSize?: number;
+    }, { rejectWithValue }) => {
         try {
-            if (!workspaceid) {
-                throw new Error("Workspace ID is required");
-            }
-
-            const response = await apiClient.get(
-                `/workspaces/${workspaceid}/projects`,
-                {
-                    params: {
-                        ...filters,
-                        page,
-                        page_size
-                    },
+            const response = await apiClient.get(`/workspaces/${workspaceId}/projects/`, {
+                params: {
+                    workspaceid: workspaceId,
+                    ...filters,
+                    page,
+                    limit: pageSize
                 }
-            );
-
-            if (!response.data) {
-                throw new Error("No data received from server");
-            }
-
+            });
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to fetch projects"
-            );
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch projects");
         }
     }
 );
 
 export const fetchProjectById = createAsyncThunk(
     "project/fetchById",
-    async (
-        {
-            workspaceid,
-            projectId,
-        }: {
-            workspaceid: number;
-            projectId: number;
-        },
-        { rejectWithValue }
-    ) => {
+    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }, { rejectWithValue }) => {
         try {
-            const response = await apiClient.get(
-                `/workspaces/${workspaceid}/projects/${projectId}`
-            );
+            const response = await apiClient.get(`/workspaces/${workspaceId}/projects/${projectId}`);
             return response.data.project;
         } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to fetch project"
-            );
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch project");
         }
     }
 );
 
+interface CreateProjectData {
+    name: string;
+    startDate: string;
+    endDate: string;
+    managerId: number;
+    companyId: number;
+    status: string;
+    city: string;
+    product: string;
+}
+
 export const createProject = createAsyncThunk(
     "project/create",
-    async (
-        {
-            workspaceid,
-            data,
-        }: {
-            workspaceid: number;
-            data: {
-                name: string;
-                startDate: string;
-                endDate: string;
-                managerId: number;
-                companyId: number;
-                status: string;
-                city: string;
-                product: string;
-                costs: {
-                    food: number;
-                    break: number;
-                    rental: number;
-                    revenue: number;
-                    other_cost: number;
-                    labour_cost: number;
-                    manager_fee: number;
-                    costume_cost: number;
-                    sales_profit: number;
-                    transport_cost: number;
-                };
-                assignedStaff: {
-                    employeeId: number;
-                    rateType: string;
-                    breakHours: number;
-                    rateValue?: number;
-                }[];
-            };
-        },
-        { rejectWithValue }
-    ) => {
+    async ({ workspaceId, data }: { workspaceId: number; data: CreateProjectData }, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.post(`/workspaces/${workspaceId}/projects`, data);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to create project");
+        }
+    }
+);
+
+export const updateProject = createAsyncThunk(
+    "project/update",
+    async ({ workspaceId, projectId, data }: { 
+        workspaceId: number; 
+        projectId: number; 
+        data: Partial<CreateProjectData>;
+    }, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.post(`/workspaces/${workspaceId}/projects/${projectId}`, data);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "Failed to update project");
+        }
+    }
+);
+
+interface AssignStaffData {
+    staff: Array<{
+        employeeId: number;
+        rateType: string;
+        breakHours: number;
+    }>;
+}
+
+export const assignStaffToProject = createAsyncThunk(
+    "project/assignStaff",
+    async ({ workspaceId, projectId, data }: {
+        workspaceId: number;
+        projectId: number;
+        data: AssignStaffData;
+    }, { rejectWithValue }) => {
         try {
             const response = await apiClient.post(
-                `/workspaces/${workspaceid}/projects`,
+                `/workspaces/${workspaceId}/projects/${projectId}/staff`,
                 data
             );
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to create project"
-            );
-        }
-    }
-);
-
-export const assignStaffToProject = createAsyncThunk(
-    "project/assignStaff",
-    async (
-        {
-            workspaceid,
-            projectId,
-            data,
-        }: {
-            workspaceid: number;
-            projectId: number;
-            data: {
-                staff: {
-                    employeeId: number;
-                    rateType: string;
-                    breakHours: number;
-                }[];
-            };
-        },
-        { rejectWithValue }
-    ) => {
-        try {
-            const response = await apiClient.post(
-                `/workspaces/${workspaceid}/projects/${projectId}/staff`,
-                data
-            );
-            return response.data.project;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to assign staff"
-            );
+            return rejectWithValue(error.response?.data?.message || "Failed to assign staff");
         }
     }
 );
 
 export const removeStaffFromProject = createAsyncThunk(
     "project/removeStaff",
-    async (
-        {
-            workspaceid,
-            projectId,
-            employeeIds,
-        }: {
-            workspaceid: number;
-            projectId: number;
-            employeeIds: number[];
-        },
-        { rejectWithValue }
-    ) => {
+    async ({ workspaceId, projectId, employeeIds }: {
+        workspaceId: number;
+        projectId: number;
+        employeeIds: number[];
+    }, { rejectWithValue }) => {
         try {
-            await apiClient.delete(
-                `/workspaces/${workspaceid}/projects/${projectId}/staff`,
-                {
-                    params: { employeeIds }
-                }
-            );
+            await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}/staff`, {
+                params: { employeeIds }
+            });
             return { projectId, employeeIds };
         } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to remove staff"
-            );
+            return rejectWithValue(error.response?.data?.message || "Failed to remove staff");
         }
     }
 );
 
 export const deleteProject = createAsyncThunk(
     "project/delete",
-    async (
-        {
-            workspaceid,
-            projectId
-        }: {
-            workspaceid: number;
-            projectId: number;
-        },
-        { rejectWithValue }
-    ) => {
+    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }, { rejectWithValue }) => {
         try {
-            await apiClient.delete(
-                `/workspaces/${workspaceid}/projects/${projectId}`
-            );
-            return {projectId};
+            await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}`);
+            return { projectId };
         } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to delete project"
-            );
+            return rejectWithValue(error.response?.data?.message || "Failed to delete project");
         }
     }
 );
@@ -310,44 +236,13 @@ const projectSlice = createSlice({
             .addCase(fetchProjects.fulfilled, (state, action) => {
                 state.loading = false;
                 state.projects = action.payload.projects;
-                state.total = action.payload.pagination.total;
-                state.currentPage = action.payload.pagination.page;
-                state.perPage = action.payload.pagination.page_size;
+                state.total = action.payload.total;
+                state.currentPage = action.payload.page;
+                state.perPage = action.payload.limit;
             })
             .addCase(fetchProjects.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
-            })
-            // Create Project
-            .addCase(createProject.fulfilled, (state, action) => {
-                state.projects.push(action.payload);
-            })
-            // Assign Staff
-            .addCase(assignStaffToProject.fulfilled, (state, action) => {
-                const projectIndex = state.projects.findIndex(
-                    (p) => p.projectId === action.payload.projectId
-                );
-                if (projectIndex !== -1) {
-                    state.projects[projectIndex] = action.payload;
-                }
-            })
-            // Remove Staff
-            .addCase(removeStaffFromProject.fulfilled, (state, action) => {
-                const project = state.projects.find(
-                    (p) => p.projectId === action.payload.projectId
-                );
-                if (project) {
-                    project.assignedStaff = project.assignedStaff.filter(
-                        (staff) =>
-                            !action.payload.employeeIds.includes(staff.employeeId)
-                    );
-                }
-            })
-             // Delete project
-            .addCase(deleteProject.fulfilled, (state, action) => {
-                state.projects = state.projects.filter(
-                    (p) => p.projectId !== action.payload.projectId
-                );
             })
             // Fetch Project By Id
             .addCase(fetchProjectById.pending, (state) => {
@@ -356,11 +251,9 @@ const projectSlice = createSlice({
             })
             .addCase(fetchProjectById.fulfilled, (state, action) => {
                 state.loading = false;
-                const existingIndex = state.projects.findIndex(
-                    (p) => p.projectId === action.payload.projectId
-                );
-                if (existingIndex >= 0) {
-                    state.projects[existingIndex] = action.payload;
+                const index = state.projects.findIndex(p => p.projectId === action.payload.projectId);
+                if (index !== -1) {
+                    state.projects[index] = action.payload;
                 } else {
                     state.projects.push(action.payload);
                 }
@@ -368,6 +261,37 @@ const projectSlice = createSlice({
             .addCase(fetchProjectById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
+            })
+            // Create Project
+            .addCase(createProject.fulfilled, (state, action) => {
+                state.projects.push(action.payload);
+            })
+            // Update Project
+            .addCase(updateProject.fulfilled, (state, action) => {
+                const index = state.projects.findIndex(p => p.projectId === action.payload.projectId);
+                if (index !== -1) {
+                    state.projects[index] = { ...state.projects[index], ...action.payload };
+                }
+            })
+            // Assign Staff
+            .addCase(assignStaffToProject.fulfilled, (state, action) => {
+                const index = state.projects.findIndex(p => p.projectId === action.payload.projectId);
+                if (index !== -1) {
+                    state.projects[index] = action.payload;
+                }
+            })
+            // Remove Staff
+            .addCase(removeStaffFromProject.fulfilled, (state, action) => {
+                const project = state.projects.find(p => p.projectId === action.payload.projectId);
+                if (project) {
+                    project.assignedStaff = project.assignedStaff.filter(
+                        staff => !action.payload.employeeIds.includes(staff.employeeId)
+                    );
+                }
+            })
+            // Delete Project
+            .addCase(deleteProject.fulfilled, (state, action) => {
+                state.projects = state.projects.filter(p => p.projectId !== action.payload.projectId);
             });
     },
 });

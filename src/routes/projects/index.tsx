@@ -8,7 +8,7 @@ import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { TitleWrapper } from '@/components/wrapperElement';
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
-import { useProjects } from '@/hooks/useProject';
+import { useProject, useProjects } from '@/hooks/useProject';
 import { Project, type Costs } from '@/store/slices/projectSlice';
 import { ColumnDef } from '@tanstack/react-table';
 import { Users } from 'lucide-react';
@@ -41,7 +41,8 @@ function RouteComponent() {
 		[filters.startDate, filters.endDate, filters.status, debouncedKeyword]
 	);
 
-	const { projects, loading, addProject } = useProjects(projectFilters);
+	const { projects, loading } = useProjects(projectFilters);
+    const { createProject } = useProject();
 
 	// Debounce filter changes
 	const handleFilterChange = useCallback((key: string, value: string) => {
@@ -161,10 +162,10 @@ function RouteComponent() {
 				accessorKey: 'projectId',
 				cell: ({ row }) => {
 					return (
-						<div className="w-full flex justify-end">
+						<div className="flex justify-end w-full">
 							<Button
 								variant="outline"
-								className="border-r-0 border-t-0 border-b-0">
+								className="border-t-0 border-b-0 border-r-0">
 								<Link
 									to={`/projects/$projectId`}
 									params={{
