@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MenuList from '@/components/menuList';
 import { useEmployee } from '@/hooks/useEmployee';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import Loading from '@/components/Loading';
-import { TitleWrapper } from '@/components/wrapperElement';
+import { TitleWrapper, InfoSection } from '@/components/wrapperElement';
 
 interface EditedEmployee {
 	name?: string;
@@ -29,75 +29,13 @@ const menuItems = [
 	{ label: 'Payroll', path: '/employee/$userId/payroll' },
 ];
 
-const InfoSection = ({
-	title,
-	items,
-	isEditing,
-	onValueChange,
-}: {
-	title: React.ReactNode;
-	items: {
-		label: string;
-		value: string;
-		key?: string;
-		options?: { value: string; label: string }[];
-	}[];
-	isEditing?: boolean;
-	onValueChange?: (key: string, value: string) => void;
-}) => (
-	<div className="flex flex-col border-l">
-		<h2 className="px-4 py-4 text-sm font-medium bg-gray-100 border-b border-r">{title}</h2>
-		<div className=" bg-white">
-			{items.map((item, index) => (
-				<div
-					key={index}
-					className="flex gap-8 border-b border-r">
-					<div className="w-32 px-4 py-2 text-sm font-medium bg-white text-gray-600">
-						<span>{item.label}</span>
-					</div>
-					<div className="flex-1 px-4 py-2 text-sm bg-white">
-						{isEditing && item.key && onValueChange ? (
-							item.options ? (
-								<Select
-									value={item.value}
-									onValueChange={(value) => onValueChange(item.key!, value)}>
-									<SelectTrigger>
-										<SelectValue placeholder={`Select ${item.label}`} />
-									</SelectTrigger>
-									<SelectContent>
-										{item.options.map((option) => (
-											<SelectItem
-												key={option.value}
-												value={option.value}>
-												{option.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							) : (
-								<Input
-									value={item.value}
-									onChange={(e) => onValueChange(item.key!, e.target.value)}
-									className="h-8"
-								/>
-							)
-						) : (
-							<span>{item.value}</span>
-						)}
-					</div>
-				</div>
-			))}
-		</div>
-	</div>
-);
-
 function RouteComponent() {
 	const { userId } = useParams({ strict: false });
 	const location = useLocation();
 	const isCurrentPath = location.pathname === `/employee/${userId}`;
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedEmployee, setEditedEmployee] = useState<EditedEmployee>({});
-	const { employee, loading, error, updateEmployee } = useEmployee(Number(userId));
+	const { employee, loading, error, updateEmployeeData } = useEmployee(Number(userId));
 	// const { categories } = useEmployeeCategories();
 
 	if (loading || !employee) {
@@ -121,7 +59,7 @@ function RouteComponent() {
 				toast.error('No changes to save');
 				return;
 			}
-			await updateEmployee(editedEmployee);
+			await updateEmployeeData(employee.employeeid, editedEmployee);
 			setIsEditing(false);
 			setEditedEmployee({});
 			toast.success('Employee updated successfully');
@@ -135,6 +73,7 @@ function RouteComponent() {
 			label: 'Employee ID',
 			value: employee?.employeeid?.toString() || '-',
 			key: 'employeeId',
+			nonEditable: true,  // Make ID non-editable
 		},
 		{
 			label: 'Name',
@@ -150,10 +89,6 @@ function RouteComponent() {
 			label: 'Category',
 			value: editedEmployee.employeeCategoryId?.toString() || employee?.employeeCategory?.categoryid?.toString() || '-',
 			key: 'employeeCategoryId',
-			// options: employee?.employeeCategory?.map((c: any) => ({
-			//     value: c.categoryId.toString(),
-			//     label: c.name
-			// }))
 			options: Array.isArray(employee?.employeeCategory)
 				? employee.employeeCategory.map((c: any) => ({
 						value: c.categoryid.toString(),
@@ -262,6 +197,7 @@ function RouteComponent() {
 									title="Basic Information"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
+									nonEditableFields={['employeeId']}  // Add nonEditableFields prop
 								/>
 								<InfoSection
 									items={contractInfo}

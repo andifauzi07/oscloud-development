@@ -112,7 +112,7 @@ export const Route = createFileRoute('/employee/')({
 });
 
 function RouteComponent() {
-    const { employees, loading, addEmployee } = useWorkspaceEmployees();
+    const { employees, loading, addEmployee, updateEmployeeData} = useWorkspaceEmployees();
     const { categories, loading: loadingEmployeeCategories } = useEmployeeCategories();
     const { departments, loading: loadingDepartments } = useDepartments();
     const [editable, setEditable] = useState(false);
@@ -153,12 +153,24 @@ function RouteComponent() {
     const handleSaveEdits = useCallback(async (updatedData: any[]) => {
         try {
             console.log('Saving updates:', updatedData);
-            // Add your API call here
+            // Assuming updateEmployee takes an array of updated employee objects
+            await Promise.all(updatedData.map(async (employee) => {
+                // Only include properties that you want to update
+                const updatePayload = {
+                  employeeid: employee.employeeid,
+                  name: employee.name,
+                  email: employee.email,
+                  employeecategoryid: employee.employeecategoryid,
+                  departmentid: employee.departmentid
+                }
+                await updateEmployeeData(employee.employeeid, updatePayload);
+              }));
             setEditable(false); // Turn off edit mode after saving
         } catch (error) {
             console.error('Failed to save updates:', error);
         }
-    }, []);
+    }, [updateEmployeeData])
+
 
     const selectFields = {
         employeecategoryid: {
@@ -236,3 +248,4 @@ function RouteComponent() {
         </div>
     );
 }
+

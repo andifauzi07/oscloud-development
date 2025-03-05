@@ -40,7 +40,7 @@ export const fetchAvailability = createAsyncThunk(
         });
 
         const response = await apiClient.get(
-            `/v1/workspaces/${workspaceId}/availability?${params}`
+            `/workspaces/${workspaceId}/availability?${params}`
         );
         return response.data;
     }
@@ -50,7 +50,7 @@ export const fetchAvailabilityById = createAsyncThunk(
     "availability/fetchOne",
     async ({ workspaceId, availabilityId }: { workspaceId: number; availabilityId: number }) => {
         const response = await apiClient.get(
-            `/v1/workspaces/${workspaceId}/availability/${availabilityId}`
+            `/workspaces/${workspaceId}/availability/${availabilityId}`
         );
         return response.data;
     }
@@ -66,7 +66,7 @@ export const createAvailability = createAsyncThunk(
         data: CreateAvailabilityData 
     }) => {
         const response = await apiClient.post(
-            `/v1/workspaces/${workspaceId}/availability`,
+            `/workspaces/${workspaceId}/availability`,
             data
         );
         return response.data;
@@ -85,7 +85,7 @@ export const updateAvailability = createAsyncThunk(
         data: UpdateAvailabilityData;
     }) => {
         const response = await apiClient.patch(
-            `/v1/workspaces/${workspaceId}/availability/${availabilityId}`,
+            `/workspaces/${workspaceId}/availability/${availabilityId}`,
             data
         );
         return response.data;
@@ -96,7 +96,7 @@ export const deleteAvailability = createAsyncThunk(
     "availability/delete",
     async ({ workspaceId, availabilityId }: { workspaceId: number; availabilityId: number }) => {
         await apiClient.delete(
-            `/v1/workspaces/${workspaceId}/availability/${availabilityId}`
+            `/workspaces/${workspaceId}/availability/${availabilityId}`
         );
         return availabilityId;
     }

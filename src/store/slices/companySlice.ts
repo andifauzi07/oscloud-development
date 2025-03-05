@@ -88,7 +88,7 @@ export const fetchCompanies = createAsyncThunk(
         if (limit) params.append('limit', limit.toString());
 
         const response = await apiClient.get(
-            `/v1/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ''}`
+            `/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ''}`
         );
         return response.data;
     }
@@ -97,7 +97,7 @@ export const fetchCompanies = createAsyncThunk(
 export const fetchCompanyById = createAsyncThunk(
     "company/fetchOne",
     async ({ workspaceId, companyId }: { workspaceId: number; companyId: number }) => {
-        const response = await apiClient.get(`/v1/workspaces/${workspaceId}/crm/companies/${companyId}`);
+        const response = await apiClient.get(`/workspaces/${workspaceId}/crm/companies/${companyId}`);
         return response.data;
     }
 );
@@ -121,7 +121,7 @@ export const createCompany = createAsyncThunk(
         };
     }) => {
         const response = await apiClient.post(
-            `/v1/workspaces/${workspaceId}/crm/companies`,
+            `/workspaces/${workspaceId}/crm/companies`,
             data
         );
         return response.data;
@@ -140,7 +140,7 @@ export const updateCompany = createAsyncThunk(
         data: Partial<Company>;
     }) => {
         const response = await apiClient.patch(
-            `/v1/workspaces/${workspaceId}/crm/companies/${companyId}`,
+            `/workspaces/${workspaceId}/crm/companies/${companyId}`,
             data
         );
         return response.data;
@@ -168,7 +168,7 @@ export const fetchLeads = createAsyncThunk(
             });
         }
         const response = await apiClient.get(
-            `/v1/workspaces/${workspaceId}/crm/leads${params.toString() ? `?${params.toString()}` : ''}`
+            `/workspaces/${workspaceId}/crm/leads${params.toString() ? `?${params.toString()}` : ''}`
         );
         return response.data;
     }
@@ -189,7 +189,7 @@ export const createLead = createAsyncThunk(
         };
     }) => {
         const response = await apiClient.post(
-            `/v1/workspaces/${workspaceId}/crm/leads`,
+            `/workspaces/${workspaceId}/crm/leads`,
             data
         );
         return response.data;
@@ -208,7 +208,7 @@ export const updateLeadStatus = createAsyncThunk(
         status: string;
     }) => {
         const response = await apiClient.patch(
-            `/v1/workspaces/${workspaceId}/crm/leads/${leadId}`,
+            `/workspaces/${workspaceId}/crm/leads/${leadId}`,
             { status }
         );
         return response.data;
@@ -218,7 +218,7 @@ export const updateLeadStatus = createAsyncThunk(
 export const deleteCompany = createAsyncThunk(
     "company/delete",
     async ({ workspaceId, companyId }: { workspaceId: number; companyId: number }) => {
-        await apiClient.delete(`/v1/workspaces/${workspaceId}/crm/companies/${companyId}`);
+        await apiClient.delete(`/workspaces/${workspaceId}/crm/companies/${companyId}`);
         return companyId;
     }
 );
@@ -226,7 +226,7 @@ export const deleteCompany = createAsyncThunk(
 export const deleteLead = createAsyncThunk(
     "company/deleteLead",
     async ({ workspaceId, leadId }: { workspaceId: number; leadId: number }) => {
-        await apiClient.delete(`/v1/workspaces/${workspaceId}/crm/leads/${leadId}`);
+        await apiClient.delete(`/workspaces/${workspaceId}/crm/leads/${leadId}`);
         return leadId;
     }
 );

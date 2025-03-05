@@ -1,131 +1,110 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import { useUserData } from '@/hooks/useUserData';
-import { fetchDepartments, fetchDepartmentById, createDepartment as createDepartmentAction, updateDepartment as updateDepartmentAction, clearCurrentDepartment } from '@/store/slices/departmentSlice';
-import { Department, DepartmentCreateData, DepartmentUpdateData, UseDepartmentReturn, UseDepartmentsReturn } from '@/types/departments';
+import {
+    fetchDepartments,
+    fetchDepartmentById,
+    createDepartment as createDepartmentAction,
+    updateDepartment as updateDepartmentAction,
+    deleteDepartment as deleteDepartmentAction,
+    clearCurrentDepartment
+} from '@/store/slices/departmentSlice';
+import { Department, DepartmentCreateData, DepartmentUpdateData } from '@/types/departments';
 
-// Hook for managing departments (listing, creating, updating)
-export const useDepartments = (): UseDepartmentsReturn => {
-	const dispatch = useDispatch<AppDispatch>();
-	const { workspaceid } = useUserData();
-	const { departments, loading, error } = useSelector((state: RootState) => state.department);
+export const useDepartments = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { workspaceid } = useUserData();
+    const { departments, loading, error } = useSelector((state: RootState) => state.department);
 
-	useEffect(() => {
-		if (workspaceid) {
-			dispatch(fetchDepartments(Number(workspaceid)));
-		}
-	}, [dispatch, workspaceid]);
+    useEffect(() => {
+        if (workspaceid) {
+            dispatch(fetchDepartments(Number(workspaceid)));
+        }
+    }, [dispatch, workspaceid]);
 
-	const getDepartmentById = (id: number) => {
-		// Helper function to find a department in the tree
-		const findDepartment = (departments: Department[], id: number): Department | undefined => {
-			for (const dept of departments) {
-				if (dept.departmentId === id) {
-					return dept;
-				}
-				if (dept.subDepartments?.length) {
-					const found = findDepartment(dept.subDepartments, id);
-					if (found) return found;
-				}
-			}
-			return undefined;
-		};
+    const createDepartment = useCallback(async (data: DepartmentCreateData) => {
+        if (!workspaceid) throw new Error('No workspace ID available');
+        return dispatch(createDepartmentAction({
+            workspaceId: Number(workspaceid),
+            data
+        })).unwrap();
+    }, [dispatch, workspaceid]);
 
-		return findDepartment(departments, id);
-	};
+    const deleteDepartment = useCallback(async (departmentId: number) => {
+        if (!workspaceid) throw new Error('No workspace ID available');
+        return dispatch(deleteDepartmentAction({
+            workspaceId: Number(workspaceid),
+            departmentId
+        })).unwrap();
+    }, [dispatch, workspaceid]);
 
-	const createDepartment = async (data: DepartmentCreateData) => {
-		if (!workspaceid) throw new Error('No workspace ID available');
-		try {
-			const result = await dispatch(
-				createDepartmentAction({
-					workspaceId: Number(workspaceid),
-					data,
-				})
-			).unwrap();
-
-			// Refetch departments to get the updated tree
-			await dispatch(fetchDepartments(Number(workspaceid)));
-
-			return result;
-		} catch (error) {
-			throw new Error(error instanceof Error ? error.message : 'Failed to create department');
-		}
-	};
-
-	return {
-		departments,
-		loading,
-		error,
-		getDepartmentById,
-		createDepartment,
-	};
+    return {
+        departments,
+        loading,
+        error,
+        createDepartment,
+        deleteDepartment
+    };
 };
 
-// Hook for accessing a single department by ID
-export const useDepartment = (departmentId: number): UseDepartmentReturn => {
-	const dispatch = useDispatch<AppDispatch>();
-	const { workspaceid } = useUserData();
-	const { currentDepartment, loading, error } = useSelector((state: RootState) => state.department);
+export const useDepartment = (departmentId?: number) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { workspaceid } = useUserData();
+    const { currentDepartment, loading, error } = useSelector(
+        (state: RootState) => state.department
+    );
 
-	useEffect(() => {
-		if (workspaceid && departmentId) {
-			dispatch(
-				fetchDepartmentById({
-					workspaceId: Number(workspaceid),
-					departmentId,
-				})
-			);
-		}
-
-		return () => {
-			// Clean up current department when unmounting
-			dispatch(clearCurrentDepartment());
-		};
-	}, [dispatch, workspaceid, departmentId]);
-
-    const updateDepartment = async (data: DepartmentUpdateData) => {
-        if (!workspaceid || !departmentId) throw new Error("Workspace ID or Department ID missing");
-        try {
-            await dispatch(updateDepartmentAction({
+    useEffect(() => {
+        if (workspaceid && departmentId) {
+            dispatch(fetchDepartmentById({
                 workspaceId: Number(workspaceid),
-                departmentId,
-                data
-            })).unwrap();
-            // Refetch updated data
-            dispatch(fetchDepartmentById({ workspaceId: Number(workspaceid), departmentId }));
-            dispatch(fetchDepartments(Number(workspaceid)));
-        } catch (error) {
-            throw error;
+                departmentId
+            }));
         }
-    };
+        return () => {
+            dispatch(clearCurrentDepartment());
+        };
+    }, [dispatch, workspaceid, departmentId]);
+
+    const updateDepartment = useCallback(async (data: DepartmentUpdateData) => {
+        if (!workspaceid || !departmentId) throw new Error('Required IDs not available');
+        return dispatch(updateDepartmentAction({
+            workspaceId: Number(workspaceid),
+            departmentId,
+            data
+        })).unwrap();
+    }, [dispatch, workspaceid, departmentId]);
 
     return {
         department: currentDepartment,
         loading,
         error,
-        updateDepartment,
+        updateDepartment
     };
 };
 
-// Helper hook to get a flat list of departments from the tree
+// Helper hook to get a flat list of departments
 export const useFlatDepartmentList = () => {
-	const { departments, loading } = useDepartments();
+    const { departments, loading } = useDepartments();
 
-	// Function to flatten the department tree
-	const flattenDepartments = (departments: Department[], results: Department[] = []): Department[] => {
-		for (const dept of departments) {
-			results.push(dept);
-			if (dept.subDepartments?.length) {
-				flattenDepartments(dept.subDepartments, results);
-			}
-		}
-		return results;
-	};
+    const flattenDepartments = useCallback((
+        departments: Department[],
+        results: Department[] = []
+    ): Department[] => {
+        departments.forEach(dept => {
+            results.push(dept);
+            if (dept.subDepartments?.length) {
+                flattenDepartments(dept.subDepartments, results);
+            }
+        });
+        return results;
+    }, []);
 
-	return {
-		flatDepartments: flattenDepartments(departments),
-		loading,
-	};
+    const flatDepartments = useMemo(() => flattenDepartments(departments), [departments, flattenDepartments]);
+
+    return {
+        flatDepartments,
+        loading
+    };
 };

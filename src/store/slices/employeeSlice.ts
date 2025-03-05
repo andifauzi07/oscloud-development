@@ -36,7 +36,7 @@ export const fetchWorkspaceEmployees = createAsyncThunk(
             });
         }
         const response = await apiClient.get(
-            `/v1/workspaces/${workspaceId}/employees${params.toString() ? `?${params}` : ''}`
+            `/workspaces/${workspaceId}/employees${params.toString() ? `?${params}` : ''}`
         );
         return response.data;
     }
@@ -45,7 +45,7 @@ export const fetchWorkspaceEmployees = createAsyncThunk(
 export const fetchEmployeeById = createAsyncThunk(
     "employee/fetchOne",
     async ({ workspaceId, employeeId }: { workspaceId: number; employeeId: number }) => {
-        const response = await apiClient.get(`/v1/workspaces/${workspaceId}/employees/${employeeId}`);
+        const response = await apiClient.get(`/workspaces/${workspaceId}/employees/${employeeId}`);
         return response.data;
     }
 );
@@ -62,7 +62,7 @@ export const createEmployee = createAsyncThunk(
             profileImage?: string;
         } 
     }) => {
-        const response = await apiClient.post(`/v1/workspaces/${workspaceId}/employees`, data);
+        const response = await apiClient.post(`/workspaces/${workspaceId}/employees`, data);
         return response.data;
     }
 );
@@ -75,7 +75,7 @@ export const updateEmployee = createAsyncThunk(
         data: Partial<Employee>;
     }) => {
         const response = await apiClient.put(
-            `/v1/workspaces/${workspaceId}/employees/${employeeId}`, 
+            `/workspaces/${workspaceId}/employees/${employeeId}`, 
             data
         );
         return response.data;
@@ -85,7 +85,7 @@ export const updateEmployee = createAsyncThunk(
 export const deleteEmployee = createAsyncThunk(
     "employee/delete",
     async ({ workspaceId, employeeId }: { workspaceId: number; employeeId: number }) => {
-        await apiClient.delete(`/v1/workspaces/${workspaceId}/employees/${employeeId}`);
+        await apiClient.delete(`/workspaces/${workspaceId}/employees/${employeeId}`);
         return employeeId;
     }
 );
@@ -94,7 +94,7 @@ export const fetchEmployeeCategories = createAsyncThunk(
     "employee/fetchCategories",
     async (workspaceId: number) => {
         const response = await apiClient.get(
-            `/v1/workspaces/${workspaceId}/employees/employee-categories`
+            `/workspaces/${workspaceId}/employees/employee-categories`
         );
         return response.data.categories;
     }

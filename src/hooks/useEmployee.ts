@@ -16,9 +16,7 @@ import { Employee, EmployeeFilters } from "@/types/employee";
 export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { employees, total, currentPage, limit, loading, error } = useSelector(
-        (state: RootState) => state.employee
-    );
+    const { employees, total, currentPage, limit, loading, error } = useSelector((state: RootState) => state.employee);
 
     useEffect(() => {
         if (workspaceid) {
@@ -55,6 +53,18 @@ export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
         ).unwrap();
     }, [dispatch, workspaceid]);
 
+    const updateEmployeeData = useCallback(async (employeeId: number, data: Partial<Employee>) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(
+            updateEmployee({
+                workspaceId: Number(workspaceid),
+                employeeId,
+                data
+            })
+        ).unwrap();
+    }, [dispatch, workspaceid, employees]);
+
+   
     return {
         employees,
         total,
@@ -62,6 +72,7 @@ export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
         limit,
         loading,
         error,
+        updateEmployeeData,
         addEmployee,
         removeEmployee
     };
@@ -88,7 +99,7 @@ export const useEmployee = (employeeId: number) => {
         };
     }, [dispatch, workspaceid, employeeId]);
 
-    const updateEmployeeData = useCallback(async (data: Partial<Employee>) => {
+    const updateEmployeeData = useCallback(async (employeeId: number, data: Partial<Employee>) => {
         if (!workspaceid) throw new Error("No workspace ID available");
         return dispatch(
             updateEmployee({
@@ -97,13 +108,15 @@ export const useEmployee = (employeeId: number) => {
                 data
             })
         ).unwrap();
-    }, [dispatch, workspaceid, employeeId]);
+    }, [dispatch, workspaceid, selectedEmployee]);
+
+
 
     return {
         employee: selectedEmployee,
         loading,
         error,
-        updateEmployee: updateEmployeeData
+        updateEmployeeData,
     };
 };
 

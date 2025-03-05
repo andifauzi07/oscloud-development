@@ -1,117 +1,95 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
-import { DepartmentCreateData, DepartmentState, DepartmentUpdateData } from "@/types/departments";
+import { Department, DepartmentCreateData, DepartmentUpdateData } from "@/types/departments";
 
-
-const initialState: DepartmentState = {
-    departments: [],
-    currentDepartment: null,
-    loading: false,
-    error: null,
-};
+interface DepartmentState {
+    departments: Department[];
+    currentDepartment: Department | null;
+    loading: boolean;
+    error: string | null;
+}
 
 // Fetch all departments
-export const fetchDepartments = createAsyncThunk(
-    "department/fetchDepartments",
-    async (workspaceId: number, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.get(
-                `/workspaces/${workspaceId}/departments`
-            );
-            return response.data.departments;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to fetch departments"
-            );
-        }
+export const fetchDepartments = createAsyncThunk<
+    { departments: Department[] },
+    number
+>("department/fetchAll", async (workspaceId, { rejectWithValue }) => {
+    try {
+        const response = await apiClient.get(`/workspaces/${workspaceId}/departments`);
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.response?.data?.message || "Failed to fetch departments");
     }
-);
+});
 
-// Fetch department by ID
-export const fetchDepartmentById = createAsyncThunk(
-    "department/fetchDepartmentById",
-    async (
-        {
-            workspaceId,
-            departmentId,
-        }: {
-            workspaceId: number;
-            departmentId: number;
-        },
-        { rejectWithValue }
-    ) => {
-        try {
-            const response = await apiClient.get(
-                `/workspaces/${workspaceId}/departments/${departmentId}`
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to fetch department"
-            );
-        }
+// Fetch single department
+export const fetchDepartmentById = createAsyncThunk<
+    Department,
+    { workspaceId: number; departmentId: number }
+>("department/fetchById", async ({ workspaceId, departmentId }, { rejectWithValue }) => {
+    try {
+        const response = await apiClient.get(
+            `/workspaces/${workspaceId}/departments/${departmentId}`
+        );
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.response?.data?.message || "Failed to fetch department");
     }
-);
+});
 
 // Create department
-export const createDepartment = createAsyncThunk(
-    "department/createDepartment",
-    async (
-        {
-            workspaceId,
-            data,
-        }: {
-            workspaceId: number;
-            data: DepartmentCreateData;
-        },
-        { rejectWithValue }
-    ) => {
-        try {
-            const response = await apiClient.post(
-                `/workspaces/${workspaceId}/departments`,
-                data
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to create department"
-            );
-        }
+export const createDepartment = createAsyncThunk<
+    Department,
+    { workspaceId: number; data: DepartmentCreateData }
+>("department/create", async ({ workspaceId, data }, { rejectWithValue }) => {
+    try {
+        const response = await apiClient.post(
+            `/workspaces/${workspaceId}/departments`,
+            data
+        );
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.response?.data?.message || "Failed to create department");
     }
-);
+});
 
 // Update department
-export const updateDepartment = createAsyncThunk(
-    "department/updateDepartment",
-    async (
-        {
-            workspaceId,
-            departmentId,
-            data,
-        }: {
-            workspaceId: number;
-            departmentId: number;
-            data: DepartmentUpdateData;
-        },
-        { rejectWithValue }
-    ) => {
-        try {
-            const response = await apiClient.put(
-                `/workspaces/${workspaceId}/departments/${departmentId}`,
-                data
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data || "Failed to update department"
-            );
-        }
+export const updateDepartment = createAsyncThunk<
+    Department,
+    { workspaceId: number; departmentId: number; data: DepartmentUpdateData }
+>("department/update", async ({ workspaceId, departmentId, data }, { rejectWithValue }) => {
+    try {
+        const response = await apiClient.put(
+            `/workspaces/${workspaceId}/departments/${departmentId}`,
+            data
+        );
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.response?.data?.message || "Failed to update department");
     }
-);
+});
+
+// Delete department
+export const deleteDepartment = createAsyncThunk<
+    number,
+    { workspaceId: number; departmentId: number }
+>("department/delete", async ({ workspaceId, departmentId }, { rejectWithValue }) => {
+    try {
+        await apiClient.delete(`/workspaces/${workspaceId}/departments/${departmentId}`);
+        return departmentId;
+    } catch (error: any) {
+        return rejectWithValue(error.response?.data?.message || "Failed to delete department");
+    }
+});
 
 const departmentSlice = createSlice({
     name: "department",
-    initialState,
+    initialState: {
+        departments: [],
+        currentDepartment: null,
+        loading: false,
+        error: null,
+    } as DepartmentState,
     reducers: {
         clearCurrentDepartment: (state) => {
             state.currentDepartment = null;
@@ -119,35 +97,24 @@ const departmentSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Fetch departments
+            // Fetch All Departments
             .addCase(fetchDepartments.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchDepartments.fulfilled, (state, action) => {
                 state.loading = false;
-                state.departments = action.payload;
+                state.departments = action.payload.departments;
             })
             .addCase(fetchDepartments.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            // Fetch department by ID
+            // Fetch Single Department
             .addCase(fetchDepartmentById.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            // .addCase(fetchDepartmentById.fulfilled, (state, action) => {
-            //     state.loading = false;
-            //     state.currentDepartment = action.payload;
-            //     // Also update departments array if needed
-            //     const index = state.departments.findIndex(
-            //         (d: any) => d.departmentId === action.payload.departmentId
-            //     );
-            //     if (index !== -1) {
-            //         state.departments[index] = action.payload;
-            //     }
-            // })
             .addCase(fetchDepartmentById.fulfilled, (state, action) => {
                 state.loading = false;
                 state.currentDepartment = action.payload;
@@ -156,33 +123,49 @@ const departmentSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            // Create department
+            // Create Department
             .addCase(createDepartment.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(createDepartment.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentDepartment = action.payload;
-                // Don't add to departments array here because the tree structure might be complex
-                // It's better to refetch the departments
+                state.departments.push(action.payload);
             })
             .addCase(createDepartment.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            // Update department
+            // Update Department
             .addCase(updateDepartment.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(updateDepartment.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentDepartment = action.payload;
-                // Don't update departments array here because the tree structure might be complex
-                // It's better to refetch the departments
+                if (state.currentDepartment?.departmentid === action.payload.departmentid) {
+                    state.currentDepartment = action.payload;
+                }
             })
             .addCase(updateDepartment.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Delete Department
+            .addCase(deleteDepartment.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteDepartment.fulfilled, (state, action) => {
+                state.loading = false;
+                state.departments = state.departments.filter(
+                    (dept) => dept.departmentid !== action.payload
+                );
+                if (state.currentDepartment?.departmentid === action.payload) {
+                    state.currentDepartment = null;
+                }
+            })
+            .addCase(deleteDepartment.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });
@@ -190,5 +173,4 @@ const departmentSlice = createSlice({
 });
 
 export const { clearCurrentDepartment } = departmentSlice.actions;
-
 export default departmentSlice.reducer;
