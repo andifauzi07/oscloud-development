@@ -9,12 +9,16 @@ import { TitleWrapper } from '@/components/wrapperElement';
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { useProject, useProjects } from '@/hooks/useProject';
-import { Project, type Costs } from '@/store/slices/projectSlice';
+import { Project, type CreateProjectRequest } from '@/store/slices/projectSlice';
 import { ColumnDef } from '@tanstack/react-table';
 import { Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import useDebounce from '@/hooks/useDebounce';
 import ScheduleTable from '@/components/ScheduleTimeLine';
+import { toast } from 'sonner';
+import { useCompanies } from '@/hooks/useCompany';
+import { useUserData } from '@/hooks/useUserData';
+import { useEmployee, useWorkspaceEmployees } from '@/hooks/useEmployee';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
@@ -42,7 +46,36 @@ function RouteComponent() {
 	);
 
 	const { projects, loading } = useProjects(projectFilters);
-    const { createProject } = useProject();
+	const { addProject, editProject } = useProject();
+
+	// Add these hooks at the top of your component
+	const { companies } = useCompanies();
+	const { employees } = useWorkspaceEmployees();
+    const { userid, workspaceid } = useUserData() 
+
+	// Create the select fields options
+	const selectFields = {
+        companyId: {
+            options: companies.map(company => ({
+                value: company.companyid,
+                label: company.name
+            }))
+        },
+        assignedStaff: {
+            options: employees.map(employee => ({
+                value: employee.employeeid,
+                label: employee.name
+            }))
+        },
+        connectedPersonnel: {
+            options: companies.flatMap(company => 
+                (company.personnel || []).map(person => ({
+                    value: person.personnelid,
+                    label: `${person.name} (${company.name})` // Include company name for context
+                }))
+            )
+        }
+	};
 
 	// Debounce filter changes
 	const handleFilterChange = useCallback((key: string, value: string) => {
@@ -59,29 +92,64 @@ function RouteComponent() {
 		});
 	}, []);
 
-	const handleAddRecord = async (data: any) => {
+	const handleAddRecord = async (data: Partial<Project>) => {
 		try {
-			await addProject({
-				...data,
-				assignedStaff: [],
-				status: 'In Progress',
-				city: 'New York',
-				product: 'Marketing Automation',
-			});
+			const newProjectRequest: CreateProjectRequest = {
+				name: data.name || '',
+				startDate: data.startDate || '',
+				endDate: data.endDate || '',
+				status: 'Active',
+				city: data.city || '',
+				product: data.product || '',
+				managerid: Number(userid) || 1,
+				companyid: Number(data.companyId) || 1,
+				workspaceid: Number(workspaceid),
+				assignedStaff: (data.assignedStaff || []).map(staff => ({
+					employeeId: Number(staff),
+					rateType: 'A', // Default rate type
+					breakHours: 1  // Default break hours
+				})),
+				connectedPersonnel: (data.connectedPersonnel || []).map(personnel => ({
+					personnelId: Number(personnel)
+				})),
+				costs: {
+					food: 0,
+					break: 0,
+					rental: 0,
+					revenue: 0,
+					other_cost: 0,
+					labour_cost: 0,
+					manager_fee: 0,
+					costume_cost: 0,
+					sales_profit: 0,
+					transport_cost: 0
+				}
+			};
+
+			await addProject(newProjectRequest);
+			toast.success('Project created successfully');
 		} catch (error) {
 			console.error('Failed to add record:', error);
+			toast.error('Failed to create project');
 		}
 	};
 
-	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
+	const handleSaveEdits = useCallback(async (updatedData: Partial<Project>[]) => {
 		try {
-			// TODO: Implement batch update when available in API
-			console.log('Saving updates:', updatedData);
+			await Promise.all(
+				updatedData.map(async (project) => {
+					if (project.projectId) {
+						await editProject(project.projectId, project);
+					}
+				})
+			);
 			setEditable(false);
+			toast.success('Projects updated successfully');
 		} catch (error) {
 			console.error('Failed to save updates:', error);
+			toast.error('Failed to update projects');
 		}
-	}, []);
+	}, [editProject]);
 
 	const projectsColumns: ColumnDef<Project>[] = useMemo(
 		() => [
@@ -211,7 +279,13 @@ function RouteComponent() {
 					<AddRecordDialog
 						columns={projectsColumns}
 						onSave={handleAddRecord}
-						nonEditableColumns={['projectId*', 'id*', 'financials*', 'assignedStaff*', 'costs*']}
+						nonEditableColumns={[
+							'projectId*',
+							'id*',
+							'financials*',
+							'costs*'
+						]}
+						selectFields={selectFields}
 					/>
 					<Button
 						onClick={() => setEditable((prev) => !prev)}

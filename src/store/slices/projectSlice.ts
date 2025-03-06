@@ -1,30 +1,62 @@
-// src/store/slices/projectSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 
+export interface ProjectCosts {
+    food: number;
+    break: number;
+    rental: number;
+    revenue: number;
+    other_cost: number;
+    labour_cost: number;
+    manager_fee: number;
+    costume_cost: number;
+    sales_profit: number;
+    transport_cost: number;
+}
+
+export interface AssignedStaff {
+    employeeId: number;
+    name: string;
+    rateType: string;
+    rateValue: number;
+    breakHours: number;
+}
+
+export interface ConnectedPersonnel {
+    personnelId: number;
+    name: string;
+    email: string | null;
+    status: string;
+    company: {
+        companyId: number;
+        name: string;
+        logo: string;
+    };
+    lead: {
+        leadId: number;
+        status: string;
+        contractValue: number;
+    };
+}
+
 export interface Project {
     projectId: number;
+    projectid: number; // API returns lowercase
     name: string;
     startDate: string;
+    startdate: string; // API returns lowercase
     endDate: string;
+    enddate: string; // API returns lowercase
     managerId: number;
+    managerid: number; // API returns lowercase
     workspaceId: number;
+    workspaceid: number; // API returns lowercase
     companyId: number;
-    status: string | null;
+    companyid: number; // API returns lowercase
+    status: string;
     city?: string;
     product?: string;
-    costs: {
-        food: number;
-        break: number;
-        rental: number;
-        revenue: number;
-        other_cost: number;
-        labour_cost: number;
-        manager_fee: number;
-        costume_cost: number;
-        sales_profit: number;
-        transport_cost: number;
-    };
+    costs: ProjectCosts;
     manager: {
         userId: number;
         name: string;
@@ -34,26 +66,18 @@ export interface Project {
         name: string;
         logo?: string;
     };
-    assignedStaff: {
-        employeeId: number;
-        name: string;
-        rateType: string;
-        rateValue: number;
-        breakHours: number;
-    }[];
+    assignedStaff: AssignedStaff[];
+    connectedPersonnel: ConnectedPersonnel[];
     financials: {
         totalLabourCost: number;
         totalTransportFee: number;
     };
 }
 
-interface ProjectState {
-    projects: Project[];
-    loading: boolean;
-    error: string | null;
-    total: number;
-    currentPage: number;
-    perPage: number;
+export interface ProjectLead {
+    project_lead_id: number;
+    projectid: number;
+    leadid: number;
 }
 
 export interface ProjectFilters {
@@ -66,161 +90,167 @@ export interface ProjectFilters {
     search?: string;
 }
 
-// Update API response types
-interface ProjectsResponse {
+export interface CreateProjectRequest {
+    name: string;
+    startDate: string;
+    endDate: string;
+    managerid: number;
+    companyid: number;
+    workspaceid: number;
+    status: string;
+    city?: string;
+    product?: string;
+    assignedStaff: {
+        employeeId: number;
+        rateType: string;
+        breakHours: number;
+    }[];
+    connectedPersonnel: {
+        personnelId: number;
+    }[];
+    costs: {
+        food: number;
+        break: number;
+        rental: number;
+        revenue: number;
+        other_cost: number;
+        labour_cost: number;
+        manager_fee: number;
+        costume_cost: number;
+        sales_profit: number;
+        transport_cost: number;
+    };
+}
+
+export interface AssignStaffRequest {
+    staff: {
+        employeeId: number;
+        rateType: string;
+        breakHours: number;
+    }[];
+}
+
+export interface CreateProjectLeadRequest {
+    project_id: number;
+    lead_id: number;
+}
+
+interface ProjectState {
     projects: Project[];
+    currentProject: Project | null;
+    projectLeads: ProjectLead[];
+    loading: boolean;
+    error: string | null;
     total: number;
     page: number;
     limit: number;
 }
 
-interface SingleProjectResponse {
-    project: Project;
-}
+const initialState: ProjectState = {
+    projects: [],
+    currentProject: null,
+    projectLeads: [],
+    loading: false,
+    error: null,
+    total: 0,
+    page: 1,
+    limit: 10,
+};
 
-export const fetchProjects = createAsyncThunk<
-    ProjectsResponse,
-    {
-        workspaceId: number;
-        filters?: ProjectFilters;
-        page?: number;
-        pageSize?: number;
-    }
->("project/fetchAll", async ({ workspaceId, filters, page = 1, pageSize = 10 }, { rejectWithValue }) => {
-    try {
-        const response = await apiClient.get<ProjectsResponse>(`/v1/workspaces/${workspaceId}/projects/`, {
-            params: {
-                workspaceid: workspaceId,
-                ...filters,
-                page,
-                limit: pageSize
-            }
-        });
-        return response.data;
-    } catch (error: any) {
-        return rejectWithValue(error.response?.data?.message || "Failed to fetch projects");
-    }
-});
-
-export const fetchProjectById = createAsyncThunk(
-    "project/fetchById",
-    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.get(`/workspaces/${workspaceId}/projects/${projectId}`);
-            return response.data.project;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || "Failed to fetch project");
+export const fetchProjects = createAsyncThunk(
+    "project/fetchAll",
+    async ({ workspaceId, filters }: { workspaceId: number; filters?: ProjectFilters }) => {
+        const queryParams = new URLSearchParams();
+        if (filters) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value) queryParams.append(key.toLowerCase(), value.toString());
+            });
         }
+        const response = await apiClient.get(`/workspaces/${workspaceId}/projects/?${queryParams}`);
+        return response.data;
     }
 );
 
-interface CreateProjectData {
-    name: string;
-    startDate: string;
-    endDate: string;
-    managerId: number;
-    companyId: number;
-    status: string;
-    city: string;
-    product: string;
-}
+export const fetchProjectById = createAsyncThunk(
+    "project/fetchOne",
+    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }) => {
+        const response = await apiClient.get(`/workspaces/${workspaceId}/projects/${projectId}`);
+        return response.data.project;
+    }
+);
 
 export const createProject = createAsyncThunk(
     "project/create",
-    async ({ workspaceId, data }: { workspaceId: number; data: CreateProjectData }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.post(`/workspaces/${workspaceId}/projects`, data);
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || "Failed to create project");
-        }
+    async ({ workspaceId, data }: { workspaceId: number; data: CreateProjectRequest }) => {
+        const response = await apiClient.post(`/workspaces/${workspaceId}/projects`, data);
+        return response.data;
     }
 );
 
 export const updateProject = createAsyncThunk(
     "project/update",
-    async ({ workspaceId, projectId, data }: { 
-        workspaceId: number; 
-        projectId: number; 
-        data: Partial<CreateProjectData>;
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.post(`/workspaces/${workspaceId}/projects/${projectId}`, data);
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || "Failed to update project");
-        }
-    }
-);
-
-interface AssignStaffData {
-    staff: Array<{
-        employeeId: number;
-        rateType: string;
-        breakHours: number;
-    }>;
-}
-
-export const assignStaffToProject = createAsyncThunk(
-    "project/assignStaff",
-    async ({ workspaceId, projectId, data }: {
-        workspaceId: number;
-        projectId: number;
-        data: AssignStaffData;
-    }, { rejectWithValue }) => {
-        try {
-            const response = await apiClient.post(
-                `/workspaces/${workspaceId}/projects/${projectId}/staff`,
-                data
-            );
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || "Failed to assign staff");
-        }
-    }
-);
-
-export const removeStaffFromProject = createAsyncThunk(
-    "project/removeStaff",
-    async ({ workspaceId, projectId, employeeIds }: {
-        workspaceId: number;
-        projectId: number;
-        employeeIds: number[];
-    }, { rejectWithValue }) => {
-        try {
-            await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}/staff`, {
-                params: { employeeIds }
-            });
-            return { projectId, employeeIds };
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || "Failed to remove staff");
-        }
+    async ({ workspaceId, projectId, data }: { workspaceId: number; projectId: number; data: Partial<Project> }) => {
+        const response = await apiClient.post(`/workspaces/${workspaceId}/projects/${projectId}`, data);
+        return response.data;
     }
 );
 
 export const deleteProject = createAsyncThunk(
     "project/delete",
-    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }, { rejectWithValue }) => {
-        try {
-            await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}`);
-            return { projectId };
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || "Failed to delete project");
-        }
+    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }) => {
+        await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}`);
+        return projectId;
+    }
+);
+
+export const assignStaff = createAsyncThunk(
+    "project/assignStaff",
+    async ({ workspaceId, projectId, data }: { workspaceId: number; projectId: number; data: AssignStaffRequest }) => {
+        const response = await apiClient.post(`/workspaces/${workspaceId}/projects/${projectId}/staff`, data);
+        return response.data;
+    }
+);
+
+export const removeStaff = createAsyncThunk(
+    "project/removeStaff",
+    async ({ workspaceId, projectId, employeeIds }: { workspaceId: number; projectId: number; employeeIds: number[] }) => {
+        await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}/staff?employeeIds=${employeeIds.join(',')}`);
+        return { projectId, employeeIds };
+    }
+);
+
+export const fetchProjectLeads = createAsyncThunk(
+    "project/fetchLeads",
+    async (workspaceId: number) => {
+        const response = await apiClient.get(`/workspaces/${workspaceId}/projects/project-leads`);
+        return response.data;
+    }
+);
+
+export const createProjectLead = createAsyncThunk(
+    "project/createLead",
+    async ({ workspaceId, data }: { workspaceId: number; data: CreateProjectLeadRequest }) => {
+        const response = await apiClient.post(`/workspaces/${workspaceId}/projects/project-leads`, data);
+        return response.data;
+    }
+);
+
+export const deleteProjectLead = createAsyncThunk(
+    "project/deleteLead",
+    async ({ workspaceId, projectId, leadId }: { workspaceId: number; projectId: number; leadId: number }) => {
+        await apiClient.delete(`/workspaces/${workspaceId}/projects/project-leads/${projectId}/${leadId}`);
+        return { projectId, leadId };
     }
 );
 
 const projectSlice = createSlice({
     name: "project",
-    initialState: {
-        projects: [],
-        loading: false,
-        error: null,
-        total: 0,
-        currentPage: 1,
-        perPage: 10
-    } as ProjectState,
-    reducers: {},
+    initialState,
+    reducers: {
+        clearCurrentProject: (state) => {
+            state.currentProject = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
             // Fetch Projects
@@ -232,30 +262,25 @@ const projectSlice = createSlice({
                 state.loading = false;
                 state.projects = action.payload.projects;
                 state.total = action.payload.total;
-                state.currentPage = action.payload.page;
-                state.perPage = action.payload.limit;
+                state.page = action.payload.page;
+                state.limit = action.payload.limit;
             })
             .addCase(fetchProjects.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload as string;
+                state.error = action.error.message || "Failed to fetch projects";
             })
-            // Fetch Project By Id
+            // Fetch Single Project
             .addCase(fetchProjectById.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchProjectById.fulfilled, (state, action) => {
                 state.loading = false;
-                const index = state.projects.findIndex(p => p.projectId === action.payload.projectId);
-                if (index !== -1) {
-                    state.projects[index] = action.payload;
-                } else {
-                    state.projects.push(action.payload);
-                }
+                state.currentProject = action.payload;
             })
             .addCase(fetchProjectById.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload as string;
+                state.error = action.error.message || "Failed to fetch project";
             })
             // Create Project
             .addCase(createProject.fulfilled, (state, action) => {
@@ -263,32 +288,27 @@ const projectSlice = createSlice({
             })
             // Update Project
             .addCase(updateProject.fulfilled, (state, action) => {
-                const index = state.projects.findIndex(p => p.projectId === action.payload.projectId);
-                if (index !== -1) {
-                    state.projects[index] = { ...state.projects[index], ...action.payload };
-                }
-            })
-            // Assign Staff
-            .addCase(assignStaffToProject.fulfilled, (state, action) => {
-                const index = state.projects.findIndex(p => p.projectId === action.payload.projectId);
+                const index = state.projects.findIndex(p => p.projectid === action.payload.projectid);
                 if (index !== -1) {
                     state.projects[index] = action.payload;
                 }
-            })
-            // Remove Staff
-            .addCase(removeStaffFromProject.fulfilled, (state, action) => {
-                const project = state.projects.find(p => p.projectId === action.payload.projectId);
-                if (project) {
-                    project.assignedStaff = project.assignedStaff.filter(
-                        staff => !action.payload.employeeIds.includes(staff.employeeId)
-                    );
+                if (state.currentProject?.projectid === action.payload.projectid) {
+                    state.currentProject = action.payload;
                 }
             })
             // Delete Project
             .addCase(deleteProject.fulfilled, (state, action) => {
-                state.projects = state.projects.filter(p => p.projectId !== action.payload.projectId);
+                state.projects = state.projects.filter(p => p.projectid !== action.payload);
+                if (state.currentProject?.projectid === action.payload) {
+                    state.currentProject = null;
+                }
+            })
+            // Project Leads
+            .addCase(fetchProjectLeads.fulfilled, (state, action) => {
+                state.projectLeads = action.payload;
             });
     },
 });
 
+export const { clearCurrentProject } = projectSlice.actions;
 export default projectSlice.reducer;

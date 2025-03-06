@@ -1,56 +1,20 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
+import { Personnel, Company, Lead, CreateCompanyRequest } from '@/types/company';
 
-// Interfaces
-export interface Personnel {
-    personnelId: number;
-    name: string;
-}
-
-export interface Company {
-    companyId: number;
-    name: string;
-    logo?: string;
-    personnel: Personnel[];
-    activeLeads: number;
-    totalContractValue: number;
-    city: string | null;
-    category_group: string | null;
-    email: string;
-    product: string | null;
-    created_at: string | null;
-    managerid: number;
-}
-
-export interface Lead {
-    leadId: number;
-    company: {
-        companyId: number;
-        name: string;
-    };
-    status: string;
-    contractValue: number;
-    personnel: {
-        personnelId: number;
-        name: string;
-    };
-}
-
-export interface TotalValue {
-    active: number;
-    closed: number;
-}
+// Remove any local type definitions and use the ones from types/company.ts
+export type { Company, Personnel };
 
 interface CompanyState {
     companies: Company[];
-    selectedCompany: Company | null;
+    selectedCompany: Company | null
     leads: Lead[];
     total: number;
     loading: boolean;
-    error: string | null;
+    error: string | null
     currentPage: number;
     perPage: number;
-    totalValue: TotalValue;
+    totalContractValue: any;
 }
 
 const initialState: CompanyState = {
@@ -62,7 +26,7 @@ const initialState: CompanyState = {
     error: null,
     currentPage: 1,
     perPage: 10,
-    totalValue: { active: 0, closed: 0 }
+    totalContractValue: { active: 0, closed: 0 }
 };
 
 // Thunks
@@ -90,6 +54,7 @@ export const fetchCompanies = createAsyncThunk(
         const response = await apiClient.get(
             `/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ''}`
         );
+        
         return response.data;
     }
 );
@@ -109,22 +74,36 @@ export const createCompany = createAsyncThunk(
         data,
     }: {
         workspaceId: number;
-        data: {
-            name: string;
-            personnel: { name: string }[];
-            city?: string;
-            product?: string;
-            email?: string;
-            category_group?: string;
-            logo?: string;
-            managerid?: number;
-        };
-    }) => {
-        const response = await apiClient.post(
-            `/workspaces/${workspaceId}/crm/companies`,
-            data
-        );
-        return response.data;
+        data: CreateCompanyRequest;
+    }, { rejectWithValue }) => {
+        try {
+            // Create a new object with only the required fields
+            const requestData = {
+                name: data.name,
+                logo: data.logo,
+                city: data.city,
+                product: data.product,
+                email: data.email,
+                category_group: data.category_group,
+                managerid: data.managerid,
+                personnel: []
+            };
+
+            console.log('Request payload:', JSON.stringify(requestData));
+
+            const response = await apiClient.post(
+                `/workspaces/${workspaceId}/crm/companies`,
+                requestData
+            );
+            return response.data;
+        } catch (error: any) {
+            console.error("API Error:", error.response?.data);
+            return rejectWithValue(
+                error.response?.data?.detail || 
+                error.response?.data?.message || 
+                "Failed to create company"
+            );
+        }
     }
 );
 
@@ -156,7 +135,7 @@ export const fetchLeads = createAsyncThunk(
         workspaceId: number;
         filters?: {
             status?: string;
-            companyId?: number;
+            companyid?: number;
             minValue?: number;
             maxValue?: number;
         };
@@ -182,9 +161,9 @@ export const createLead = createAsyncThunk(
     }: {
         workspaceId: number;
         data: {
-            companyId: number;
-            personnelId: number;
-            contractValue: number;
+            companyid: number;
+            personnelid: number;
+            contractvalue: number;
             status: string;
         };
     }) => {
@@ -249,6 +228,7 @@ const companySlice = createSlice({
                 state.currentPage = action.payload.page;
                 state.perPage = action.payload.limit;
             })
+              
             .addCase(fetchCompanies.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || "Failed to fetch companies";
@@ -264,19 +244,19 @@ const companySlice = createSlice({
             // Update Company
             .addCase(updateCompany.fulfilled, (state, action) => {
                 const index = state.companies.findIndex(
-                    (c) => c.companyId === action.payload.companyId
+                    (c) => c.companyid === action.payload.companyid
                 );
                 if (index !== -1) {
                     state.companies[index] = action.payload;
                 }
-                if (state.selectedCompany?.companyId === action.payload.companyId) {
+                if (state.selectedCompany?.companyid === action.payload.companyid) {
                     state.selectedCompany = action.payload;
                 }
             })
             // Fetch Leads
             .addCase(fetchLeads.fulfilled, (state, action) => {
                 state.leads = action.payload.leads;
-                state.totalValue = action.payload.totalValue;
+                state.totalContractValue = action.payload.totalValue;
             })
             // Create Lead
             .addCase(createLead.fulfilled, (state, action) => {
@@ -285,7 +265,7 @@ const companySlice = createSlice({
             // Update Lead
             .addCase(updateLeadStatus.fulfilled, (state, action) => {
                 const index = state.leads.findIndex(
-                    (l) => l.leadId === action.payload.leadId
+                    (l: any) => l.leadid === action.payload.leadid
                 );
                 if (index !== -1) {
                     state.leads[index] = action.payload;
@@ -294,20 +274,19 @@ const companySlice = createSlice({
             // Delete Company
             .addCase(deleteCompany.fulfilled, (state, action) => {
                 state.companies = state.companies.filter(
-                    (company) => company.companyId !== action.payload
+                    (company) => company.companyid !== action.payload
                 );
-                if (state.selectedCompany?.companyId === action.payload) {
+                if (state.selectedCompany?.companyid === action.payload) {
                     state.selectedCompany = null;
                 }
             })
             // Delete Lead
             .addCase(deleteLead.fulfilled, (state, action) => {
                 state.leads = state.leads.filter(
-                    (lead) => lead.leadId !== action.payload
+                    (lead: any) => lead.leadid !== action.payload
                 );
             });
     },
 });
 
 export default companySlice.reducer;
-

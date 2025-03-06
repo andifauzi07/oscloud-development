@@ -13,12 +13,20 @@ import {
     updateLeadStatus,
     deleteCompany,
     deleteLead,
-    type Company,
-    type Lead,
 } from "@/store/slices/companySlice";
+import type {
+    Company,
+    CompanyResponse,
+    CreateCompanyRequest,
+    UpdateCompanyRequest,
+    Lead,
+    LeadResponse,
+    CreateLeadRequest,
+} from "@/types/company";
 
 export interface CompanyFilters {
     category?: string;
+    search?: string;
 }
 
 export interface LeadFilters {
@@ -29,10 +37,9 @@ export interface LeadFilters {
 }
 
 export const useCompanies = (
-    filters?: CompanyFilters | null,
-    search?: string,
+    filters?: CompanyFilters,
     page?: number,
-    limit?: number,
+    limit?: number
 ) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
@@ -46,14 +53,14 @@ export const useCompanies = (
             dispatch(
                 fetchCompanies({
                     workspaceId: Number(workspaceid),
-                    search,
-                    filters: memoizedFilters || undefined,
+                    search: filters?.search,
+                    filters: { category: filters?.category },
                     page,
                     limit,
                 })
             );
         }
-    }, [dispatch, workspaceid, search, memoizedFilters, page, limit]);
+    }, [dispatch, workspaceid, memoizedFilters, page, limit]);
 
     const fetchCompany = useCallback(
         async (companyId: number) => {
@@ -69,16 +76,7 @@ export const useCompanies = (
     );
 
     const addCompany = useCallback(
-        async (data: {
-            name: string;
-            personnel: { name: string }[];
-            city?: string;
-            product?: string;
-            email?: string;
-            category_group?: string;
-            logo?: string;
-            managerid?: number;
-        }) => {
+        async (data: CreateCompanyRequest) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
                 createCompany({
@@ -91,7 +89,7 @@ export const useCompanies = (
     );
 
     const updateCompanyDetails = useCallback(
-        async (companyId: number, data: Partial<Company>) => {
+        async (companyId: number, data: UpdateCompanyRequest) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
                 updateCompany({
@@ -135,7 +133,7 @@ export const useCompanies = (
 export const useLeads = (filters?: LeadFilters) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { leads, loading, error, totalValue } = useSelector(
+    const { leads, loading, error, totalContractValue } = useSelector(
         (state: RootState) => state.company
     );
 
@@ -161,7 +159,12 @@ export const useLeads = (filters?: LeadFilters) => {
             return dispatch(
                 createLead({
                     workspaceId: Number(workspaceid),
-                    data,
+                    data: {
+                        companyid: data.companyId,
+                        personnelid: data.personnelId,
+                        contractvalue: data.contractValue,
+                        status: data.status
+                    }
                 })
             ).unwrap();
         },
@@ -199,9 +202,11 @@ export const useLeads = (filters?: LeadFilters) => {
         leads,
         loading,
         error,
-        totalValue,
+        totalContractValue,
         addLead,
         updateStatus,
         deleteLead: removeLead,
     };
 };
+
+
