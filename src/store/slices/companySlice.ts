@@ -7,13 +7,10 @@ export type { Company, Personnel };
 
 interface CompanyState {
     companies: Company[];
-    selectedCompany: Company | null
+    selectedCompany: Company | null;
     leads: Lead[];
-    total: number;
     loading: boolean;
-    error: string | null
-    currentPage: number;
-    perPage: number;
+    error: string | null;
     totalContractValue: any;
 }
 
@@ -21,11 +18,8 @@ const initialState: CompanyState = {
     companies: [],
     selectedCompany: null,
     leads: [],
-    total: 0,
     loading: false,
     error: null,
-    currentPage: 1,
-    perPage: 10,
     totalContractValue: { active: 0, closed: 0 }
 };
 
@@ -36,20 +30,14 @@ export const fetchCompanies = createAsyncThunk(
         workspaceId,
         search,
         filters,
-        page,
-        limit,
     }: {
         workspaceId: number;
         search?: string;
         filters?: { category?: string };
-        page?: number;
-        limit?: number;
     }) => {
         const params = new URLSearchParams();
         if (search) params.append('search', search);
         if (filters?.category) params.append('category', filters.category);
-        if (page) params.append('page', page.toString());
-        if (limit) params.append('limit', limit.toString());
 
         const response = await apiClient.get(
             `/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ''}`
@@ -224,9 +212,6 @@ const companySlice = createSlice({
             .addCase(fetchCompanies.fulfilled, (state, action) => {
                 state.loading = false;
                 state.companies = action.payload.companies;
-                state.total = action.payload.total;
-                state.currentPage = action.payload.page;
-                state.perPage = action.payload.limit;
             })
               
             .addCase(fetchCompanies.rejected, (state, action) => {

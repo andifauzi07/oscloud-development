@@ -40,6 +40,54 @@ export interface Project {
     costs: ProjectCosts;
 }
 
+export interface Manager {
+    userId: number;
+    name: string;
+}
+
+export interface Company {
+    companyId: number;
+    name: string;
+    logo: string;
+}
+
+export interface StaffMember {
+    employeeId: number;
+    name: string;
+    rateType: string;
+    rateValue: number;
+    breakHours: number;
+}
+
+export interface Financials {
+    totalLabourCost: number;
+    totalTransportFee: number;
+}
+
+export interface ProjectDisplay {
+    projectid: number;
+    name: string;
+    startdate: string;
+    enddate: string;
+    managerid: number;
+    workspaceid: number;
+    companyid: number;
+    status: string;
+    costs: ProjectCosts;
+    manager: Manager;
+    company: Company;
+    assignedStaff: StaffMember[];
+    connectedPersonnel: any[]; // Define type if needed
+    financials: Financials;
+}
+
+export interface ProjectResponse {
+    projects: ProjectDisplay[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
 export interface Company {
     companyid: number;
     name: string;

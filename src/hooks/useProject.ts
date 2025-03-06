@@ -21,10 +21,17 @@ import {
     clearCurrentProject,
 } from "@/store/slices/projectSlice";
 
-export const useProjects = (filters?: ProjectFilters) => {
+export const useProjects = (filters?: {
+    keyword?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+}) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { projects, loading, error, total,  } = useSelector(
+    const { projects, loading, error, total, page, limit } = useSelector(
         (state: RootState) => state.project
     );
 
@@ -32,107 +39,106 @@ export const useProjects = (filters?: ProjectFilters) => {
         if (workspaceid) {
             dispatch(fetchProjects({
                 workspaceId: Number(workspaceid),
-                filters
+                filters: {
+                    ...filters,
+                    page: filters?.page || 1,
+                    limit: filters?.limit || 10
+                }
             }));
         }
     }, [dispatch, workspaceid, filters]);
 
     return {
         projects,
-        total,
         loading,
         error,
+        total,
+        page,
+        limit
     };
 };
 
-export const useProject = (workspaceId?: number) => {
+export const useProject = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const effectiveWorkspaceId = workspaceId || Number(workspaceid);
-    
+
     const {
         projects,
         currentProject,
         projectLeads,
         loading,
         error,
-        total,
-        page,
-        limit,
     } = useSelector((state: RootState) => state.project);
 
     const getProjects = useCallback(
         (filters?: ProjectFilters) => {
-            return dispatch(fetchProjects({ workspaceId: effectiveWorkspaceId, filters }));
+            return dispatch(fetchProjects({ workspaceId: Number(workspaceid), filters }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
     const getProjectById = useCallback(
         (projectId: number) => {
-            return dispatch(fetchProjectById({ workspaceId: effectiveWorkspaceId, projectId }));
+            return dispatch(fetchProjectById({ workspaceId: Number(workspaceid), projectId }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
     const addProject = useCallback(
         (data: CreateProjectRequest) => {
-            return dispatch(createProject({ workspaceId: effectiveWorkspaceId, data }));
+            return dispatch(createProject({ workspaceId: Number(workspaceid), data }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
-    const editProject = useCallback(
-        (projectId: number, data: Partial<CreateProjectRequest>) => {
-            return dispatch(updateProject({ workspaceId: effectiveWorkspaceId, projectId, data }));
-        },
-        [dispatch, effectiveWorkspaceId]
-    );
+    const editProject = useCallback(async ({ projectId, data }: { projectId: number; data: Partial<CreateProjectRequest> }) => {
+        if (!workspaceid) throw new Error('Workspace ID is required');
+        return dispatch(updateProject({ workspaceId: Number(workspaceid), projectId, data })).unwrap();
+    }, [dispatch, workspaceid]);
 
     const removeProject = useCallback(
         (projectId: number) => {
-            return dispatch(deleteProject({ workspaceId: effectiveWorkspaceId, projectId }));
+            return dispatch(deleteProject({ workspaceId: Number(workspaceid), projectId }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
     const assignProjectStaff = useCallback(
         (projectId: number, data: AssignStaffRequest) => {
-            return dispatch(assignStaff({ workspaceId: effectiveWorkspaceId, projectId, data }));
+            return dispatch(assignStaff({ workspaceId: Number(workspaceid), projectId, data }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
     const removeProjectStaff = useCallback(
         (projectId: number, employeeIds: number[]) => {
-            return dispatch(removeStaff({ workspaceId: effectiveWorkspaceId, projectId, employeeIds }));
+            return dispatch(removeStaff({ workspaceId: Number(workspaceid), projectId, employeeIds }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
-
     const getProjectLeads = useCallback(
         () => {
-            return dispatch(fetchProjectLeads(effectiveWorkspaceId));
+            return dispatch(fetchProjectLeads(Number(workspaceid)));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
     const addProjectLead = useCallback(
         (data: CreateProjectLeadRequest) => {
-            return dispatch(createProjectLead({ workspaceId: effectiveWorkspaceId, data }));
+            return dispatch(createProjectLead({ workspaceId: Number(workspaceid), data }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
     const removeProjectLead = useCallback(
         (projectId: number, leadId: number) => {
             return dispatch(deleteProjectLead({ 
-                workspaceId: effectiveWorkspaceId, 
+                workspaceId: Number(workspaceid), 
                 projectId, 
                 leadId 
             }));
         },
-        [dispatch, effectiveWorkspaceId]
+        [dispatch, workspaceid]
     );
 
     const clearProject = useCallback(
@@ -149,9 +155,6 @@ export const useProject = (workspaceId?: number) => {
         projectLeads,
         loading,
         error,
-        total,
-        page,
-        limit,
 
         // Actions
         getProjects,

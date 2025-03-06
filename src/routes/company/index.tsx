@@ -36,8 +36,6 @@ function RouteComponent() {
     const [searchKeyword, setSearchKeyword] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("");
     const debouncedSearchKeyword = useDebounce(searchKeyword, 500);
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
     const [isEditable, setIsEditable] = useState(false);
     const filters = useMemo(() => ({ category: "" }), []);
     const { companies, loading, addCompany } = useCompanies(filters); // This is the companies data

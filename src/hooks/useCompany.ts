@@ -36,14 +36,10 @@ export interface LeadFilters {
     maxValue?: number;
 }
 
-export const useCompanies = (
-    filters?: CompanyFilters,
-    page?: number,
-    limit?: number
-) => {
+export const useCompanies = (filters?: CompanyFilters) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { companies, selectedCompany, total, loading, error, currentPage, perPage } =
+    const { companies, selectedCompany, loading, error } =
         useSelector((state: RootState) => state.company);
 
     const memoizedFilters = useMemo(() => filters, [filters]);
@@ -55,12 +51,10 @@ export const useCompanies = (
                     workspaceId: Number(workspaceid),
                     search: filters?.search,
                     filters: { category: filters?.category },
-                    page,
-                    limit,
                 })
             );
         }
-    }, [dispatch, workspaceid, memoizedFilters, page, limit]);
+    }, [dispatch, workspaceid, memoizedFilters]);
 
     const fetchCompany = useCallback(
         async (companyId: number) => {
@@ -118,11 +112,8 @@ export const useCompanies = (
     return {
         companies,
         selectedCompany,
-        total,
         loading,
         error,
-        currentPage,
-        perPage,
         fetchCompany,
         addCompany,
         updateCompany: updateCompanyDetails,

@@ -4,7 +4,8 @@ export type TableColumnType = 'text' | 'number' | 'boolean' | 'email' | 'date' |
 
 export interface BaseColumnSetting<T> {
     accessorKey: keyof T & string; // Ensure it's a string key
-    label: string;
+    label?: string;
+    header: string;
     type: TableColumnType;
     date_created: string;
     status: "shown" | "hidden";
