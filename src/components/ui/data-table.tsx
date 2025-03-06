@@ -1,28 +1,29 @@
-import { CellContext, ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { CellContext, ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import { Input } from './input';
 import { Button } from './button';
 import Loading from '../Loading';
 
-interface DataTableProps<TData, TValue> {
-	columns: ColumnDef<TData, TValue>[];
-	data: TData[];
-	loading?: boolean;
-	enableRowDragAndDrop?: boolean;
-	enableColumnDragAndDrop?: boolean;
-	isEditable?: boolean;
-	nonEditableColumns?: string[];
-	onSave?: (data: TData[]) => void;
-	rowDragProps?: {
-		onDragStart: (e: React.DragEvent<HTMLDivElement>, key: string) => void;
-		onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-		onDrop: (e: React.DragEvent<HTMLDivElement>, dropKey: string) => void;
-		draggedKey: string | null;
-	};
+const preloadImage = (src: string) => {
+    if (!src) return;
+    const img = new Image();
+    img.src = src;
+};
+
+export interface DataTableProps<TData, TValue> {
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+    loading?: boolean;
+    enableRowDragAndDrop?: boolean;
+    enableColumnDragAndDrop?: boolean;
+    isEditable?: boolean;
+    nonEditableColumns?: string[];
+    onSave?: (data: TData[]) => void;
+    onRowDragEnd?: (result: { oldIndex: number; newIndex: number }) => void;
 }
 
 interface EditableCellProps<TData> {
@@ -69,9 +70,31 @@ const EditableCell = <TData,>({ value: initialValue, row: { index, original }, c
 	);
 };
 
-export function DataTable<TData, TValue>({ columns, data, loading = false, enableRowDragAndDrop = false, enableColumnDragAndDrop = false, isEditable = false, nonEditableColumns = [], onSave, rowDragProps }: DataTableProps<TData, TValue>) {
-    const [tableData, setTableData] = useState<TData[]>(data);
-    const [tableColumns, setTableColumns] = useState(() => columns);
+// Memoized Table Row component
+const TableRowMemo = memo(({ row, columns }: { row: any; columns: any[] }) => (
+	<TableRow className="border-t">
+		{row.getVisibleCells().map((cell: any) => (
+			<TableCell key={cell.id}>
+				{flexRender(cell.column.columnDef.cell, cell.getContext())}
+			</TableCell>
+		))}
+	</TableRow>
+));
+TableRowMemo.displayName = 'TableRowMemo';
+
+export function DataTable<TData, TValue>({
+    columns,
+    data,
+    loading = false,
+    enableRowDragAndDrop = false,
+    enableColumnDragAndDrop = false,
+    isEditable = false,
+    nonEditableColumns = [],
+    onSave,
+    onRowDragEnd
+}: DataTableProps<TData, TValue>) {
+	const [tableData, setTableData] = useState<TData[]>(data);
+	const [tableColumns, setTableColumns] = useState(() => columns);
 
 	// Update tableData when data prop changes
 	useEffect(() => {
@@ -128,32 +151,41 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 		data: tableData,
 		columns: tableColumns,
 		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		enableSorting: false,
+		enableMultiSort: false,
 	});
 
 	// Handle row drag-and-drop
-	const handleRowDragEnd = (event: any) => {
+	const handleRowDragEnd = useCallback((event: any) => {
 		const { active, over } = event;
-		if (!over || active.id === over.id) return;
+		if (!active || !over || active.id === over.id) return;
 
-		setTableData((prev) => {
-			const oldIndex = prev.findIndex((item: any) => item.companyId === active.id);
-			const newIndex = prev.findIndex((item: any) => item.companyId === over.id);
-			return arrayMove(prev, oldIndex, newIndex);
-		});
-	};
+		const oldIndex = tableData.findIndex((item: any) => item.id === active.id || item.companyId === active.id);
+		const newIndex = tableData.findIndex((item: any) => item.id === over.id || item.companyId === over.id);
+		
+		if (oldIndex === -1 || newIndex === -1) return;
+
+		const newData = arrayMove([...tableData], oldIndex, newIndex);
+		setTableData(newData);
+
+		if (onRowDragEnd) {
+			onRowDragEnd({ oldIndex, newIndex });
+		}
+	}, [tableData, onRowDragEnd]);
 
 	// Handle column drag-and-drop
-	const handleColumnDragEnd = (event: any) => {
+	const handleColumnDragEnd = useCallback((event: any) => {
 		const { active, over } = event;
-		if (!over || active.id === over.id) return;
+		if (!active || !over || active.id === over.id) return;
 
-		setTableColumns((prev) => {
-			const oldIndex = prev.findIndex((col) => col.id === active.id);
-			const newIndex = prev.findIndex((col) => col.id === over.id);
-			if (oldIndex === -1 || newIndex === -1) return prev;
-			return arrayMove(prev, oldIndex, newIndex);
-		});
-	};
+		const oldIndex = tableColumns.findIndex((col) => col.id === active.id);
+		const newIndex = tableColumns.findIndex((col) => col.id === over.id);
+		
+		if (oldIndex === -1 || newIndex === -1) return;
+
+		setTableColumns(prev => arrayMove([...prev], oldIndex, newIndex));
+	}, [tableColumns]);
 
 	// Sortable Row Component
 	const SortableRow = ({ row }: { row: any }) => {
@@ -204,6 +236,85 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 		);
 	};
 
+	// Memoize the DndContext content
+	const dndContent = useMemo(() => (
+		<DndContext
+			sensors={sensors}
+			onDragEnd={(event) => {
+				if (enableColumnDragAndDrop) {
+					handleColumnDragEnd(event);
+				} else if (enableRowDragAndDrop) {
+					handleRowDragEnd(event);
+				}
+			}}>
+			<SortableContext
+				items={enableRowDragAndDrop 
+					? tableData.map((item: any) => item.id || item.companyId)
+					: tableColumns.map((item: any) => item.id || item.accessorKey)}
+				strategy={verticalListSortingStrategy}>
+				<Table>
+					<TableHeader className="bg-[#f3f4f6]">
+						{table.getHeaderGroups().map((headerGroup) => (
+							<TableRow key={headerGroup.id}>
+								{headerGroup.headers.map((header) =>
+									enableColumnDragAndDrop ? (
+										<SortableHeader
+											key={header.id}
+											header={header}
+										/>
+									) : (
+										<TableHead
+											key={header.id}
+											className="p-4 text-left font-bold text-[#0a0a30]">
+											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+										</TableHead>
+									)
+								)}
+							</TableRow>
+						))}
+					</TableHeader>
+					<TableBody>
+						{table.getRowModel().rows.length ? (
+							table.getRowModel().rows.map((row) =>
+								enableRowDragAndDrop ? (
+									<SortableRow
+										key={row.id}
+										row={row}
+									/>
+								) : (
+									<TableRowMemo
+										key={row.id}
+										row={row}
+										columns={columns}
+									/>
+								)
+							)
+						) : (
+							<TableRow>
+								<TableCell
+									colSpan={columns.length}
+									className="h-24 text-center">
+									No results.
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</Table>
+			</SortableContext>
+		</DndContext>
+	), [
+		sensors,
+		enableColumnDragAndDrop,
+		enableRowDragAndDrop,
+		handleColumnDragEnd,
+		handleRowDragEnd,
+		tableData,
+		tableColumns,
+		table,
+		columns,
+		loading
+	]);
+
 	return (
 		<div className="flex flex-col w-full">
 			{isEditable && onSave && (
@@ -216,76 +327,7 @@ export function DataTable<TData, TValue>({ columns, data, loading = false, enabl
 				</div>
 			)}
 			<div className="w-full bg-white border-t border-b border-r">
-				{enableRowDragAndDrop || enableColumnDragAndDrop ? (
-					<DndContext
-						sensors={sensors}
-						onDragEnd={(event) => {
-							if (enableColumnDragAndDrop) {
-								handleColumnDragEnd(event);
-							} else if (enableRowDragAndDrop) {
-								handleRowDragEnd(event);
-							}
-						}}>
-						<SortableContext
-							items={(enableRowDragAndDrop ? tableData : tableColumns).map((item: any) => item.companyId || item.accessorKey)}
-							strategy={verticalListSortingStrategy}>
-							<Table>
-								<TableHeader className="bg-[#f3f4f6]">
-									{table.getHeaderGroups().map((headerGroup) => (
-										<TableRow key={headerGroup.id}>
-											{headerGroup.headers.map((header) =>
-												enableColumnDragAndDrop ? (
-													<SortableHeader
-														key={header.id}
-														header={header}
-													/>
-												) : (
-													<TableHead
-														key={header.id}
-														className="p-4 text-left font-bold text-[#0a0a30]">
-														{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-													</TableHead>
-												)
-											)}
-										</TableRow>
-									))}
-								</TableHeader>
-								<TableBody>
-									{table.getRowModel().rows.length ? (
-										table.getRowModel().rows.map((row) =>
-											enableRowDragAndDrop ? (
-												<SortableRow
-													key={row.id}
-													row={row}
-												/>
-											) : (
-												<TableRow
-													key={row.id}
-													className="border-t border-gray-200">
-													{row.getVisibleCells().map((cell) => (
-														<TableCell
-															key={cell.id}
-															className="p-4">
-															{flexRender(cell.column.columnDef.cell, cell.getContext())}
-														</TableCell>
-													))}
-												</TableRow>
-											)
-										)
-									) : (
-										<TableRow>
-											<TableCell
-												colSpan={columns.length}
-												className="h-24 text-center">
-												No results.
-											</TableCell>
-										</TableRow>
-									)}
-								</TableBody>
-							</Table>
-						</SortableContext>
-					</DndContext>
-				) : (
+				{(enableRowDragAndDrop || enableColumnDragAndDrop) ? dndContent : (
 					<Table className="p-0 m-0">
 						<TableHeader className="bg-gray-100">
 							{table.getHeaderGroups().map((headerGroup) => (

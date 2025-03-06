@@ -1,3 +1,5 @@
+import { Personnel } from "@/store/slices/companySlice";
+
 export interface Point {
     pointid: number; // Changed from pointId
     categoryid: number; // Added
@@ -142,9 +144,19 @@ export interface ProjectFinancials {
 }
 
 export interface Company {
-    companyId: number;
+    companyid: number;
     name: string;
     logo: string;
+    workspaceid: number;
+    created_at: string;
+    managerid: number;
+    city: string;
+    product: string;
+    email: string;
+    category_group: string;
+    personnel: Personnel[];
+    activeLeads: number;
+    totalContractValue: number;
 }
 
 export interface Project {
