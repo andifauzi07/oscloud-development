@@ -231,7 +231,7 @@ function RouteComponent() {
 								<Link
 									to={`/company/$companyId`}
 									params={{
-										companyId: row.original.companyId.toString(),
+										companyId: row.original.companyId?.toString(),
 									}}>
 									<Button
 										variant="outline"

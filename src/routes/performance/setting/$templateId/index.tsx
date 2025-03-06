@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { Label, Pie, PieChart, Cell, Text } from 'recharts';
+import { Pie, PieChart, Cell, Text } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Plus, X } from 'lucide-react';
-import EmojiPicker from 'emoji-picker-react';
 import { mockTemplates, TemplateType, Category, CategoryItem } from '@/config/mockData/templates';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 
 export const Route = createFileRoute('/performance/setting/$templateId/')({
 	component: RouteComponent,
@@ -23,6 +24,8 @@ function RouteComponent() {
 	const [newCategory, setNewCategory] = useState('');
 	const [newItemName, setNewItemName] = useState('');
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+	const [editable, setEditable] = useState(false);
+	const [itemPopover, setItemPopover] = useState(false);
 
 	useEffect(() => {
 		const foundTemplate = mockTemplates.find((t) => t.id === templateId);
@@ -82,6 +85,7 @@ function RouteComponent() {
 			categories: template.categories.map((cat) => (cat.id === categoryId ? { ...cat, items: [...cat.items, newItem] } : cat)),
 		});
 		setNewItemName('');
+		setItemPopover(false);
 	};
 
 	const handleWeightChange = (categoryId: string, weight: number) => {
@@ -201,35 +205,52 @@ function RouteComponent() {
 				</div>
 				<div className="flex flex-row items-center justify-end bg-white h-10">
 					<div>
-						<Popover
-							open={isPopoverOpen}
-							onOpenChange={setIsPopoverOpen}>
-							<PopoverTrigger asChild>
-								<Button className="w-36 text-black bg-transparent border-l border-r link border-r-none h-10">NEW CATEGORY+</Button>
-							</PopoverTrigger>
-							<PopoverContent className="w-80 mr-8">
-								<div className="flex flex-col gap-4">
-									<Label>Add New Category</Label>
-									<Input
-										value={newCategory}
-										onChange={(e) => setNewCategory(e.target.value)}
-										placeholder="Category name"
-										className="w-full"
-									/>
-									<Button
-										onClick={handleAddCategory}
-										className="w-full">
-										Add Category
-									</Button>
-								</div>
-							</PopoverContent>
-						</Popover>
-						<Button
-							onClick={handleSave}
-							className="w-20 text-black bg-transparent border-r border-b link border-r-none h-10"
-							variant="default">
-							SAVE
-						</Button>
+						{editable ? (
+							<Button
+								onClick={() => setEditable((prev) => !prev)}
+								className="w-20 text-black bg-transparent border-r border-b link border-r-none h-10"
+								variant="default">
+								CANCEL
+							</Button>
+						) : (
+							<Popover open={isPopoverOpen}>
+								<PopoverTrigger asChild>
+									<Button className="w-36 text-black bg-transparent border-l border-r link border-r-none h-10">NEW CATEGORY+</Button>
+								</PopoverTrigger>
+								<PopoverContent className="w-80 mr-8">
+									<div className="flex flex-col gap-4">
+										<Label>Add New Category</Label>
+										<Input
+											value={newCategory}
+											onChange={(e) => setNewCategory(e.target.value)}
+											placeholder="Category name"
+											className="w-full"
+										/>
+										<Button
+											onClick={handleAddCategory}
+											className="w-full">
+											Add Category
+										</Button>
+									</div>
+								</PopoverContent>
+							</Popover>
+						)}
+
+						{editable ? (
+							<Button
+								onClick={() => setEditable((prev) => !prev)}
+								className="w-20 text-black bg-transparent border-r border-b link border-r-none h-10"
+								variant="default">
+								SAVE
+							</Button>
+						) : (
+							<Button
+								onClick={() => setEditable((prev) => !prev)}
+								className="w-20 text-black bg-transparent border-r border-b link border-r-none h-10"
+								variant="default">
+								EDIT
+							</Button>
+						)}
 					</div>
 				</div>
 			</div>
@@ -285,41 +306,36 @@ function RouteComponent() {
 								<AccordionItem
 									key={category.id}
 									value={category.id}
-									className="border-0">
-									<div className="flex w-full border-b">
+									className="border-0 p-0 m-0">
+									<div className="flex w-full items-center border-r border-b">
 										<div
 											className="flex-1"
 											style={{
 												backgroundColor: category.color || `hsl(var(--chart-${index + 1}))`,
 											}}>
 											<AccordionTrigger className="w-full p-0 m-0 hover:no-underline">
-												<div className="flex items-center justify-between w-full px-4 py-2">
-													<Input
-														enableEmoji={false}
-														value={category.name}
-														onChange={(e) => handleUpdateCategoryName(category.id, e.target.value)}
-														className="w-48 bg-transparent border-0 focus:bg-white/90"
-													/>
+												<div className="flex items-center justify-between w-full pl-4 py-2">
+													{!editable ? (
+														<Badge className="rounded-xs text-black bg-white">{category.name}</Badge>
+													) : (
+														<Input
+															enableEmoji={false}
+															value={category.name}
+															onChange={(e) => handleUpdateCategoryName(category.id, e.target.value)}
+															className="w-48 bg-transparent border-0 focus:bg-white/90"
+														/>
+													)}
 													<div className="flex items-center gap-4">
-														<div className="flex flex-col gap-1">
-															<Label className="text-xs text-white">Weight %</Label>
-															<Input
-																type="number"
-																className="w-24 bg-transparent border-0 focus:bg-white/90"
-																value={category.weight || 0}
-																enableEmoji={false}
-																onChange={(e) => handleWeightChange(category.id, Number(e.target.value))}
-															/>
-														</div>
 														<Popover>
 															<PopoverTrigger asChild>
 																<Button
 																	variant="outline"
-																	className="w-8 h-8 p-0 border-2 border-white/50"
+																	className="text-xs underline px-2 w-20 h-8 p-0 border-none"
 																	style={{
 																		backgroundColor: category.color || `hsl(var(--chart-${index + 1}))`,
-																	}}
-																/>
+																	}}>
+																	Color
+																</Button>
 															</PopoverTrigger>
 															<PopoverContent className="w-80">
 																<div className="flex flex-col gap-4">
@@ -332,41 +348,94 @@ function RouteComponent() {
 																</div>
 															</PopoverContent>
 														</Popover>
+														<div className="flex items-center w-full gap-2">
+															<Label className="text-xs text-black">Weight</Label>
+															<Input
+																type="number"
+																className="w-14 h-7 rounded-xs bg-white border-0"
+																value={category.weight || 0}
+																enableEmoji={false}
+																onChange={(e) => handleWeightChange(category.id, Number(e.target.value))}
+															/>
+														</div>
 													</div>
 												</div>
 											</AccordionTrigger>
 										</div>
-										<Button
-											variant="ghost"
-											onClick={(e) => {
-												e.preventDefault();
-												handleDeleteCategory(category.id);
-											}}
-											className="w-20 border-r rounded-none hover:text-red-200 hover:bg-transparent py-7">
-											DELETE
-										</Button>
+										{!editable ? (
+											<Popover
+												open={itemPopover}
+												onOpenChange={setItemPopover}>
+												<PopoverTrigger>
+													<Button
+														variant={'outline'}
+														className="w-20 h-8 border-none rounded-none hover:text-red-200 hover:bg-transparent">
+														NEW +
+													</Button>
+												</PopoverTrigger>
+												<PopoverContent className="w-80 mr-8">
+													<div className="flex flex-col gap-4">
+														<Label>Add New Item</Label>
+														<Input
+															value={newCategory}
+															onChange={(e) => setNewItemName(e.target.value)}
+															placeholder="Item name"
+															className="w-full"
+														/>
+														<Button
+															onClick={() => handleAddItem(category.id)}
+															className="w-full">
+															Add Item
+														</Button>
+													</div>
+												</PopoverContent>
+											</Popover>
+										) : (
+											<Button
+												variant="outline"
+												onClick={(e) => {
+													e.preventDefault();
+													handleDeleteCategory(category.id);
+												}}
+												className="w-20 h-8 border-none rounded-none hover:text-red-200 hover:bg-transparent">
+												DELETE
+											</Button>
+										)}
 									</div>
 									<AccordionContent className="border-b">
 										<div className="">
 											{category.items.map((item) => (
 												<div
 													key={item.id}
-													className="flex items-center justify-between border">
-													<Input
-														value={item.name}
-														onChange={(e) => handleUpdateItem(category.id, item.id, e.target.value)}
-														className="w-full mr-2 border-none rounded-none"
-													/>
-													<Button
-														variant="ghost"
-														size="lg"
-														onClick={() => handleDeleteItem(category.id, item.id)}
-														className="w-20 border-l rounded-none py-7 hover:text-red-700">
-														DELETE
-													</Button>
+													className="flex bg-white px-3 items-center justify-between border-b border-r">
+													{!editable ? (
+														<div className="py-1">
+															<Badge
+																className="rounded-none"
+																variant={'secondary'}>
+																{item.name}
+															</Badge>
+														</div>
+													) : (
+														<>
+															<Input
+																value={item.name}
+																onChange={(e) => handleUpdateItem(category.id, item.id, e.target.value)}
+																className="w-[80%] h-8 mr-2 border-none rounded-none"
+																enableEmoji={false}
+															/>
+															<Button
+																variant="ghost"
+																size="lg"
+																onClick={() => handleDeleteItem(category.id, item.id)}
+																className="w-20 h-10 border-l rounded-none hover:text-red-700">
+																DELETE
+															</Button>
+														</>
+													)}
 												</div>
 											))}
-											<div className="flex items-center gap-2">
+											{/* <div className="flex items-center gap-2">
 												<Input
 													placeholder="New item name"
 													value={newItemName}
@@ -378,7 +447,7 @@ function RouteComponent() {
 													onClick={() => handleAddItem(category.id)}>
 													<Plus className="w-4 h-4" />
 												</Button>
-											</div>
+											</div> */}
 										</div>
 									</AccordionContent>
 								</AccordionItem>

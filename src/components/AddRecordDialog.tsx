@@ -65,8 +65,9 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns, selectFie
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
-				className="w-[400px] p-4 rounded-none absolute -top-[200px] right-0"
-				align="end">
+				className="w-[400px] -mt-[80px] max-h-[350px] overflow-y-scroll p-4 rounded-none"
+				align="center"
+				sideOffset={2}>
 				<form onSubmit={handleSubmit}>
 					<div className="grid gap-4">
 						<h3 className="font-medium leading-none">Add New Record</h3>
