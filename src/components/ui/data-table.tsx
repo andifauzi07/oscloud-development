@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import { Input } from './input';
 import { Button } from './button';
 import Loading from '../Loading';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const preloadImage = (src: string) => {
     if (!src) return;
@@ -24,6 +25,11 @@ export interface DataTableProps<TData, TValue> {
     nonEditableColumns?: string[];
     onSave?: (data: TData[]) => void;
     onRowDragEnd?: (result: { oldIndex: number; newIndex: number }) => void;
+    // Pagination props
+    total?: number;
+    currentPage?: number;
+    pageSize?: number;
+    onPageChange?: (page: number) => void;
 }
 
 interface EditableCellProps<TData> {
@@ -91,7 +97,11 @@ export function DataTable<TData, TValue>({
     isEditable = false,
     nonEditableColumns = [],
     onSave,
-    onRowDragEnd
+    onRowDragEnd,
+    total = 0,
+    currentPage = 1,
+    pageSize = 10,
+    onPageChange
 }: DataTableProps<TData, TValue>) {
 	const [tableData, setTableData] = useState<TData[]>(data);
 	const [tableColumns, setTableColumns] = useState(() => columns);
@@ -315,6 +325,20 @@ export function DataTable<TData, TValue>({
 		loading
 	]);
 
+	const totalPages = Math.ceil(total / pageSize);
+
+	const handleNextPage = () => {
+		if (currentPage < totalPages && onPageChange) {
+			onPageChange(currentPage + 1);
+		}
+	};
+
+	const handlePrevPage = () => {
+		if (currentPage > 1 && onPageChange) {
+			onPageChange(currentPage - 1);
+		}
+	};
+
 	return (
 		<div className="flex flex-col w-full">
 			{isEditable && onSave && (
@@ -328,48 +352,77 @@ export function DataTable<TData, TValue>({
 			)}
 			<div className="w-full bg-white border-t border-b border-r">
 				{(enableRowDragAndDrop || enableColumnDragAndDrop) ? dndContent : (
-					<Table className="p-0 m-0">
-						<TableHeader className="bg-gray-100">
-							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow
-									className="p-0 m-0"
-									key={headerGroup.id}>
-									{headerGroup.headers.map((header) => (
-										<TableHead
-											key={header.id}
-											className="text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]">
-											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-										</TableHead>
-									))}
-								</TableRow>
-							))}
-						</TableHeader>
-						<TableBody>
-							{table.getRowModel().rows.length && !loading ? (
-								table.getRowModel().rows.map((row) => (
+					<>
+						<Table className="p-0 m-0">
+							<TableHeader className="bg-gray-100">
+								{table.getHeaderGroups().map((headerGroup) => (
 									<TableRow
-										key={row.id}
-										className="border-t">
-										{row.getVisibleCells().map((cell) => (
-											<TableCell
-												key={cell.id}
-												className={cell.column.id === 'actions' ? 'text-xs whitespace-nowrap sticky right-0 z-10' : 'text-xs whitespace-nowrap'}>
-												{flexRender(cell.column.columnDef.cell, cell.getContext())}
-											</TableCell>
+										className="p-0 m-0"
+										key={headerGroup.id}>
+										{headerGroup.headers.map((header) => (
+											<TableHead
+												key={header.id}
+												className="text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]">
+												{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+											</TableHead>
 										))}
 									</TableRow>
-								))
-							) : (
-								<TableRow>
-									<TableCell
-										colSpan={columns.length}
-										className="h-24 text-center">
-										{loading ? <Loading /> : 'No results'}
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
+								))}
+							</TableHeader>
+							<TableBody>
+								{table.getRowModel().rows.length && !loading ? (
+									table.getRowModel().rows.map((row) => (
+										<TableRow
+											key={row.id}
+											className="border-t">
+											{row.getVisibleCells().map((cell) => (
+												<TableCell
+													key={cell.id}
+													className={cell.column.id === 'actions' ? 'text-xs whitespace-nowrap sticky right-0 z-10' : 'text-xs whitespace-nowrap'}>
+													{flexRender(cell.column.columnDef.cell, cell.getContext())}
+												</TableCell>
+											))}
+										</TableRow>
+									))
+								) : (
+									<TableRow>
+										<TableCell
+											colSpan={columns.length}
+											className="h-24 text-center">
+											{loading ? <Loading /> : 'No results'}
+										</TableCell>
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+						{onPageChange && total > 0 && (
+							<div className="flex items-center justify-between px-4 py-4 border-t">
+								<div className="text-sm text-gray-500">
+									Page {currentPage} of {totalPages}
+								</div>
+								<div className="flex gap-2">
+									<Button
+										variant="outline"
+										size="icon"
+										onClick={handlePrevPage}
+										disabled={currentPage === 1 || loading}
+										className="w-8 h-8 p-0"
+									>
+										<ChevronLeft className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="outline"
+										size="icon"
+										onClick={handleNextPage}
+										disabled={currentPage >= totalPages || loading}
+										className="w-8 h-8 p-0"
+									>
+										<ChevronRight className="w-4 h-4" />
+									</Button>
+								</div>
+							</div>
+						)}
+					</>
 				)}
 			</div>
 		</div>

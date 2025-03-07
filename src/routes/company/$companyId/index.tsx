@@ -84,12 +84,12 @@ function CompanyDetail() {
     const handleSave = async () => {
         try {
             if (!Object.keys(editedCompany).length) {
-                toast.error('No changes to save');
+                alert('No changes to save');
                 return;
             }
 
             if (!selectedCompany?.companyid) {
-                toast.error('Company ID is missing');
+                alert('Company ID is missing');
                 return;
             }
 
@@ -100,7 +100,7 @@ function CompanyDetail() {
             
             setIsEditing(false);
             setEditedCompany({});
-            toast.success('Company updated successfully');
+            alert('Company updated successfully');
         } catch (error) {
             console.error('Error updating company:', error);
             toast.error('Failed to update company');

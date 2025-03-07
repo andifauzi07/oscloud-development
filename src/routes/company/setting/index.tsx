@@ -31,9 +31,9 @@ function RouteComponent() {
 		);
 	}, [saveSettings]);
 
-	const handleDragEnd = useCallback(({ oldIndex, newIndex }: { oldIndex: number; newIndex: number }) => {
-		if (oldIndex === newIndex) return; // Add this guard clause
-		reorderColumns(oldIndex, newIndex);
+	const handleDragEnd = useCallback((result: { oldIndex: number; newIndex: number }) => {
+		if (result.oldIndex === result.newIndex) return;
+		reorderColumns(result.oldIndex, result.newIndex);
 	}, [reorderColumns]);
 
 	const columns = useMemo<ColumnDef<BaseColumnSetting<CompanyDisplay>>[]>(() => [

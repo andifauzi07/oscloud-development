@@ -88,6 +88,8 @@ export interface ProjectFilters {
     employeeId?: number;
     companyId?: number;
     search?: string;
+    page?: number;
+    limit?: number;
 }
 
 export interface CreateProjectRequest {
@@ -154,7 +156,7 @@ const initialState: ProjectState = {
     error: null,
     total: 0,
     page: 1,
-    limit: 10,
+    limit: 10
 };
 
 export const fetchProjects = createAsyncThunk(
@@ -189,7 +191,11 @@ export const createProject = createAsyncThunk(
 
 export const updateProject = createAsyncThunk(
     "project/update",
-    async ({ workspaceId, projectId, data }: { workspaceId: number; projectId: number; data: Partial<Project> }) => {
+    async ({ workspaceId, projectId, data }: { 
+        workspaceId: number; 
+        projectId: number; 
+        data: Partial<CreateProjectRequest> 
+    }) => {
         const response = await apiClient.post(`/workspaces/${workspaceId}/projects/${projectId}`, data);
         return response.data;
     }

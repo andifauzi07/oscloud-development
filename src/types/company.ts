@@ -40,6 +40,63 @@ export interface Project {
     costs: ProjectCosts;
 }
 
+export interface Manager {
+    userId: number;
+    name: string;
+}
+
+export interface Company {
+    companyid?: number;
+    companyId?: number;
+    name: string;
+    logo?: string;
+    city?: string;
+    product?: string;
+    email?: string;
+    category_group?: string;
+    workspaceid?: number;
+    managerid?: number;
+    created_at?: string;
+    // ... other fields
+}
+
+export interface StaffMember {
+    employeeId: number;
+    name: string;
+    rateType: string;
+    rateValue: number;
+    breakHours: number;
+}
+
+export interface Financials {
+    totalLabourCost: number;
+    totalTransportFee: number;
+}
+
+export interface ProjectDisplay {
+    projectid: number;
+    name: string;
+    startdate: string;
+    enddate: string;
+    managerid: number;
+    workspaceid: number;
+    companyid: number;
+    status: string;
+    costs: ProjectCosts;
+    manager: Manager;
+    company: Company;
+    assignedStaff: StaffMember[];
+    connectedPersonnel: any[]; // Define type if needed
+    financials: Financials;
+}
+
+export interface ProjectResponse {
+    projects: ProjectDisplay[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
 export interface Company {
     companyid: number;
     name: string;
@@ -117,4 +174,36 @@ export interface CreateLeadRequest {
 
 export interface UpdateLeadRequest {
     status: string;
+}
+
+export type CompanyId = {
+    companyId?: number;
+    companyid?: number;
+}
+
+export interface Company extends CompanyId {
+    name: string;
+    logo: string;
+    // ... other fields
+}
+
+export interface CompanyUpdateResponse {
+    companyId: number;
+    name: string;
+    logo?: string;
+    city?: string;
+    product?: string;
+    email?: string;
+    category_group?: string;
+    managerid?: number;
+}
+
+export interface CompanyUpdate {
+    name?: string;
+    logo?: string;
+    city?: string;
+    product?: string;
+    email?: string;
+    category_group?: string;
+    managerid?: number;
 }
