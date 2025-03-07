@@ -55,12 +55,20 @@ function RouteComponent() {
         return settings
             .filter((setting) => setting.status === "shown")
             .sort((a, b) => a.order - b.order)
-            .map((setting) => ({
-                id: String(setting.accessorKey), // Convert to string
-                accessorKey: setting.accessorKey as string, // Explicitly type as string
-                header: setting.label,
-                cell: setting.cell || defaultCellRenderer,
-            }));
+            .map((setting) => {
+                // Find the matching default setting to get the original cell renderer
+                const defaultSetting = defaultCompanyColumnSettings.find(
+                    (def) => def.accessorKey === setting.accessorKey
+                );
+
+                return {
+                    id: String(setting.accessorKey),
+                    accessorKey: setting.accessorKey as string,
+                    header: setting.header || setting.label,
+                    // Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
+                    cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
+                };
+            });
     }, [settings]);
 
     const filteredCompanies = useMemo(() => {

@@ -15,6 +15,7 @@ import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { Project, ProjectDisplay } from '@/types/company';
 import { defaultProjectColumnSettings } from '@/config/columnSettings';
 import { CreateProjectRequest, UpdateProjectRequest } from '@/types/project';
+import { ColumnDef } from '@tanstack/react-table';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
@@ -47,17 +48,37 @@ function RouteComponent() {
 		defaultSettings: defaultProjectColumnSettings,
 	});
 
-	const columns = useMemo(() => {
-		return settings
-			.filter((setting) => setting.status === "shown")
-			.sort((a, b) => a.order - b.order)
-			.map((setting) => ({
-				id: String(setting.accessorKey),
-				accessorKey: setting.accessorKey as string,
-				header: setting.label,
-				cell: setting.cell || defaultCellRenderer,
-			}));
-	}, [settings]);
+	// const columns = useMemo(() => {
+	// 	return settings
+	// 		.filter((setting) => setting.status === "shown")
+	// 		.sort((a, b) => a.order - b.order)
+	// 		.map((setting) => ({
+	// 			id: String(setting.accessorKey),
+	// 			accessorKey: setting.accessorKey as string,
+	// 			header: setting.label,
+	// 			cell: setting.cell || defaultCellRenderer,
+	// 		}));
+	// }, [settings]);
+
+    const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
+        return settings
+            .filter((setting) => setting.status === "shown")
+            .sort((a, b) => a.order - b.order)
+            .map((setting) => {
+                // Find the matching default setting to get the original cell renderer
+                const defaultSetting = defaultProjectColumnSettings.find(
+                    (def) => def.accessorKey === setting.accessorKey
+                );
+
+                return {
+                    id: String(setting.accessorKey),
+                    accessorKey: setting.accessorKey as string,
+                    header: setting.header || setting.label,
+                    // Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
+                    cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
+                };
+            });
+    }, [settings]);
 
 	const handleAddRecord = useCallback(async (data: Partial<Project>) => {
 		try {
