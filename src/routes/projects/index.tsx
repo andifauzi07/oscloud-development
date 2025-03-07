@@ -16,6 +16,8 @@ import { Project, ProjectDisplay } from '@/types/company';
 import { defaultProjectColumnSettings } from '@/config/columnSettings';
 import { CreateProjectRequest, UpdateProjectRequest } from '@/types/project';
 import { ColumnDef } from '@tanstack/react-table';
+import { useCompanies } from '@/hooks/useCompany';
+import { useUserData } from '@/hooks/useUserData';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
@@ -41,24 +43,21 @@ function RouteComponent() {
 	}), [statusFilter, debouncedKeyword]);
 
 	const { projects, loading } = useProjects(filters);
-    const { addProject, editProject } = useProject();
+	const { addProject, editProject } = useProject();
 	
 	const { settings, saveSettings, reorderColumns } = useColumnSettings({
 		storageKey: "projectColumnSettings",
 		defaultSettings: defaultProjectColumnSettings,
 	});
 
-	// const columns = useMemo(() => {
-	// 	return settings
-	// 		.filter((setting) => setting.status === "shown")
-	// 		.sort((a, b) => a.order - b.order)
-	// 		.map((setting) => ({
-	// 			id: String(setting.accessorKey),
-	// 			accessorKey: setting.accessorKey as string,
-	// 			header: setting.label,
-	// 			cell: setting.cell || defaultCellRenderer,
-	// 		}));
-	// }, [settings]);
+	const { companies } = useCompanies();
+	const { userid } = useUserData();
+
+	const companyOptions = useMemo(() => 
+		companies.map(company => ({
+			value: company.companyid.toString(),
+			label: company.name
+		})), [companies]);
 
     const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
         return settings
@@ -86,15 +85,17 @@ function RouteComponent() {
 				throw new Error("Project name is required");
 			}
 
-			const newProjectRequest: CreateProjectRequest = {
+			const newProjectRequest = {
 				name: data.name,
-				startdate: data.startdate || '',
-				enddate: data.enddate || '',
+				startDate: data.startdate,
+				endDate: data.enddate,
 				status: 'Active',
-				managerid: Number(data.managerid) || 1,
-				companyid: Number(data.companyid) || 1,
-				workspaceid: Number(data.workspaceid),
-				costs: {
+				managerId: userid || 1,
+				companyId: Number(data.companyid),
+				workspaceid: 1,
+				city: data.city || '',
+				product: data.product || '',
+				costs: data.costs || {
 					food: 0,
 					break: 0,
 					rental: 0,
@@ -115,7 +116,7 @@ function RouteComponent() {
 			alert('Failed to create project');
 			throw error;
 		}
-	}, [addProject]);
+	}, [addProject, userid]);
 
 	const handleStatusChange = useCallback((newStatus: string) => {
 		setStatusFilter(newStatus);
@@ -225,8 +226,22 @@ function RouteComponent() {
 						"updated_at",
 						"assignedStaff",
 						"connectedPersonnel",
-						"costs"
+						"costs",
+						"managerid"
 					]}
+					selectFields={{
+						companyid: {
+							options: companyOptions
+						}
+					}}
+					customFields={{
+						duration: {
+							type: 'dateRange',
+							startKey: 'startdate',
+							endKey: 'enddate',
+							label: 'Duration'
+						}
+					}}
 				/>
 				{editButton()}
 			</div>

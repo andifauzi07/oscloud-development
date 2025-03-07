@@ -25,10 +25,11 @@ export interface DataTableProps<TData, TValue> {
     nonEditableColumns?: string[];
     onSave?: (data: TData[]) => void;
     onRowDragEnd?: (result: { oldIndex: number; newIndex: number }) => void;
+    // Pagination props
     total?: number;
     currentPage?: number;
-    onPageChange?: (page: number) => void;
     pageSize?: number;
+    onPageChange?: (page: number) => void;
 }
 
 interface EditableCellProps<TData> {
@@ -99,8 +100,8 @@ export function DataTable<TData, TValue>({
     onRowDragEnd,
     total = 0,
     currentPage = 1,
-    onPageChange,
-    pageSize = 10
+    pageSize = 10,
+    onPageChange
 }: DataTableProps<TData, TValue>) {
 	const [tableData, setTableData] = useState<TData[]>(data);
 	const [tableColumns, setTableColumns] = useState(() => columns);
@@ -394,7 +395,7 @@ export function DataTable<TData, TValue>({
 								)}
 							</TableBody>
 						</Table>
-						{onPageChange && (
+						{onPageChange && total > 0 && (
 							<div className="flex items-center justify-between px-4 py-4 border-t">
 								<div className="text-sm text-gray-500">
 									Page {currentPage} of {totalPages}
