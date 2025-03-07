@@ -9,24 +9,19 @@ import {
     createCompany,
     updateCompany,
     fetchLeads,
-    createLead,
-    updateLeadStatus,
     deleteCompany,
-    deleteLead,
+    clearSelectedCompany,
 } from "@/store/slices/companySlice";
-import type {
-    Company,
-    CompanyResponse,
-    CreateCompanyRequest,
-    UpdateCompanyRequest,
-    Lead,
-    LeadResponse,
-    CreateLeadRequest,
-} from "@/types/company";
+import {
+    createProjectLead,
+    deleteProjectLead,
+} from "@/store/slices/projectSlice";
 
 export interface CompanyFilters {
     category?: string;
     search?: string;
+    page?: number;
+    limit?: number;
 }
 
 export interface LeadFilters {
@@ -39,7 +34,7 @@ export interface LeadFilters {
 export const useCompanies = (filters?: CompanyFilters) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { companies, selectedCompany, loading, error } =
+    const { companies, selectedCompany, loading, error, pagination } =
         useSelector((state: RootState) => state.company);
 
     const memoizedFilters = useMemo(() => filters, [filters]);
@@ -50,7 +45,9 @@ export const useCompanies = (filters?: CompanyFilters) => {
                 fetchCompanies({
                     workspaceId: Number(workspaceid),
                     search: filters?.search,
-                    filters: { category: filters?.category },
+                    category: filters?.category,
+                    page: filters?.page,
+                    limit: filters?.limit
                 })
             );
         }
@@ -70,7 +67,7 @@ export const useCompanies = (filters?: CompanyFilters) => {
     );
 
     const addCompany = useCallback(
-        async (data: CreateCompanyRequest) => {
+        async (data: { name: string; personnel: { name: string }[] }) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
                 createCompany({
@@ -83,7 +80,12 @@ export const useCompanies = (filters?: CompanyFilters) => {
     );
 
     const updateCompanyDetails = useCallback(
-        async (companyId: number, data: UpdateCompanyRequest) => {
+        async (companyId: number, data: {
+            city?: string;
+            product?: string;
+            email?: string;
+            category_group?: string;
+        }) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
                 updateCompany({
@@ -109,22 +111,28 @@ export const useCompanies = (filters?: CompanyFilters) => {
         [dispatch, workspaceid]
     );
 
+    const clearCompany = useCallback(() => {
+        dispatch(clearSelectedCompany());
+    }, [dispatch]);
+
     return {
         companies,
         selectedCompany,
         loading,
         error,
+        pagination,
         fetchCompany,
         addCompany,
         updateCompany: updateCompanyDetails,
         deleteCompany: removeCompany,
+        clearCompany
     };
 };
 
 export const useLeads = (filters?: LeadFilters) => {
     const dispatch = useDispatch<AppDispatch>();
     const { workspaceid } = useUserData();
-    const { leads, loading, error, totalContractValue } = useSelector(
+    const { leads, loading, error, totalValue } = useSelector(
         (state: RootState) => state.company
     );
 
@@ -133,28 +141,24 @@ export const useLeads = (filters?: LeadFilters) => {
             dispatch(
                 fetchLeads({
                     workspaceId: Number(workspaceid),
-                    filters,
+                    status: filters?.status,
+                    companyId: filters?.companyId,
+                    minValue: filters?.minValue,
+                    maxValue: filters?.maxValue
                 })
-            ).unwrap();
+            );
         }
     }, [dispatch, workspaceid, filters]);
 
     const addLead = useCallback(
-        async (data: {
-            companyId: number;
-            personnelId: number;
-            contractValue: number;
-            status: string;
-        }) => {
+        async (projectId: number, leadId: number) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
-                createLead({
+                createProjectLead({
                     workspaceId: Number(workspaceid),
                     data: {
-                        companyid: data.companyId,
-                        personnelid: data.personnelId,
-                        contractvalue: data.contractValue,
-                        status: data.status
+                        project_id: projectId,
+                        lead_id: leadId
                     }
                 })
             ).unwrap();
@@ -163,26 +167,22 @@ export const useLeads = (filters?: LeadFilters) => {
     );
 
     const updateStatus = useCallback(
-        async (leadId: number, status: string) => {
+        async (projectId: number, leadId: number, status: string) => {
             if (!workspaceid) throw new Error("No workspace ID available");
-            return dispatch(
-                updateLeadStatus({
-                    workspaceId: Number(workspaceid),
-                    leadId,
-                    status,
-                })
-            ).unwrap();
+            // Note: This needs to be implemented in the projectSlice
+            throw new Error("updateStatus not implemented");
         },
         [dispatch, workspaceid]
     );
 
     const removeLead = useCallback(
-        async (leadId: number) => {
+        async (projectId: number, leadId: number) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
-                deleteLead({
+                deleteProjectLead({
                     workspaceId: Number(workspaceid),
-                    leadId,
+                    projectId,
+                    leadId
                 })
             ).unwrap();
         },
@@ -193,7 +193,7 @@ export const useLeads = (filters?: LeadFilters) => {
         leads,
         loading,
         error,
-        totalContractValue,
+        totalValue,
         addLead,
         updateStatus,
         deleteLead: removeLead,

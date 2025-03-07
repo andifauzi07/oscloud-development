@@ -46,9 +46,18 @@ export interface Manager {
 }
 
 export interface Company {
-    companyId: number;
+    companyid?: number;
+    companyId?: number;
     name: string;
-    logo: string;
+    logo?: string;
+    city?: string;
+    product?: string;
+    email?: string;
+    category_group?: string;
+    workspaceid?: number;
+    managerid?: number;
+    created_at?: string;
+    // ... other fields
 }
 
 export interface StaffMember {
@@ -165,4 +174,36 @@ export interface CreateLeadRequest {
 
 export interface UpdateLeadRequest {
     status: string;
+}
+
+export type CompanyId = {
+    companyId?: number;
+    companyid?: number;
+}
+
+export interface Company extends CompanyId {
+    name: string;
+    logo: string;
+    // ... other fields
+}
+
+export interface CompanyUpdateResponse {
+    companyId: number;
+    name: string;
+    logo?: string;
+    city?: string;
+    product?: string;
+    email?: string;
+    category_group?: string;
+    managerid?: number;
+}
+
+export interface CompanyUpdate {
+    name?: string;
+    logo?: string;
+    city?: string;
+    product?: string;
+    email?: string;
+    category_group?: string;
+    managerid?: number;
 }

@@ -24,7 +24,7 @@ export interface DataTableProps<TData, TValue> {
     isEditable?: boolean;
     nonEditableColumns?: string[];
     onSave?: (data: TData[]) => void;
-    onRowDragEnd?: (data: TData[]) => void;
+    onRowDragEnd?: (result: { oldIndex: number; newIndex: number }) => void;
     total?: number;
     currentPage?: number;
     onPageChange?: (page: number) => void;
