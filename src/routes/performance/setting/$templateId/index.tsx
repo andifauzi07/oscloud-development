@@ -23,9 +23,9 @@ function RouteComponent() {
 	const [templateName, setTemplateName] = useState('');
 	const [newCategory, setNewCategory] = useState('');
 	const [newItemName, setNewItemName] = useState('');
-	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+	const [isPopoverOpen, setIsPopoverOpen] = useState(true);
 	const [editable, setEditable] = useState(false);
-	const [itemPopover, setItemPopover] = useState(false);
+	const [isItemPopover, setIsItemPopover] = useState(false);
 
 	useEffect(() => {
 		const foundTemplate = mockTemplates.find((t) => t.id === templateId);
@@ -85,7 +85,7 @@ function RouteComponent() {
 			categories: template.categories.map((cat) => (cat.id === categoryId ? { ...cat, items: [...cat.items, newItem] } : cat)),
 		});
 		setNewItemName('');
-		setItemPopover(false);
+		setIsItemPopover(false);
 	};
 
 	const handleWeightChange = (categoryId: string, weight: number) => {
@@ -213,7 +213,7 @@ function RouteComponent() {
 								CANCEL
 							</Button>
 						) : (
-							<Popover open={isPopoverOpen}>
+							<Popover>
 								<PopoverTrigger asChild>
 									<Button className="w-36 text-black bg-transparent border-l border-r link border-r-none h-10">NEW CATEGORY+</Button>
 								</PopoverTrigger>
@@ -363,10 +363,8 @@ function RouteComponent() {
 											</AccordionTrigger>
 										</div>
 										{!editable ? (
-											<Popover
-												open={itemPopover}
-												onOpenChange={setItemPopover}>
-												<PopoverTrigger>
+											<Popover>
+												<PopoverTrigger asChild>
 													<Button
 														variant={'outline'}
 														className="w-20 h-8 border-none rounded-none hover:text-red-200 hover:bg-transparent">
@@ -377,7 +375,7 @@ function RouteComponent() {
 													<div className="flex flex-col gap-4">
 														<Label>Add New Item</Label>
 														<Input
-															value={newCategory}
+															value={newItemName}
 															onChange={(e) => setNewItemName(e.target.value)}
 															placeholder="Item name"
 															className="w-full"
@@ -407,7 +405,7 @@ function RouteComponent() {
 											{category.items.map((item) => (
 												<div
 													key={item.id}
-													className="flex bg-white px-3 items-center justify-between border-b border-r">
+													className="flex bg-white items-center justify-between border-b border-r">
 													{!editable ? (
 														<div className="py-1">
 															<Badge
@@ -417,11 +415,11 @@ function RouteComponent() {
 															</Badge>
 														</div>
 													) : (
-														<>
+														<div className="flex w-full justify-between">
 															<Input
 																value={item.name}
 																onChange={(e) => handleUpdateItem(category.id, item.id, e.target.value)}
-																className="w-[80%] h-8 mr-2 border-none rounded-none"
+																className="w-full h-8 mr-2 border-none rounded-none"
 																enableEmoji={false}
 															/>
 															<Button
@@ -431,7 +429,7 @@ function RouteComponent() {
 																className="w-20 h-10 border-l rounded-none hover:text-red-700">
 																DELETE
 															</Button>
-														</>
+														</div>
 													)}
 												</div>
 											))}
