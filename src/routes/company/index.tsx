@@ -30,6 +30,36 @@ const defaultCellRenderer = ({ getValue }: CellContext<CompanyDisplay, any>) => 
 	return <span className="text-xs whitespace-nowrap">{String(value)}</span>;
 };
 
+const field = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
+
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
+
 function RouteComponent() {
 	const [searchKeyword, setSearchKeyword] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string>('');
@@ -191,7 +221,7 @@ function RouteComponent() {
 				<div className="flex flex-col items-end space-y-2">
 					<Label>‎</Label>
 					<div className="flex items-center gap-4">
-						<AdvancedFilterPopover />
+						<AdvancedFilterPopover fields={field} />
 					</div>
 				</div>
 			</div>
