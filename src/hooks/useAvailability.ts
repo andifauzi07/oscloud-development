@@ -22,7 +22,8 @@ export const useAvailability = (
     limit?: number
 ) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { 
         availability, 
         selectedAvailability,

@@ -4,8 +4,8 @@ import MenuList from '@/components/menuList';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
-import { useUsers } from '@/hooks/useUser';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
+import { useUserData } from '@/hooks/useUserData';
 
 export const Route = createFileRoute('/performance/$employeeId/accesscontrol/')({
 	component: RouteComponent,
@@ -13,8 +13,8 @@ export const Route = createFileRoute('/performance/$employeeId/accesscontrol/')(
 
 function RouteComponent() {
 	const { employeeId } = useParams({ strict: false });
-	const workspaceId = 1;
-	const { users, loading } = useUsers(workspaceId);
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
 
 	const handleAddRecord = async (data: any) => {
 		try {
@@ -56,7 +56,7 @@ function RouteComponent() {
 			id: 'actions',
 			header: '',
 			cell: () => (
-				<div className="w-full flex justify-end">
+				<div className="flex justify-end w-full">
 					<Button
 						variant="outline"
 						className="self-end w-20 text-black bg-transparent border border-t-0 border-b-0">
@@ -70,7 +70,7 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			<div className="flex-none min-h-0 border-b">
-				<div className="pl-4 container flex flex-row items-center justify-between">
+				<div className="container flex flex-row items-center justify-between pl-4">
 					<MenuList
 						items={[
 							{
@@ -101,8 +101,8 @@ function RouteComponent() {
 
 			<DataTable
 				columns={columns}
-				data={users}
-				loading={loading}
+				data={[]}
+				loading={false}
 			/>
 		</div>
 	);

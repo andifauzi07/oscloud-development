@@ -20,7 +20,8 @@ interface Workspaces {
 }
 
 function RouteComponent() {
-	const { workspaceid } = useUserData();
+	const { currentUser } = useUserData();
+	const workspaceid = currentUser?.workspaceid;
 	const { selectedWorkspace, updateWorkspace, loading, error } = useWorkspace(Number(workspaceid));
 
 	const usersColumn: ColumnDef<Workspaces>[] = [
@@ -45,10 +46,10 @@ function RouteComponent() {
 			id: 'actions',
 			header: '',
 			cell: () => (
-				<div className="w-full flex justify-end">
+				<div className="flex justify-end w-full">
 					<Button
 						variant="outline"
-						className="w-20 text-xs border-t-0 border-r-0 border-b-0">
+						className="w-20 text-xs border-t-0 border-b-0 border-r-0">
 						REMOVE
 					</Button>
 				</div>

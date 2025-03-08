@@ -6,12 +6,14 @@ interface AuthState {
     session: Session | null;
     user: User | null;
     loading: boolean;
+    error: string | null;
 }
 
 const initialState: AuthState = {
     session: null,
     user: null,
     loading: true,
+    error: null
 };
 
 const authSlice = createSlice({
@@ -21,6 +23,7 @@ const authSlice = createSlice({
         setSession: (state, action: PayloadAction<Session | null>) => {
             state.session = action.payload;
             state.user = action.payload ? action.payload.user : null;
+            state.loading = false;
         },
         setUser: (state, action: PayloadAction<User | null>) => {
             state.user = action.payload;

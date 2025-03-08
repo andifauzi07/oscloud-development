@@ -23,7 +23,8 @@ import {
 
 export const usePerformanceTemplates = (): UsePerformanceTemplatesReturn => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { templates, loading, error } = useSelector(
         (state: RootState) => state.performance
     );
@@ -120,7 +121,8 @@ export const usePerformanceSheets = ({
     sheetId?: number;
 }) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { sheets, currentSheet, loading, error } = useSelector(
         (state: RootState) => ({
             sheets: state.performance.sheets,

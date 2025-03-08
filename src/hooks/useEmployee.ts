@@ -12,10 +12,12 @@ import {
     clearSelectedEmployee
 } from "@/store/slices/employeeSlice";
 import { Employee, EmployeeFilters } from "@/types/employee";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { employees, total, currentPage, limit, loading, error } = useSelector((state: RootState) => state.employee);
 
     useEffect(() => {
@@ -80,10 +82,18 @@ export const useWorkspaceEmployees = (filters?: EmployeeFilters) => {
 
 export const useEmployee = (employeeId: number) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { selectedEmployee, loading, error } = useSelector(
         (state: RootState) => state.employee
     );
+
+    const { uploadImage, isUploading: isUploadingProfile } = useImageUpload({
+        bucketName: 'employees',
+        folderPath: 'profile-images',
+        maxSizeInMB: 2, // Different size limit for employee photos
+        allowedFileTypes: ['image/jpeg', 'image/png']
+    });
 
     useEffect(() => {
         if (workspaceid && employeeId) {
@@ -110,19 +120,42 @@ export const useEmployee = (employeeId: number) => {
         ).unwrap();
     }, [dispatch, workspaceid, selectedEmployee]);
 
+    const updateEmployeePhoto = useCallback(
+        async (file: File) => {
+            try {
+                if (!workspaceid) throw new Error("No workspace ID available");
+                
+                const publicUrl = await uploadImage(file);
+                
+                await updateEmployeeData(employeeId, {
+                    profileimage: publicUrl
+                });
 
+                alert('Profile photo updated successfully');
+                return publicUrl;
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Failed to update profile photo';
+                alert(message);
+                throw error;
+            }
+        },
+        [workspaceid, uploadImage, updateEmployeeData, employeeId]
+    );
 
     return {
         employee: selectedEmployee,
         loading,
         error,
         updateEmployeeData,
+        updateEmployeePhoto,
+        isUploadingProfile
     };
 };
 
 export const useEmployeeCategories = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { categories, loading, error } = useSelector(
         (state: RootState) => state.employee
     );

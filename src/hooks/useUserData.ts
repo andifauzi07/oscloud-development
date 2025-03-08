@@ -1,75 +1,118 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/backend/supabase/supabaseClient';
-
-interface UserData {
-	userid: string;
-	role: string;
-	status: string;
-	workspaceid: string;
-	error?: string;
-	loading: boolean;
-}
+import { useEffect, useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store/store';
+import type { UpdateUserData, UserFilters } from '@/types/user';
+import {
+	fetchCurrentUser,
+	fetchUsers,
+	fetchUserById,
+	updateUser,
+	deleteUser,
+	clearSelectedUser,
+	clearUsers,
+	// Selectors
+	selectUsers,
+	selectCurrentUser,
+	selectSelectedUser,
+	selectUserLoading,
+	selectUserError,
+	selectUsersByRole,
+	selectUsersByStatus,
+} from '@/store/slices/userSlice';
 
 export const useUserData = () => {
-	const { session } = useAuth();
-	const [userData, setUserData] = useState<UserData>({
-		userid: '',
-		role: '',
-		status: '',
-		workspaceid: '',
-		loading: true,
-	});
+	const dispatch = useDispatch<AppDispatch>();
 
+	// Fix the selector types by explicitly typing state as RootState
+	const users = useSelector((state: RootState) => selectUsers(state));
+	const currentUser = useSelector((state: RootState) => selectCurrentUser(state));
+	const selectedUser = useSelector((state: RootState) => selectSelectedUser(state));
+	const loading = useSelector((state: RootState) => selectUserLoading(state));
+	const error = useSelector((state: RootState) => selectUserError(state));
+	const session = useSelector((state: RootState) => state.auth.session);
+
+	// Memoize complex computations
+	const activeUsers = useMemo(() => 
+		users.filter(user => user.status === 'Active'),
+		[users]
+	);
+
+	const adminUsers = useSelector((state: RootState) => 
+		selectUsersByRole(state, 'Admin')
+	);
+
+	// Effect for fetching current user
 	useEffect(() => {
-		const fetchUserData = async () => {
-			if (!session?.user?.id) {
-				setUserData((prev) => ({ ...prev, loading: false }));
-				return;
-			}
+		if (session?.user && !currentUser && !loading) {
+			dispatch(fetchCurrentUser());
+		}
+	}, [dispatch, session?.user, currentUser, loading]);
 
-			try {
-				// console.log(session.user.id)
-				// USER ID
-				// is not auth dynamic yet.
+	// Memoized action creators
+	const getUsers = useCallback((workspaceId: number, filters?: UserFilters) => {
+		return dispatch(fetchUsers({ workspaceId, filters })).unwrap();
+	}, [dispatch]);
 
-				const { data, error } = await supabase
-					.from('app_user')
-					.select('userid, role, status, workspaceid')
-					// .eq("userid", session.user.id)
-					.eq('userid', 1)
-					.single();
+	const getUserById = useCallback((workspaceId: number, userId: string) => {
+		return dispatch(fetchUserById({ workspaceId, userId })).unwrap();
+	}, [dispatch]);
 
-				// console.log(data)
-				if (error) {
-					throw error;
-				}
+	const updateUserData = useCallback((
+		workspaceId: number,
+		userId: string,
+		data: UpdateUserData
+	) => {
+		return dispatch(updateUser({ workspaceId, userId, data })).unwrap();
+	}, [dispatch]);
 
-				setUserData({
-					userid: data.userid,
-					role: data.role,
-					status: data.status,
-					workspaceid: data.workspaceid,
-					loading: false,
-				});
-			} catch (error) {
-				setUserData((prev) => ({
-					...prev,
-					error: error instanceof Error ? error.message : 'Failed to fetch user data',
-					loading: false,
-				}));
-			}
-		};
+	const removeUser = useCallback((workspaceId: number, userId: string) => {
+		return dispatch(deleteUser({ workspaceId, userId })).unwrap();
+	}, [dispatch]);
 
-		fetchUserData();
-	}, [session]);
+	const clearUser = useCallback(() => {
+		dispatch(clearSelectedUser());
+	}, [dispatch]);
 
-	// const [userData, setUserData] = useState<UserData>({
-	//     userid: '1',
-	//     role: 'Admin',
-	//     status: 'Active',
-	//     workspaceid: '1',
-	//     loading: false,
-	// });
-	return userData;
+	const clearAllUsers = useCallback(() => {
+		dispatch(clearUsers());
+	}, [dispatch]);
+
+	return {
+		// State
+		currentUser,
+		users,
+		selectedUser,
+		activeUsers,
+		adminUsers,
+		loading,
+		error,
+		isAuthenticated: !!session?.user,
+		
+		// Actions
+		getUsers,
+		getUserById,
+		updateUserData,
+		removeUser,
+		clearUser,
+		clearAllUsers,
+	};
+};
+
+// Optional: Add a helper hook for ensuring workspace context
+export const useEnsureWorkspace = () => {
+	const { currentUser, loading, error } = useUserData();
+	
+	if (loading) {
+		throw new Promise((resolve) => setTimeout(resolve, 100)); // Suspense fallback
+	}
+	
+	if (error) {
+		throw new Error(error);
+	}
+	
+	if (!currentUser?.workspaceid) {
+		throw new Error('No workspace ID available');
+	}
+	
+	return currentUser.workspaceid;
 };

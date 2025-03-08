@@ -16,6 +16,7 @@ import {
     createProjectLead,
     deleteProjectLead,
 } from "@/store/slices/projectSlice";
+import { useImageUpload } from './useImageUpload';
 
 export interface CompanyFilters {
     category?: string;
@@ -33,7 +34,8 @@ export interface LeadFilters {
 
 export const useCompanies = (filters?: CompanyFilters) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { companies, selectedCompany, loading, error, pagination } =
         useSelector((state: RootState) => state.company);
 
@@ -85,6 +87,7 @@ export const useCompanies = (filters?: CompanyFilters) => {
             product?: string;
             email?: string;
             category_group?: string;
+            logo?: string;
         }) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
@@ -115,6 +118,35 @@ export const useCompanies = (filters?: CompanyFilters) => {
         dispatch(clearSelectedCompany());
     }, [dispatch]);
 
+    const { uploadImage, isUploading: isUploadingLogo } = useImageUpload({
+        bucketName: 'companies',
+        folderPath: 'company-images',
+        maxSizeInMB: 3,
+        allowedFileTypes: ['image/jpeg', 'image/png']
+    });
+
+    const updateCompanyLogo = useCallback(
+        async (companyId: number, file: File) => {
+            try {
+                if (!workspaceid) throw new Error("No workspace ID available");
+                
+                const publicUrl = await uploadImage(file);
+                
+                await updateCompanyDetails(companyId, {
+                    logo: publicUrl
+                });
+
+                alert('Company logo updated successfully');
+                return publicUrl;
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Failed to update company logo';
+                alert(message);
+                throw error;
+            }
+        },
+        [workspaceid, uploadImage, updateCompanyDetails]
+    );
+
     return {
         companies,
         selectedCompany,
@@ -125,13 +157,16 @@ export const useCompanies = (filters?: CompanyFilters) => {
         addCompany,
         updateCompany: updateCompanyDetails,
         deleteCompany: removeCompany,
-        clearCompany
+        clearCompany,
+        updateCompanyLogo,
+        isUploadingLogo,
     };
 };
 
 export const useLeads = (filters?: LeadFilters) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { leads, loading, error, totalValue } = useSelector(
         (state: RootState) => state.company
     );

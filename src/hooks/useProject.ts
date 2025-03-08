@@ -30,7 +30,8 @@ export const useProjects = (filters?: {
     limit?: number;
 }) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { projects, loading, error, total, page, limit } = useSelector(
         (state: RootState) => state.project
     );
@@ -60,7 +61,8 @@ export const useProjects = (filters?: {
 
 export const useProject = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
 
     const {
         projects,

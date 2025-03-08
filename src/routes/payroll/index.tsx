@@ -100,7 +100,8 @@ const columns: ColumnDef<PayrollRow>[] = [
 ];
 
 function RouteComponent() {
-	const { workspaceid } = useUserData();
+	const { currentUser } = useUserData();
+	const workspaceid = currentUser?.workspaceid;
 	const [searchKeyword, setSearchKeyword] = useState('');
 	const [editable, setEditable] = useState(false);
 

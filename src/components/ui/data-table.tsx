@@ -15,6 +15,7 @@ const preloadImage = (src: string) => {
     img.src = src;
 };
 
+
 export interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
@@ -25,11 +26,10 @@ export interface DataTableProps<TData, TValue> {
     nonEditableColumns?: string[];
     onSave?: (data: TData[]) => void;
     onRowDragEnd?: (result: { oldIndex: number; newIndex: number }) => void;
-    // Pagination props
     total?: number;
     currentPage?: number;
-    pageSize?: number;
     onPageChange?: (page: number) => void;
+    pageSize?: number;
 }
 
 interface EditableCellProps<TData> {
@@ -100,8 +100,8 @@ export function DataTable<TData, TValue>({
     onRowDragEnd,
     total = 0,
     currentPage = 1,
-    pageSize = 10,
-    onPageChange
+    onPageChange,
+    pageSize = 10
 }: DataTableProps<TData, TValue>) {
 	const [tableData, setTableData] = useState<TData[]>(data);
 	const [tableColumns, setTableColumns] = useState(() => columns);
@@ -325,35 +325,35 @@ export function DataTable<TData, TValue>({
 		loading
 	]);
 
-	const totalPages = Math.ceil(total / pageSize);
+    const totalPages = Math.ceil(total / pageSize);
 
-	const handleNextPage = () => {
-		if (currentPage < totalPages && onPageChange) {
-			onPageChange(currentPage + 1);
-		}
-	};
+    const handleNextPage = () => {
+        if (currentPage < totalPages && onPageChange) {
+            onPageChange(currentPage + 1);
+        }
+    };
 
-	const handlePrevPage = () => {
-		if (currentPage > 1 && onPageChange) {
-			onPageChange(currentPage - 1);
-		}
-	};
+    const handlePrevPage = () => {
+        if (currentPage > 1 && onPageChange) {
+            onPageChange(currentPage - 1);
+        }
+    };
 
 	return (
-		<div className="flex flex-col w-full">
-			{isEditable && onSave && (
-				<div className="flex justify-end flex-none w-full bg-white border-b">
-					<Button
-						onClick={() => onSave(tableData)}
-						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
-						SAVE
-					</Button>
-				</div>
-			)}
-			<div className="w-full bg-white border-t border-b border-r">
-				{(enableRowDragAndDrop || enableColumnDragAndDrop) ? dndContent : (
-					<>
-						<Table className="p-0 m-0">
+        <div className="flex flex-col w-full">
+            {isEditable && onSave && (
+                <div className="flex justify-end flex-none w-full bg-white border-b">
+                    <Button
+                        onClick={() => onSave(tableData)}
+                        className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                        SAVE
+                    </Button>
+                </div>
+            )}
+            <div className="w-full bg-white border-t border-b border-r">
+                {(enableRowDragAndDrop || enableColumnDragAndDrop) ? dndContent : (
+                    <>
+                        <Table className="p-0 m-0">
 							<TableHeader className="bg-gray-100">
 								{table.getHeaderGroups().map((headerGroup) => (
 									<TableRow
@@ -395,36 +395,36 @@ export function DataTable<TData, TValue>({
 								)}
 							</TableBody>
 						</Table>
-						{onPageChange && total > 0 && (
-							<div className="flex items-center justify-between px-4 py-4 border-t">
-								<div className="text-sm text-gray-500">
-									Page {currentPage} of {totalPages}
-								</div>
-								<div className="flex gap-2">
-									<Button
-										variant="outline"
-										size="icon"
-										onClick={handlePrevPage}
-										disabled={currentPage === 1 || loading}
-										className="w-8 h-8 p-0"
-									>
-										<ChevronLeft className="w-4 h-4" />
-									</Button>
-									<Button
-										variant="outline"
-										size="icon"
-										onClick={handleNextPage}
-										disabled={currentPage >= totalPages || loading}
-										className="w-8 h-8 p-0"
-									>
-										<ChevronRight className="w-4 h-4" />
-									</Button>
-								</div>
-							</div>
-						)}
-					</>
-				)}
-			</div>
-		</div>
-	);
+                        {onPageChange && (
+                            <div className="flex items-center justify-between px-4 py-4 border-t">
+                                <div className="text-sm text-gray-500">
+                                    Page {currentPage} of {totalPages}
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={handlePrevPage}
+                                        disabled={currentPage === 1 || loading}
+                                        className="w-8 h-8 p-0"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={handleNextPage}
+                                        disabled={currentPage >= totalPages || loading}
+                                        className="w-8 h-8 p-0"
+                                    >
+                                        <ChevronRight className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </div>
+    );
 }
