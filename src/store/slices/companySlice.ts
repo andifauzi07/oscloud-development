@@ -113,6 +113,9 @@ interface UpdateCompanyRequest {
     product?: string;
     email?: string;
     category_group?: string;
+    logo?: string;
+    name?: string;
+    personnel?: { name: string }[];
 }
 
 export const updateCompany = createAsyncThunk(

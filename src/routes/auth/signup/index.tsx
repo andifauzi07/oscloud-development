@@ -50,7 +50,7 @@ function RouteComponent() {
             const session = await signUp(data.email, data.password, data.name);
 
             if (session) {
-                navigate({ to: "/dashboard" }); // Redirect on success
+                navigate({ to: "/" }); // Redirect on success
             } else {
                 alert(
                     "Sign-up successful! Please check your email to confirm."
@@ -73,7 +73,7 @@ function RouteComponent() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit(onSubmit)}>
-                            <div className="grid w-full items-center gap-4">
+                            <div className="grid items-center w-full gap-4">
                                 <div className="flex flex-col space-y-1.5 border-b">
                                     <Label htmlFor="name" className="text-xs">
                                         Name
@@ -88,7 +88,7 @@ function RouteComponent() {
                                         />
                                     </div>
                                     {errors.name?.message && (
-                                        <p className="text-red-500 text-xs">
+                                        <p className="text-xs text-red-500">
                                             {String(errors.name.message)}
                                         </p>
                                     )}
@@ -108,7 +108,7 @@ function RouteComponent() {
                                         />
                                     </div>
                                     {errors.email && (
-                                        <p className="text-red-500 text-xs">
+                                        <p className="text-xs text-red-500">
                                             {String(errors.email.message)}
                                         </p>
                                     )}
@@ -132,7 +132,7 @@ function RouteComponent() {
                                         />
                                     </div>
                                     {errors.password && (
-                                        <p className="text-red-500 text-xs">
+                                        <p className="text-xs text-red-500">
                                             {String(errors.password.message)}
                                         </p>
                                     )}

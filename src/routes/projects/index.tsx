@@ -18,6 +18,7 @@ import { CreateProjectRequest, UpdateProjectRequest } from '@/types/project';
 import { ColumnDef } from '@tanstack/react-table';
 import { useCompanies } from '@/hooks/useCompany';
 import { useUserData } from '@/hooks/useUserData';
+import { current } from '@reduxjs/toolkit';
 
 export const Route = createFileRoute('/projects/')({
 	component: RouteComponent,
@@ -51,7 +52,7 @@ function RouteComponent() {
 	});
 
 	const { companies } = useCompanies();
-	const { userid } = useUserData();
+	const { currentUser } = useUserData();
 
 	const companyOptions = useMemo(() => 
 		companies.map(company => ({
@@ -90,11 +91,11 @@ function RouteComponent() {
 				startDate: data.startdate,
 				endDate: data.enddate,
 				status: 'Active',
-				managerId: userid || 1,
+				managerId: currentUser?.userid || 1,
 				companyId: Number(data.companyid),
 				workspaceid: 1,
-				city: data.city || '',
-				product: data.product || '',
+				// city: data.city || '',
+				// product: data.product || '',
 				costs: data.costs || {
 					food: 0,
 					break: 0,
@@ -116,7 +117,7 @@ function RouteComponent() {
 			alert('Failed to create project');
 			throw error;
 		}
-	}, [addProject, userid]);
+	}, [addProject, currentUser]);
 
 	const handleStatusChange = useCallback((newStatus: string) => {
 		setStatusFilter(newStatus);

@@ -36,7 +36,8 @@ function RouteComponent() {
 	// 	endDate: dateRange.endDate,
 	// });
 
-	const { workspaceid } = useUserData();
+	const { currentUser } = useUserData();
+	const workspaceid = currentUser?.workspaceid;
 
 	const defaultTemplate = templates[0];
 	const { performanceData, loading: employeePerformanceLoading } = useEmployeePerformance({
@@ -100,7 +101,7 @@ function RouteComponent() {
 				id: 'actions',
 				header: '',
 				cell: ({ row }: any) => (
-					<div className="w-full flex justify-end">
+					<div className="flex justify-end w-full">
 						<Link
 							to={`/performance/$employeeId`}
 							params={{ employeeId: row.original.employeeid }}>

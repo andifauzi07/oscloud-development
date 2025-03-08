@@ -14,7 +14,8 @@ import { Department, DepartmentCreateData, DepartmentUpdateData } from '@/types/
 
 export const useDepartments = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { departments, loading, error } = useSelector((state: RootState) => state.department);
 
     useEffect(() => {
@@ -50,7 +51,8 @@ export const useDepartments = () => {
 
 export const useDepartment = (departmentId?: number) => {
     const dispatch = useDispatch<AppDispatch>();
-    const { workspaceid } = useUserData();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
     const { currentDepartment, loading, error } = useSelector(
         (state: RootState) => state.department
     );

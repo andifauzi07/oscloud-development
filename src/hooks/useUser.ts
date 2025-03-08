@@ -19,7 +19,7 @@ export const useUsers = (workspaceId: number) => {
 		error,
 		createUser: (userData: { name: string; email: string; image?: string; phone_number?: string; backup_email?: string }) => dispatch(createUser({ workspaceId, userData })),
 		updateUser: (
-			userId: string,
+			userId: number,
 			updateData: {
 				name?: string;
 				email?: string;
@@ -28,6 +28,6 @@ export const useUsers = (workspaceId: number) => {
 				backup_email?: string;
 			}
 		) => dispatch(updateUser({ workspaceId, userId, updateData })),
-		deleteUser: (userId: string) => dispatch(deleteUser({ workspaceId, userId })),
+		deleteUser: (userId: number) => dispatch(deleteUser({ workspaceId, userId })),
 	};
 };
