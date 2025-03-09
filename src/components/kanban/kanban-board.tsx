@@ -105,19 +105,26 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
 		const targetColumn = columns.find(col => col.id === overId);
 
-		if (!sourceColumn || !targetColumn) return;
+		if (!sourceColumn || !targetColumn || sourceColumn.id === targetColumn.id) return;
 
 		const draggedLead = sourceColumn.leads.find(lead => lead.id === activeId);
 		if (!draggedLead) return;
 
+		// Create copies of the leads arrays
 		const sourceLeads = [...sourceColumn.leads];
 		const targetLeads = [...targetColumn.leads];
+
+		// Update the lead's status to match the new column
+		const updatedLead = {
+			...draggedLead,
+			status: targetColumn.title
+		};
 
 		// Remove from source column
 		sourceLeads.splice(sourceLeads.indexOf(draggedLead), 1);
 
 		// Add to target column
-		targetLeads.push(draggedLead);
+		targetLeads.push(updatedLead);
 
 		const updatedColumns = columns.map(col => {
 			if (col.id === sourceColumn.id) {

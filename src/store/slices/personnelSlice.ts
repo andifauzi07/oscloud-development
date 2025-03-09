@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 import { Personnel, CreatePersonnelRequest, UpdatePersonnelRequest } from "@/types/personnel";
+import { supabase } from "@/backend/supabase/supabaseClient";
 
 interface PersonnelState {
     personnel: Personnel[];
@@ -74,6 +75,38 @@ export const deletePersonnel = createAsyncThunk(
     }
 );
 
+export const fetchAllPersonnel = createAsyncThunk(
+    "personnel/fetchAll",
+    async ({ workspaceId }: { workspaceId: number }) => {
+        const { data, error } = await supabase
+            .from("personnel")
+            .select(`
+                *,
+                lead:leadid (*,
+                    company:companyid (*)
+                ),
+                app_user (
+                    userid,
+                    email,
+                    status,
+                    role,
+                    image,
+                    phone_number,
+                    backup_email
+                ),
+                company:companyid (*)
+            `)
+            .eq('company.workspaceid', workspaceId);
+
+        if (error) {
+            console.error("Supabase error:", error);
+            throw error;
+        }
+
+        return data || [];
+    }
+);
+
 const personnelSlice = createSlice({
     name: "personnel",
     initialState,
@@ -140,6 +173,19 @@ const personnelSlice = createSlice({
             .addCase(deletePersonnel.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || "Failed to delete personnel";
+            })
+            // Fetch All Personnel
+            .addCase(fetchAllPersonnel.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchAllPersonnel.fulfilled, (state, action) => {
+                state.loading = false;
+                state.personnel = action.payload;
+            })
+            .addCase(fetchAllPersonnel.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message || null;
             });
     },
 });

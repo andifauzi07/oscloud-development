@@ -17,8 +17,11 @@ import {
     PersonnelProject,
     UpdatePersonnelRequest,
 } from "@/types/personnel";
-import { usePersonnel } from "@/hooks/usePersonnel";
-import { useCompanies, useLeads } from "@/hooks/useCompany";
+import {
+    useCompanies,
+    useCompanyPersonnel,
+    useLeads,
+} from "@/hooks/useCompany";
 import { useProject } from "@/hooks/useProject";
 import { toast } from "sonner";
 import { useUserData } from "@/hooks/useUserData";
@@ -125,34 +128,77 @@ function CompanyPersonnelDetailsPage() {
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
 
-    const { personnel, loading, error, updatePersonnel, fetchPersonnel } =
-        usePersonnel(Number(companyPersonnelId));
+    // Change to useCompanyPersonnel
+    const {
+        selectedPersonnel: personnel,
+        loading,
+        error,
+        updatePersonnel,
+        fetchPersonnel,
+    } = useCompanyPersonnel(Number(companyId));
 
-    const { company } = useCompanies(Number(companyId));
+    const { company } = useCompanies();
     const [isEditing, setIsEditing] = useState(false);
     const [editedPersonnel, setEditedPersonnel] = useState<EditedPersonnel>({});
     const [personnelLeads, setPersonnelLeads] = useState<Lead[]>([]);
     const { updateLead } = useLeads();
     const [isUpdating, setIsUpdating] = useState(false);
 
+    // Initial data fetch
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                if (workspaceid && companyPersonnelId) {
+                    await fetchPersonnel(Number(companyPersonnelId));
+                }
+            } catch (error) {
+                console.error("Error fetching personnel:", error);
+            }
+        };
+
+        fetchData();
+    }, [workspaceid, companyPersonnelId, fetchPersonnel]);
+
+    // Transform leads after personnel data is loaded
     useEffect(() => {
         if (personnel?.leads) {
-            const transformedLeads = personnel.leads.map((lead) => ({
-                id: lead.leadId.toString(),
-                companyId: lead.companyId, // Add this line to preserve the company ID
-                company: lead.company?.name || company?.name || "", // Try to get company name from lead first, then fall back to current company
-                personnel: personnel?.name || "",
-                title: lead.name || `Lead ${lead.leadId}`,
-                addedOn: lead.createdAt || new Date().toISOString(),
-                manager: personnel?.manager?.email || "Unassigned",
-                contractValue: `${lead.contractValue?.toLocaleString() || 0} USD`,
-                status:
-                    lead.status.charAt(0).toUpperCase() +
-                    lead.status.slice(1).toLowerCase(),
-            }));
-            setPersonnelLeads(transformedLeads);
+            try {
+                const transformedLeads = personnel.leads.map((lead) => ({
+                    id: lead.leadId.toString(),
+                    companyId: personnel.company?.companyId,
+                    company: personnel.company?.name || "",
+                    personnel: personnel.name || "",
+                    title: lead.name,
+                    addedOn: lead.createdAt,
+                    manager: personnel.manager?.email || "Unassigned",
+                    contractValue: `${lead.contractValue.toLocaleString()} USD`,
+                    status: lead.status,
+                    projects: lead.projects || []
+                }));
+                setPersonnelLeads(transformedLeads);
+                console.log("Transformed Leads:", transformedLeads);
+            } catch (error) {
+                console.error("Error transforming leads:", error);
+            }
         }
-    }, [personnel, company]);
+    }, [personnel]);
+
+    // Loading states
+    if (!workspaceid || !companyPersonnelId) {
+        return <div>Loading workspace information...</div>;
+    }
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+    if (!personnel) {
+        return <div>No personnel found</div>;
+    }
 
     const kanbanColumns: KanbanColumnTypes[] = [
         {
@@ -185,7 +231,7 @@ function CompanyPersonnelDetailsPage() {
         try {
             if (!updatedColumns) return;
 
-            const allLeads = updatedColumns.reduce<Lead[]>((acc, column) => {
+            const allLeads = updatedColumns.reduce<Lead[]>((acc, column: any) => {
                 const leadsWithUpdatedStatus = column.leads.map((lead) => ({
                     ...lead,
                     status: column.title,
@@ -193,37 +239,32 @@ function CompanyPersonnelDetailsPage() {
                 return [...acc, ...leadsWithUpdatedStatus];
             }, []);
 
-            // Update local state
             setPersonnelLeads(allLeads);
 
-            // Create an array of promises for all updates
-            const updatePromises = allLeads.map((lead) => {
+            const updatePromises = allLeads.map((lead: any) => {
                 const updateData = {
                     status: lead.status,
                     name: lead.title,
                     contract_value: parseFloat(
                         lead.contractValue.replace(/[^0-9.-]+/g, "")
                     ),
-                    company_id: lead.companyId, // Add this line
+                    company_id: lead.companyId,
                 };
-
-                console.log("Updating lead:", {
-                    leadId: lead.id,
-                    ...updateData,
-                });
 
                 return updateLead(parseInt(lead.id), updateData);
             });
 
-            // Wait for all updates to complete
             await Promise.all(updatePromises);
 
-            // Refresh the data
-            await fetchPersonnel();
-            toast.success("Leads updated successfully");
+            // Fix: Pass workspaceId and personnelId as numbers
+            if (workspaceid && companyPersonnelId) {
+                await fetchPersonnel(Number(companyPersonnelId));
+            }
+
+            alert("Leads updated successfully");
         } catch (error) {
             console.error("Update failed:", error);
-            toast.error("Failed to update leads");
+            alert("Failed to update leads");
         } finally {
             setIsUpdating(false);
         }
@@ -238,37 +279,42 @@ function CompanyPersonnelDetailsPage() {
     const handleProfileSave = async () => {
         try {
             if (!Object.keys(editedPersonnel).length) {
-                toast.error("No changes to save");
+                alert("No changes to save");
                 return;
             }
 
-            const updateData: UpdatePersonnelRequest = {
-                workspaceid: Number(workspaceid),
-                personnelid: Number(companyPersonnelId),
+            // Create the update data object with the correct structure
+            const updateData = {
+                ...editedPersonnel,
+                workspaceId: Number(workspaceid),
+                personnelId: Number(companyPersonnelId),
             };
 
             // Only include changed fields
             Object.entries(editedPersonnel).forEach(([key, value]) => {
                 if (value !== personnel?.[key as keyof typeof personnel]) {
-                    updateData[key as keyof UpdatePersonnelRequest] = value;
+                    updateData[key] = value;
                 }
             });
 
-            if (Object.keys(updateData).length === 2) {
-                // Only has workspaceid and personnelid
-                toast.error("No changes detected");
+            if (Object.keys(updateData).length <= 2) {
+                // Only has workspaceId and personnelId
+                alert("No changes detected");
                 return;
             }
 
-            await updatePersonnel(updateData);
-            await fetchPersonnel(); // Refresh the data after update
+            // First update the personnel
+            await updatePersonnel(Number(companyPersonnelId), updateData);
+
+            // Then fetch the updated data
+            await fetchPersonnel(Number(companyPersonnelId));
 
             setIsEditing(false);
             setEditedPersonnel({});
-            toast.success("Personnel updated successfully");
+            alert("Personnel updated successfully");
         } catch (error: any) {
             console.error("Error updating personnel:", error);
-            toast.error(error?.message || "Failed to update personnel");
+            alert(error?.message || "Failed to update personnel");
         }
     };
 
@@ -321,16 +367,12 @@ function CompanyPersonnelDetailsPage() {
         },
     ];
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
-    if (!personnel) return <div>No personnel found</div>;
-
     const getProjectsData = (): ProjectTableData[] => {
         if (!personnel?.leads) return [];
 
-        return personnel.leads.reduce<ProjectTableData[]>((acc, lead) => {
+        return personnel.leads.reduce<ProjectTableData[]>((acc: any, lead: any) => {
             if (lead.projects && Array.isArray(lead.projects)) {
-                const projectsData = lead.projects.map((project) => ({
+                const projectsData = lead.projects.map((project: any) => ({
                     id: project.projectId,
                     name: project.name,
                     status: project.status,
@@ -517,12 +559,15 @@ function CompanyPersonnelDetailsPage() {
                                 <DataTable
                                     columns={leadsColumns}
                                     data={personnelLeads.map((lead) => ({
-                                        ...lead,
-                                        companyName: company?.name,
-                                        personnelName: personnel?.name,
-                                        manager:
-                                            personnel?.manager ||
-                                            company?.managers?.[0]?.name,
+                                        leadId: lead.id,
+                                        name: lead.title,
+                                        status: lead.status,
+                                        contractValue: lead.contractValue,
+                                        createdAt: lead.addedOn,
+                                        projects: lead.projects,
+                                        companyName: lead.company,  // Use the existing company name
+                                        personnelName: lead.personnel,
+                                        manager: lead.manager,
                                     }))}
                                     loading={loading}
                                 />
@@ -534,7 +579,7 @@ function CompanyPersonnelDetailsPage() {
                 {/* Projects Tab */}
                 <TabsContent value="projects" className="m-0 overflow-x-hidden">
                     <div>
-                    <div className="flex flex-col gap-4 px-8 pt-4 border-t border-b border-r md:flex-row md:gap-16">
+                        <div className="flex flex-col gap-4 px-8 pt-4 border-t border-b border-r md:flex-row md:gap-16">
                             {/* Search and Filter Controls */}
                             <div className="flex flex-col w-full space-y-2 md:w-auto">
                                 <Label htmlFor="keyword">Keyword</Label>
