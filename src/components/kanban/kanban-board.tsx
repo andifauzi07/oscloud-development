@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { KanbanBoardProps, KanbanColumnTypes, Lead } from './types';
 import { KanbanColumnContainer } from './kanban-column';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,25 @@ import { KanbanCardItem } from './kanban-card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCompanies } from '@/hooks/useCompany';
+import { SelectField } from '@/components/select-field';
 
-export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanBoardProps) {
+interface Company {
+    companyid: number;
+    name: string;
+}
+
+interface KanbanBoardProps {
+    columns: KanbanColumnTypes[];
+    onColumnUpdate: (columns: KanbanColumnTypes[]) => Promise<void>;
+    disabled?: boolean;
+}
+
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({
+    columns: initialColumns,
+    onColumnUpdate,
+    disabled
+}) => {
 	// Column states
 	const [columns, setColumns] = useState<KanbanColumnTypes[]>(initialColumns);
 	const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
@@ -30,7 +47,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 		addedOn: '',
 		manager: '',
 		contractValue: '',
-		status: ''
+		status: 'Pending'
 	});
 
 	// DnD sensors
@@ -45,6 +62,9 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 	// Add these new states for drag animation
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [activeLead, setActiveLead] = useState<Lead | null>(null);
+
+	// Add this to your existing state declarations
+	const [isSaving, setIsSaving] = useState(false);
 
 	// Helper function to update columns and notify parent
 	const updateColumns = (newColumns: KanbanColumnTypes[]) => {
@@ -139,13 +159,14 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 
 		setCurrentLead({
 			id: uuidv4(),
-			company: 'COMPANY A',
-			personnel: 'Personnel A',
-			title: 'Web dev for their corp site',
+			companyId: undefined,  // Add this line
+			company: '',
+			personnel: '',
+			title: '',
 			addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-			manager: 'John Brown',
-			contractValue: '300,000 USD',
-			status: column?.id || '',
+			manager: '',
+			contractValue: '',
+			status: 'Pending'
 		});
 
 		setIsCardDialogOpen(true);
@@ -174,39 +195,119 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 		updateColumns(newColumns);
 	};
 
-	const saveCard = () => {
-		if (!currentColumnId) return;
+	const handleCompanyChange = (value: string) => {
+		const selectedCompany = companies?.find(c => c.companyid.toString() === value);
+		if (selectedCompany) {
+			setCurrentLead(prev => ({
+				...prev,
+				companyId: selectedCompany.companyid,
+				company: selectedCompany.name
+			}));
+		}
+	};
 
-		if (isEditMode) {
-			// Update existing card
-			const newColumns = columns.map((col) => {
-				const leadIndex = col.leads.findIndex((lead) => lead.id === currentLead.id);
-				if (leadIndex !== -1) {
-					const newLeads = [...col.leads];
-					newLeads[leadIndex] = currentLead;
-					return { ...col, leads: newLeads };
-				}
-				return col;
-			});
-
-			updateColumns(newColumns);
-		} else {
-			// Add new card
-			const newColumns = columns.map((col) => {
-				if (col.id === currentColumnId) {
-					return {
-						...col,
-						leads: [...col.leads, currentLead],
-					};
-				}
-				return col;
-			});
-
-			updateColumns(newColumns);
+	const saveCard = async () => {
+		if (!currentColumnId || !currentLead) {
+			alert("Invalid card data");
+			return;
 		}
 
-		setIsCardDialogOpen(false);
+		// Validate required fields
+		if (!currentLead.companyId || !currentLead.title) {
+			alert("Please fill in all required fields (Company and Title)");
+			return;
+		}
+
+		setIsSaving(true);
+
+		try {
+			const updatedColumns = columns.map((col) => {
+				if (isEditMode) {
+					const hasExistingCard = col.leads.some(lead => lead.id === currentLead.id);
+					
+					if (hasExistingCard) {
+						if (col.id !== currentColumnId) {
+							return {
+								...col,
+								leads: col.leads.filter(lead => lead.id !== currentLead.id)
+							};
+						}
+						return {
+							...col,
+							leads: col.leads.map(lead => 
+								lead.id === currentLead.id 
+									? { 
+										...currentLead,
+										status: col.title,
+										company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+									}
+									: lead
+							)
+						};
+					}
+					
+					if (col.id === currentColumnId) {
+						return {
+							...col,
+							leads: [...col.leads, { 
+								...currentLead,
+								status: col.title,
+								company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+							}]
+						};
+					}
+				} else {
+					if (col.id === currentColumnId) {
+						return {
+							...col,
+							leads: [...col.leads, { 
+								...currentLead,
+								status: col.title,
+								addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+								company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+							}]
+						};
+					}
+				}
+				return col;
+			});
+
+			await updateColumns(updatedColumns);
+			alert(isEditMode ? "Card updated successfully!" : "New card added successfully!");
+			setIsCardDialogOpen(false);
+			
+			// Reset states
+			setCurrentLead({
+				id: '',
+				company: '',
+				companyId: undefined,
+				personnel: '',
+				title: '',
+				addedOn: '',
+				manager: '',
+				contractValue: '',
+				status: 'Pending'
+			});
+			setCurrentColumnId(null);
+			setIsEditMode(false);
+
+		} catch (error) {
+			console.error("Error saving card:", error);
+			alert("Failed to save card. Please try again.");
+		} finally {
+			setIsSaving(false);
+		}
 	};
+
+	const { companies } = useCompanies();
+
+	// Transform companies data for SelectField
+	const companyOptions = useMemo(() => 
+		companies?.map(company => ({
+			value: company.companyid.toString(),
+			label: company.name
+		})) || [], 
+	[companies]);
 
 	return (
 		<div className="p-4">
@@ -306,11 +407,13 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 					<div className="grid gap-4 py-4">
 						<div className="grid grid-cols-2 gap-4">
 							<div className="grid gap-2">
-								<Label htmlFor="company">Company</Label>
-								<Input
-									id="company"
-									value={currentLead.company}
-									onChange={(e) => setCurrentLead({ ...currentLead, company: e.target.value })}
+								<SelectField
+									label="Company"
+									options={companyOptions}
+									value={currentLead.companyId?.toString() || ''}
+									onChange={handleCompanyChange}
+									disabled={isSaving}
+									className="w-full"
 								/>
 							</div>
 							<div className="grid gap-2">
@@ -318,7 +421,8 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								<Input
 									id="personnel"
 									value={currentLead.personnel}
-									onChange={(e) => setCurrentLead({ ...currentLead, personnel: e.target.value })}
+									disabled={true}
+									className="bg-gray-100"
 								/>
 							</div>
 						</div>
@@ -328,6 +432,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								id="title"
 								value={currentLead.title}
 								onChange={(e) => setCurrentLead({ ...currentLead, title: e.target.value })}
+								disabled={isSaving}
 							/>
 						</div>
 						<div className="grid grid-cols-2 gap-4">
@@ -337,6 +442,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 									id="addedOn"
 									value={currentLead.addedOn}
 									onChange={(e) => setCurrentLead({ ...currentLead, addedOn: e.target.value })}
+									disabled={isSaving}
 								/>
 							</div>
 							<div className="grid gap-2">
@@ -345,6 +451,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 									id="manager"
 									value={currentLead.manager}
 									onChange={(e) => setCurrentLead({ ...currentLead, manager: e.target.value })}
+									disabled={isSaving}
 								/>
 							</div>
 						</div>
@@ -354,16 +461,30 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								id="contractValue"
 								value={currentLead.contractValue}
 								onChange={(e) => setCurrentLead({ ...currentLead, contractValue: e.target.value })}
+								disabled={isSaving}
 							/>
 						</div>
 					</div>
 					<DialogFooter>
 						<Button
 							variant="outline"
-							onClick={() => setIsCardDialogOpen(false)}>
+							onClick={() => setIsCardDialogOpen(false)}
+							disabled={isSaving}>
 							Cancel
 						</Button>
-						<Button onClick={saveCard}>{isEditMode ? 'Save Changes' : 'Add Card'}</Button>
+						<Button 
+							onClick={saveCard}
+							disabled={isSaving}
+						>
+							{isSaving ? (
+								<div className="flex items-center gap-2">
+									<div className="w-4 h-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
+									Saving...
+								</div>
+							) : (
+								isEditMode ? 'Save Changes' : 'Add Card'
+							)}
+						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>

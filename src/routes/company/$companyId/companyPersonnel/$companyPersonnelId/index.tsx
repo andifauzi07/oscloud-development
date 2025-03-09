@@ -62,7 +62,6 @@ const projectTableColumns: ColumnDef<ProjectTableData>[] = [
     {
         accessorKey: "status",
         header: "Status",
-       
     },
     {
         accessorKey: "contractValue",
@@ -101,19 +100,16 @@ const projectTableColumns: ColumnDef<ProjectTableData>[] = [
     {
         id: "actions",
         cell: ({ row }) => (
-           <Link
-                    to={`/projects/$projectId`}
-                    params={{
-                        projectId:row.original.id.toString(),
-                    }}
-                >
-                    <Button
-                        variant="outline"
-                        className="w-20 h-full border"
-                    >
-                        DETAIL
-                    </Button>
-                </Link>
+            <Link
+                to={`/projects/$projectId`}
+                params={{
+                    projectId: row.original.id.toString(),
+                }}
+            >
+                <Button variant="outline" className="w-20 h-full border">
+                    DETAIL
+                </Button>
+            </Link>
         ),
     },
 ];
@@ -137,12 +133,14 @@ function CompanyPersonnelDetailsPage() {
     const [editedPersonnel, setEditedPersonnel] = useState<EditedPersonnel>({});
     const [personnelLeads, setPersonnelLeads] = useState<Lead[]>([]);
     const { updateLead } = useLeads();
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         if (personnel?.leads) {
             const transformedLeads = personnel.leads.map((lead) => ({
                 id: lead.leadId.toString(),
-                company: company?.name || "",
+                companyId: lead.companyId, // Add this line to preserve the company ID
+                company: lead.company?.name || company?.name || "", // Try to get company name from lead first, then fall back to current company
                 personnel: personnel?.name || "",
                 title: lead.name || `Lead ${lead.leadId}`,
                 addedOn: lead.createdAt || new Date().toISOString(),
@@ -150,7 +148,7 @@ function CompanyPersonnelDetailsPage() {
                 contractValue: `${lead.contractValue?.toLocaleString() || 0} USD`,
                 status:
                     lead.status.charAt(0).toUpperCase() +
-                    lead.status.slice(1).toLowerCase(), // Proper case conversion
+                    lead.status.slice(1).toLowerCase(),
             }));
             setPersonnelLeads(transformedLeads);
         }
@@ -183,13 +181,14 @@ function CompanyPersonnelDetailsPage() {
     ];
 
     const handleColumnUpdate = async (updatedColumns: KanbanColumnTypes[]) => {
+        setIsUpdating(true);
         try {
             if (!updatedColumns) return;
 
             const allLeads = updatedColumns.reduce<Lead[]>((acc, column) => {
                 const leadsWithUpdatedStatus = column.leads.map((lead) => ({
                     ...lead,
-                    status: column.id as "Active" | "Pending" | "Completed",
+                    status: column.title,
                 }));
                 return [...acc, ...leadsWithUpdatedStatus];
             }, []);
@@ -197,18 +196,36 @@ function CompanyPersonnelDetailsPage() {
             // Update local state
             setPersonnelLeads(allLeads);
 
-            // Process each lead update sequentially
-            for (const lead of allLeads) {
-                await updateLead(parseInt(lead.id), {
-                    status: lead.status, // Now using proper case status
-                });
-            }
+            // Create an array of promises for all updates
+            const updatePromises = allLeads.map((lead) => {
+                const updateData = {
+                    status: lead.status,
+                    name: lead.title,
+                    contract_value: parseFloat(
+                        lead.contractValue.replace(/[^0-9.-]+/g, "")
+                    ),
+                    company_id: lead.companyId, // Add this line
+                };
 
+                console.log("Updating lead:", {
+                    leadId: lead.id,
+                    ...updateData,
+                });
+
+                return updateLead(parseInt(lead.id), updateData);
+            });
+
+            // Wait for all updates to complete
+            await Promise.all(updatePromises);
+
+            // Refresh the data
             await fetchPersonnel();
             toast.success("Leads updated successfully");
         } catch (error) {
             console.error("Update failed:", error);
             toast.error("Failed to update leads");
+        } finally {
+            setIsUpdating(false);
         }
     };
     const handleValueChange = (key: string, value: string) => {
@@ -481,10 +498,18 @@ function CompanyPersonnelDetailsPage() {
                                 value="kanban"
                                 className="pl-4 m-0 border-t border-r"
                             >
+                                {isUpdating && (
+                                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/10">
+                                        <div className="flex items-center gap-2 p-4 bg-white rounded-md shadow-lg">
+                                            <div className="w-6 h-6 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
+                                            <span>Updating leads...</span>
+                                        </div>
+                                    </div>
+                                )}
                                 <KanbanBoard
                                     columns={kanbanColumns}
                                     onColumnUpdate={handleColumnUpdate}
-                                    // onCreateLead={handleCreateLead}
+                                    disabled={isUpdating}
                                 />
                             </TabsContent>
 
@@ -509,14 +534,14 @@ function CompanyPersonnelDetailsPage() {
                 {/* Projects Tab */}
                 <TabsContent value="projects" className="m-0 overflow-x-hidden">
                     <div>
-                        <div className="flex flex-col gap-4 px-4 pt-4 border-t border-r md:flex-row md:px-8 md:gap-16">
-                            {/* Project Controls (similar to leads) */}
+                    <div className="flex flex-col gap-4 px-8 pt-4 border-t border-b border-r md:flex-row md:gap-16">
+                            {/* Search and Filter Controls */}
                             <div className="flex flex-col w-full space-y-2 md:w-auto">
-                                <Label htmlFor="projectKeyword">Keyword</Label>
+                                <Label htmlFor="keyword">Keyword</Label>
                                 <Input
-                                    type="text"
-                                    id="projectKeyword"
-                                    placeholder="Search projects..."
+                                    type="keyword"
+                                    id="keyword"
+                                    placeholder="Search leads..."
                                     className="border rounded-none w-[400px]"
                                 />
                             </div>
@@ -534,7 +559,9 @@ function CompanyPersonnelDetailsPage() {
                                     </Button>
                                 </div>
                             </div>
-                            <AdvancedFilterPopover />
+                            <div className="flex flex-col space-y-2 md:p-5 md:m-0">
+                                <AdvancedFilterPopover />
+                            </div>
                         </div>
 
                         <Tabs defaultValue="list">

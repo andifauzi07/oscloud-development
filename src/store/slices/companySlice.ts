@@ -86,6 +86,9 @@ interface CreateLeadRequest {
 
 interface UpdateLeadRequest {
     status: string;
+    name?: string;
+    contract_value?: number;
+    company_id?: number;
 }
 
 interface CompanyState {
@@ -328,21 +331,22 @@ export const createLead = createAsyncThunk(
 );
 
 export const updateLead = createAsyncThunk(
-    "company/updateLead",
-    async ({
-        workspaceId,
-        leadId,
-        data,
-    }: {
+    'company/updateLead',
+    async ({ workspaceId, leadId, data }: {
         workspaceId: number;
         leadId: number;
         data: UpdateLeadRequest;
     }) => {
-        const response = await apiClient.patch(
-            `/workspaces/${workspaceId}/crm/leads/${leadId}`,
-            data
-        );
-        return response.data;
+        try {
+            const response = await apiClient.patch(
+                `/workspaces/${workspaceId}/crm/leads/${leadId}`,
+                data
+            );
+            return response.data;
+
+        } catch (error) {
+            throw error;
+        }
     }
 );
 

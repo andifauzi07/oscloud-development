@@ -10,6 +10,7 @@ export interface KanbanCard {
 
 export interface Lead {
 	id: string;
+	companyId?: number;
 	company: string;
 	personnel: string;
 	title: string;
