@@ -32,128 +32,167 @@ const defaultCellRenderer = ({ getValue }: any) => {
 	return <span className="text-xs whitespace-nowrap">{String(value)}</span>;
 };
 
+const field = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
+
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
+
 function RouteComponent() {
-	const [searchKeyword, setSearchKeyword] = useState("");
-	const [statusFilter, setStatusFilter] = useState<string>("");
+	const [searchKeyword, setSearchKeyword] = useState('');
+	const [statusFilter, setStatusFilter] = useState<string>('');
 	const debouncedKeyword = useDebounce(searchKeyword, 500);
 	const [isEditable, setIsEditable] = useState(false);
 
-	const filters = useMemo(() => ({
-		status: statusFilter || undefined,
-		search: debouncedKeyword || undefined,
-	}), [statusFilter, debouncedKeyword]);
+	const filters = useMemo(
+		() => ({
+			status: statusFilter || undefined,
+			search: debouncedKeyword || undefined,
+		}),
+		[statusFilter, debouncedKeyword]
+	);
 
 	const { projects, loading } = useProjects(filters);
 	const { addProject, editProject } = useProject();
-	
+
 	const { settings, saveSettings, reorderColumns } = useColumnSettings({
-		storageKey: "projectColumnSettings",
+		storageKey: 'projectColumnSettings',
 		defaultSettings: defaultProjectColumnSettings,
 	});
 
 	const { companies } = useCompanies();
 	const { currentUser } = useUserData();
 
-	const companyOptions = useMemo(() => 
-		companies.map(company => ({
-			value: company.companyid.toString(),
-			label: company.name
-		})), [companies]);
+	const companyOptions = useMemo(
+		() =>
+			companies.map((company) => ({
+				value: company.companyid.toString(),
+				label: company.name,
+			})),
+		[companies]
+	);
 
-    const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
-        return settings
-            .filter((setting) => setting.status === "shown")
-            .sort((a, b) => a.order - b.order)
-            .map((setting) => {
-                // Find the matching default setting to get the original cell renderer
-                const defaultSetting = defaultProjectColumnSettings.find(
-                    (def) => def.accessorKey === setting.accessorKey
-                );
+	const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
+		return settings
+			.filter((setting) => setting.status === 'shown')
+			.sort((a, b) => a.order - b.order)
+			.map((setting) => {
+				// Find the matching default setting to get the original cell renderer
+				const defaultSetting = defaultProjectColumnSettings.find((def) => def.accessorKey === setting.accessorKey);
 
-                return {
-                    id: String(setting.accessorKey),
-                    accessorKey: setting.accessorKey as string,
-                    header: setting.header || setting.label,
-                    // Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
-                    cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
-                };
-            });
-    }, [settings]);
+				return {
+					id: String(setting.accessorKey),
+					accessorKey: setting.accessorKey as string,
+					header: setting.header || setting.label,
+					// Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
+					cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
+				};
+			});
+	}, [settings]);
 
-	const handleAddRecord = useCallback(async (data: Partial<Project>) => {
-		try {
-			if (!data.name) {
-				throw new Error("Project name is required");
-			}
-
-			const newProjectRequest = {
-				name: data.name,
-				startDate: data.startdate,
-				endDate: data.enddate,
-				status: 'Active',
-				managerId: currentUser?.userid || 1,
-				companyId: Number(data.companyid),
-				workspaceid: 1,
-				// city: data.city || '',
-				// product: data.product || '',
-				costs: data.costs || {
-					food: 0,
-					break: 0,
-					rental: 0,
-					revenue: 0,
-					other_cost: 0,
-					labour_cost: 0,
-					manager_fee: 0,
-					costume_cost: 0,
-					sales_profit: 0,
-					transport_cost: 0
+	const handleAddRecord = useCallback(
+		async (data: Partial<Project>) => {
+			try {
+				if (!data.name) {
+					throw new Error('Project name is required');
 				}
-			};
 
-			await addProject(newProjectRequest);
-			alert('Project created successfully');
-		} catch (error) {
-			console.error('Failed to add project:', error);
-			alert('Failed to create project');
-			throw error;
-		}
-	}, [addProject, currentUser]);
+				const newProjectRequest = {
+					name: data.name,
+					startDate: data.startdate,
+					endDate: data.enddate,
+					status: 'Active',
+					managerid: currentUser?.userid || 1,
+					companyid: Number(data.companyid),
+					workspaceid: 1,
+					// city: data.city || '',
+					// product: data.product || '',
+					costs: data.costs || {
+						food: 0,
+						break: 0,
+						rental: 0,
+						revenue: 0,
+						other_cost: 0,
+						labour_cost: 0,
+						manager_fee: 0,
+						costume_cost: 0,
+						sales_profit: 0,
+						transport_cost: 0,
+					},
+				};
+
+				await addProject(newProjectRequest);
+				alert('Project created successfully');
+			} catch (error) {
+				console.error('Failed to add project:', error);
+				alert('Failed to create project');
+				throw error;
+			}
+		},
+		[addProject, currentUser]
+	);
 
 	const handleStatusChange = useCallback((newStatus: string) => {
 		setStatusFilter(newStatus);
 	}, []);
 
-	const handleSave = useCallback(async (updatedData: ProjectDisplay[]) => {
-		try {
-			await Promise.all(
-				updatedData.map(async (project) => {
-					if (!project.projectid) return;
-					
-					const updatePayload: UpdateProjectRequest = {
-						name: project.name,
-						startdate: project.startdate,
-						enddate: project.enddate,
-						status: project.status
-					};
+	const handleSave = useCallback(
+		async (updatedData: ProjectDisplay[]) => {
+			try {
+				await Promise.all(
+					updatedData.map(async (project) => {
+						if (!project.projectid) return;
 
-					await editProject({ projectId: project.projectid, data: updatePayload });
-				})
-			);
-			
-			setIsEditable(false);
-			alert('Projects updated successfully');
-		} catch (error) {
-			console.error('Error updating projects:', error);
-			alert('Failed to update projects');
-		}
-	}, [editProject]);
+						const updatePayload: UpdateProjectRequest = {
+							name: project.name,
+							startdate: project.startdate,
+							enddate: project.enddate,
+							status: project.status,
+						};
+
+						await editProject({ projectId: project.projectid, data: updatePayload });
+					})
+				);
+
+				setIsEditable(false);
+				alert('Projects updated successfully');
+			} catch (error) {
+				console.error('Error updating projects:', error);
+				alert('Failed to update projects');
+			}
+		},
+		[editProject]
+	);
 
 	const editButton = useCallback(() => {
 		return (
 			<Button
 				onClick={() => setIsEditable((prev) => !prev)}
-				className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
-			>
+				className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
 				{isEditable ? 'CANCEL' : 'EDIT+'}
 			</Button>
 		);
@@ -163,7 +202,9 @@ function RouteComponent() {
 		<div className="flex flex-col flex-1 h-full">
 			<TitleWrapper>
 				<h1 className="text-base">Projects</h1>
-				<Link className="text-xs" to="/projects/setting">
+				<Link
+					className="text-xs"
+					to="/projects/setting">
 					Settings
 				</Link>
 			</TitleWrapper>
@@ -186,23 +227,15 @@ function RouteComponent() {
 							<Button
 								size="default"
 								variant="outline"
-								className={cn(
-									"w-20 rounded-none",
-									statusFilter === "Active" && "bg-black text-white"
-								)}
-								onClick={() => handleStatusChange("Active")}
-							>
+								className={cn('w-20 rounded-none', statusFilter === 'Active' && 'bg-black text-white')}
+								onClick={() => handleStatusChange('Active')}>
 								Active
 							</Button>
 							<Button
 								size="default"
 								variant="outline"
-								className={cn(
-									"w-20 rounded-none",
-									statusFilter === "" && "bg-black text-white"
-								)}
-								onClick={() => handleStatusChange("")}
-							>
+								className={cn('w-20 rounded-none', statusFilter === '' && 'bg-black text-white')}
+								onClick={() => handleStatusChange('')}>
 								All
 							</Button>
 						</div>
@@ -212,7 +245,7 @@ function RouteComponent() {
 				<div className="flex flex-col items-end space-y-2">
 					<Label>‎</Label>
 					<div className="flex items-center gap-4">
-						<AdvancedFilterPopover />
+						<AdvancedFilterPopover fields={field} />
 					</div>
 				</div>
 			</div>
@@ -221,27 +254,19 @@ function RouteComponent() {
 				<AddRecordDialog
 					columns={columns}
 					onSave={handleAddRecord}
-					nonEditableColumns={[
-						"projectid",
-						"created_at",
-						"updated_at",
-						"assignedStaff",
-						"connectedPersonnel",
-						"costs",
-						"managerid"
-					]}
+					nonEditableColumns={['projectid', 'created_at', 'updated_at', 'assignedStaff', 'connectedPersonnel', 'costs', 'managerid']}
 					selectFields={{
 						companyid: {
-							options: companyOptions
-						}
+							options: companyOptions,
+						},
 					}}
 					customFields={{
 						duration: {
 							type: 'dateRange',
 							startKey: 'startdate',
 							endKey: 'enddate',
-							label: 'Duration'
-						}
+							label: 'Duration',
+						},
 					}}
 				/>
 				{editButton()}
@@ -253,14 +278,7 @@ function RouteComponent() {
 					loading={loading}
 					isEditable={isEditable}
 					onSave={handleSave}
-					nonEditableColumns={[
-						"projectid",
-						"created_at",
-						"updated_at",
-						"assignedStaff",
-						"connectedPersonnel",
-						"costs"
-					]}
+					nonEditableColumns={['projectid', 'created_at', 'updated_at', 'assignedStaff', 'connectedPersonnel', 'costs']}
 				/>
 			</div>
 		</div>

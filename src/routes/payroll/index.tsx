@@ -99,6 +99,36 @@ const columns: ColumnDef<PayrollRow>[] = [
 	},
 ];
 
+const field = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
+
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
+
 function RouteComponent() {
 	const { currentUser } = useUserData();
 	const workspaceid = currentUser?.workspaceid;
@@ -221,7 +251,7 @@ function RouteComponent() {
 
 						<div className="flex flex-col space-y-2">
 							<Label>‎</Label>
-							<AdvancedFilterPopover />
+							<AdvancedFilterPopover fields={field} />
 						</div>
 					</div>
 					<div className="flex justify-end flex-none w-full bg-white">

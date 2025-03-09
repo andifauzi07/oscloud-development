@@ -1,4 +1,3 @@
-// src/routes/company/index.tsx
 import { createFileRoute } from '@tanstack/react-router';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';

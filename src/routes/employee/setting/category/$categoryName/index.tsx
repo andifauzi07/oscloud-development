@@ -81,11 +81,15 @@ function RouteComponent() {
 							},
 							{
 								label: 'Data Category',
-								path: '/employee/setting/category',
+								path: '/employee/setting/',
+							},
+							{
+								label: 'Employee Category',
+								path: '/employee/setting',
 							},
 							{
 								label: 'Department',
-								path: '/employee/setting/department',
+								path: '/employee/setting/',
 							},
 						]}
 					/>

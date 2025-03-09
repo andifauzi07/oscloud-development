@@ -66,18 +66,31 @@ const employeeCategory = [
 ];
 
 const employeeCategoryColumns = [
-	{ id: 'category', accessorKey: 'category', header: () => <h1 className="pl-4">Category</h1>, cell: ({ row }: any) => <h1 className="pl-8">{row.original.category}</h1> },
-	{ id: 'parentCategory', accessorKey: 'parenCategory', header: 'Parent Category' },
+	{
+		id: 'category',
+		accessorKey: 'category',
+		header: () => <h1 className="pl-8 text-xs">Category</h1>,
+		cell: ({ row }: any) => <h1 className="pl-8">{row.original.category}</h1>,
+	},
+	{
+		id: 'parentCategory',
+		accessorKey: 'parenCategory',
+		header: 'Parent Category',
+	},
 	{
 		id: 'action',
+		header: '',
 		accessorKey: 'action',
-		header: 'Actions',
 		cell: ({ row }: any) => (
 			<div className="w-full flex justify-end">
 				<Link
 					to={`/employee/setting/category/$categoryName`}
 					params={{ categoryName: row.original.categoryName }}>
-					<Button className="w-20 text-black bg-transparent border border-t-0 border-b-0 rounded-none link">VIEW</Button>
+					<Button
+						variant={'outline'}
+						onClick={() => console.log('Removing:', row.original.actions)}>
+						VIEW
+					</Button>
 				</Link>
 			</div>
 		),
@@ -111,7 +124,7 @@ const departmentColumns = [
 				<Link
 					to={`/employee/setting/department/$departmentName`}
 					params={{ departmentName: row.original.departmentid }}>
-					<Button className="w-20 text-black bg-transparent border border-t-0 border-b-0 rounded-none link">VIEW</Button>
+					<Button className="w-20 text-black bg-transparent border border-t-0 border-b-0 rounded-none">VIEW</Button>
 				</Link>
 			</div>
 		),
@@ -222,6 +235,7 @@ async function RouteComponent() {
 							onSave={handleAddRecord}
 							nonEditableColumns={['action*']}
 						/>
+
 						<Button
 							onClick={() => setEditable((prev) => !prev)}
 							className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
@@ -229,7 +243,7 @@ async function RouteComponent() {
 						</Button>
 					</div>
 					<DataTable
-						enableRowDragAndDrop={editable ? false : true}
+						enableRowDragAndDrop={editable}
 						columns={employeeCategoryColumns}
 						data={employeeCategory}
 						loading={false}
