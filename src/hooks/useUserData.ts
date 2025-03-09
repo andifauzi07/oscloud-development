@@ -32,14 +32,9 @@ export const useUserData = () => {
 	const session = useSelector((state: RootState) => state.auth.session);
 
 	// Memoize complex computations
-	const activeUsers = useMemo(() => 
-		users.filter(user => user.status === 'Active'),
-		[users]
-	);
+	const activeUsers = useMemo(() => users.filter((user) => user.status === 'Active'), [users]);
 
-	const adminUsers = useSelector((state: RootState) => 
-		selectUsersByRole(state, 'Admin')
-	);
+	const adminUsers = useSelector((state: RootState) => selectUsersByRole(state, 'Admin'));
 
 	// Effect for fetching current user
 	useEffect(() => {
@@ -49,25 +44,33 @@ export const useUserData = () => {
 	}, [dispatch, session?.user, currentUser, loading]);
 
 	// Memoized action creators
-	const getUsers = useCallback((workspaceId: number, filters?: UserFilters) => {
-		return dispatch(fetchUsers({ workspaceId, filters })).unwrap();
-	}, [dispatch]);
+	const getUsers = useCallback(
+		(workspaceId: number, filters?: UserFilters) => {
+			return dispatch(fetchUsers({ workspaceId, filters })).unwrap();
+		},
+		[dispatch]
+	);
 
-	const getUserById = useCallback((workspaceId: number, userId: string) => {
-		return dispatch(fetchUserById({ workspaceId, userId })).unwrap();
-	}, [dispatch]);
+	const getUserById = useCallback(
+		(workspaceId: number, userId: string) => {
+			return dispatch(fetchUserById({ workspaceId, userId })).unwrap();
+		},
+		[dispatch]
+	);
 
-	const updateUserData = useCallback((
-		workspaceId: number,
-		userId: string,
-		data: UpdateUserData
-	) => {
-		return dispatch(updateUser({ workspaceId, userId, data })).unwrap();
-	}, [dispatch]);
+	const updateUserData = useCallback(
+		(workspaceId: number, userId: string, data: UpdateUserData) => {
+			return dispatch(updateUser({ workspaceId, userId, data })).unwrap();
+		},
+		[dispatch]
+	);
 
-	const removeUser = useCallback((workspaceId: number, userId: string) => {
-		return dispatch(deleteUser({ workspaceId, userId })).unwrap();
-	}, [dispatch]);
+	const removeUser = useCallback(
+		(workspaceId: number, userId: string) => {
+			return dispatch(deleteUser({ workspaceId, userId })).unwrap();
+		},
+		[dispatch]
+	);
 
 	const clearUser = useCallback(() => {
 		dispatch(clearSelectedUser());
@@ -87,7 +90,7 @@ export const useUserData = () => {
 		loading,
 		error,
 		isAuthenticated: !!session?.user,
-		
+
 		// Actions
 		getUsers,
 		getUserById,

@@ -13,7 +13,7 @@ export const Route = createFileRoute('/employee/setting/')({
 });
 
 const dataFieldColumns = [
-	{ id: 'field', header: () => <h1 className="pl-8 py-2">Data Field</h1>, accessorKey: 'field', cell: ({ row }: any) => <h1 className="pl-4 py-2">{row.original.field}</h1> },
+	{ id: 'field', header: () => <h1 className="pl-8 py-2">Data Field</h1>, accessorKey: 'field', cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.field}</h1> },
 	{ id: 'type', header: 'Type', accessorKey: 'type' },
 	{ id: 'category', header: 'Category', accessorKey: 'category' },
 	{ id: 'dateCreated', header: 'Date Created', accessorKey: 'dateCreated' },
