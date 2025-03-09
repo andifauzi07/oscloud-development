@@ -12,16 +12,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanBoardProps) {
+	// Column states
 	const [columns, setColumns] = useState<KanbanColumnTypes[]>(initialColumns);
-	const [activeColumn, setActiveColumn] = useState<KanbanColumnTypes | null>(null);
-	const [activeLead, setActiveLead] = useState<Lead | null>(null);
-	const [isUpdatingFromProps, setIsUpdatingFromProps] = useState(false);
-
-	// Dialog states
 	const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
 	const [newColumnTitle, setNewColumnTitle] = useState('');
 	const [newColumnColor, setNewColumnColor] = useState('bg-gray-500');
+
+	// Card states
 	const [isCardDialogOpen, setIsCardDialogOpen] = useState(false);
+	const [isEditMode, setIsEditMode] = useState(false);
 	const [currentColumnId, setCurrentColumnId] = useState<string | null>(null);
 	const [currentLead, setCurrentLead] = useState<Lead>({
 		id: '',
@@ -31,56 +30,10 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 		addedOn: '',
 		manager: '',
 		contractValue: '',
-		status: '',
+		status: ''
 	});
-	const [isEditMode, setIsEditMode] = useState(false);
 
-	// Only update columns from props on initial render or when the structure changes significantly
-	useEffect(() => {
-		// Deep comparison to check if the columns structure has actually changed
-		const columnsChanged =
-			JSON.stringify(
-				initialColumns.map((col) => ({
-					id: col.id,
-					title: col.title,
-					color: col.color,
-					leadsCount: col.leads.length,
-				}))
-			) !==
-			JSON.stringify(
-				columns.map((col) => ({
-					id: col.id,
-					title: col.title,
-					color: col.color,
-					leadsCount: col.leads.length,
-				}))
-			);
-
-		if (columnsChanged) {
-			setIsUpdatingFromProps(true);
-			setColumns(initialColumns);
-		}
-	}, [initialColumns]);
-
-	// Notify parent component when columns change, but only due to user actions
-	const notifyColumnUpdate = useCallback(
-		(updatedColumns: KanbanColumnTypes[]) => {
-			if (onColumnUpdate && !isUpdatingFromProps) {
-				onColumnUpdate(updatedColumns);
-			}
-		},
-		[onColumnUpdate, isUpdatingFromProps]
-	);
-
-	// Update columns and notify parent
-	const updateColumns = useCallback(
-		(newColumns: KanbanColumnTypes[]) => {
-			setColumns(newColumns);
-			notifyColumnUpdate(newColumns);
-		},
-		[notifyColumnUpdate]
-	);
-
+	// DnD sensors
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
@@ -89,157 +42,76 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 		})
 	);
 
-	const onDragStart = (event: DragStartEvent) => {
-		if (event.active.data.current?.type === 'Column') {
-			setActiveColumn(event.active.data.current.column);
-			return;
-		}
+	// Add these new states for drag animation
+	const [activeId, setActiveId] = useState<string | null>(null);
+	const [activeLead, setActiveLead] = useState<Lead | null>(null);
 
-		if (event.active.data.current?.type === 'Card') {
-			setActiveLead(event.active.data.current.lead);
-			return;
+	// Helper function to update columns and notify parent
+	const updateColumns = (newColumns: KanbanColumnTypes[]) => {
+		setColumns(newColumns);
+		if (onColumnUpdate) {
+			onColumnUpdate(newColumns);
 		}
 	};
 
-	const onDragEnd = (event: DragEndEvent) => {
-		setActiveColumn(null);
-		setActiveLead(null);
+	useEffect(() => {
+		setColumns(initialColumns);
+	}, [initialColumns]);
 
-		const { active, over } = event;
-		if (!over) return;
-
-		const activeColumnId = active.id;
-		const overColumnId = over.id;
-
-		if (activeColumnId === overColumnId) return;
-
-		updateColumns(
-			arrayMove(
-				columns,
-				columns.findIndex((col) => col.id === activeColumnId),
-				columns.findIndex((col) => col.id === overColumnId)
-			)
-		);
+	const handleDragStart = (event: DragStartEvent) => {
+		const { active } = event;
+		setActiveId(active.id as string);
+		
+		const draggedLead = columns
+			.flatMap(col => col.leads)
+			.find(lead => lead.id === active.id);
+			
+		if (draggedLead) {
+			setActiveLead(draggedLead);
+		}
 	};
 
-	const onDragOver = (event: DragOverEvent) => {
+	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
+		
 		if (!over) return;
 
 		const activeId = active.id;
 		const overId = over.id;
 
-		if (activeId === overId) return;
+		const sourceColumn = columns.find(col => 
+			col.leads.some(lead => lead.id === activeId)
+		);
 
-		const isActiveACard = active.data.current?.type === 'Card';
-		const isOverACard = over.data.current?.type === 'Card';
+		const targetColumn = columns.find(col => col.id === overId);
 
-		if (!isActiveACard) return;
+		if (!sourceColumn || !targetColumn) return;
 
-		// Dropping a Card over another Card
-		if (isActiveACard && isOverACard) {
-			const activeLeadData = active.data.current?.lead as Lead;
-			const overLeadData = over.data.current?.lead as Lead;
+		const draggedLead = sourceColumn.leads.find(lead => lead.id === activeId);
+		if (!draggedLead) return;
 
-			// Find the columns
-			const activeColumn = columns.find((col) => col.leads.some((lead) => lead.id === activeLeadData.id));
+		const sourceLeads = [...sourceColumn.leads];
+		const targetLeads = [...targetColumn.leads];
 
-			const overColumn = columns.find((col) => col.leads.some((lead) => lead.id === overLeadData.id));
+		// Remove from source column
+		sourceLeads.splice(sourceLeads.indexOf(draggedLead), 1);
 
-			if (!activeColumn || !overColumn) return;
+		// Add to target column
+		targetLeads.push(draggedLead);
 
-			// Find the indices
-			const activeLeadIndex = activeColumn.leads.findIndex((lead) => lead.id === activeLeadData.id);
-
-			const overLeadIndex = overColumn.leads.findIndex((lead) => lead.id === overLeadData.id);
-
-			// If in the same column
-			if (activeColumn.id === overColumn.id) {
-				const newLeads = arrayMove(activeColumn.leads, activeLeadIndex, overLeadIndex);
-
-				const newColumns = columns.map((col) => {
-					if (col.id === activeColumn.id) {
-						return { ...col, leads: newLeads };
-					}
-					return col;
-				});
-
-				updateColumns(newColumns);
-			} else {
-				// If in different columns
-				// Update the status of the lead to match the new column
-				const updatedLead = {
-					...activeLeadData,
-					status: overColumn.id,
-				};
-
-				const newColumns = columns.map((col) => {
-					// Remove from active column
-					if (col.id === activeColumn.id) {
-						const newLeads = [...col.leads];
-						newLeads.splice(activeLeadIndex, 1);
-						return { ...col, leads: newLeads };
-					}
-
-					// Add to over column
-					if (col.id === overColumn.id) {
-						const newLeads = [...col.leads];
-						newLeads.splice(overLeadIndex, 0, updatedLead);
-						return { ...col, leads: newLeads };
-					}
-
-					return col;
-				});
-
-				updateColumns(newColumns);
+		const updatedColumns = columns.map(col => {
+			if (col.id === sourceColumn.id) {
+				return { ...col, leads: sourceLeads };
 			}
-		}
+			if (col.id === targetColumn.id) {
+				return { ...col, leads: targetLeads };
+			}
+			return col;
+		});
 
-		const isOverAColumn = over.data.current?.type === 'Column';
-
-		// Dropping a Card over a Column
-		if (isActiveACard && isOverAColumn) {
-			const activeLeadData = active.data.current?.lead as Lead;
-			const overColumnId = over.id as string;
-
-			// Find the columns
-			const activeColumn = columns.find((col) => col.leads.some((lead) => lead.id === activeLeadData.id));
-
-			const overColumn = columns.find((col) => col.id === overColumnId);
-
-			if (!activeColumn || !overColumn) return;
-
-			// Find the index
-			const activeLeadIndex = activeColumn.leads.findIndex((lead) => lead.id === activeLeadData.id);
-
-			// If in the same column
-			if (activeColumn.id === overColumn.id) return;
-
-			// Update the status of the lead to match the new column
-			const updatedLead = {
-				...activeLeadData,
-				status: overColumn.id,
-			};
-
-			// If in different columns
-			const newColumns = columns.map((col) => {
-				// Remove from active column
-				if (col.id === activeColumn.id) {
-					const newLeads = [...col.leads];
-					newLeads.splice(activeLeadIndex, 1);
-					return { ...col, leads: newLeads };
-				}
-
-				// Add to over column
-				if (col.id === overColumn.id) {
-					return { ...col, leads: [...col.leads, updatedLead] };
-				}
-
-				return col;
-			});
-
-			updateColumns(newColumns);
-		}
+		setActiveId(null);
+		setActiveLead(null);
+		updateColumns(updatedColumns);
 	};
 
 	const addColumn = () => {
@@ -338,22 +210,23 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 
 	return (
 		<div className="p-4">
-			{/* <div className="flex justify-between items-center mb-6">
+			{/* <div className="flex items-center justify-between mb-6">
 				<Button onClick={() => setIsAddColumnOpen(true)}>
-					<Plus className="mr-2 h-4 w-4" />
+					<Plus className="w-4 h-4 mr-2" />
 					Add Column
 				</Button>
 			</div> */}
 
 			<DndContext
 				sensors={sensors}
-				onDragStart={onDragStart}
-				onDragEnd={onDragEnd}
-				onDragOver={onDragOver}>
-				<div className="flex gap-4 pb-4">
+				onDragStart={handleDragStart}
+				onDragEnd={handleDragEnd}
+			>
+				<div className="flex h-full gap-4">
 					<SortableContext
-						items={columns.map((col) => col.id)}
-						strategy={horizontalListSortingStrategy}>
+						items={columns.map(col => col.id)}
+						strategy={horizontalListSortingStrategy}
+					>
 						{columns.map((column) => (
 							<KanbanColumnContainer
 								key={column.id}
@@ -365,17 +238,13 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 						))}
 					</SortableContext>
 				</div>
-
 				<DragOverlay>
-					{activeColumn && (
-						<KanbanColumnContainer
-							column={activeColumn}
-							onAddCard={handleAddCard}
-							onEditCard={handleEditCard}
-							onDeleteCard={handleDeleteCard}
+					{activeId && activeLead ? (
+						<KanbanCardItem
+							lead={activeLead}
+							// ... other props ...
 						/>
-					)}
-					{activeLead && <KanbanCardItem lead={activeLead} />}
+					) : null}
 				</DragOverlay>
 			</DndContext>
 
@@ -404,7 +273,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								id="column-color"
 								value={newColumnColor}
 								onChange={(e) => setNewColumnColor(e.target.value)}
-								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+								className="flex w-full h-10 px-3 py-2 text-sm border rounded-md border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
 								<option value="bg-blue-500">Blue</option>
 								<option value="bg-green-500">Green</option>
 								<option value="bg-yellow-500">Yellow</option>

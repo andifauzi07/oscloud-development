@@ -11,15 +11,112 @@ import { leadsColumns } from "@/components/companyPersonnelLeadsListDataTable";
 import AdvancedFilterPopover from "@/components/search/advanced-search";
 import { KanbanColumnTypes, Lead } from "@/components/kanban/types";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
-import { PersonnelLead, UpdatePersonnelRequest } from "@/types/personnel";
+import {
+    EditedPersonnel,
+    PersonnelLead,
+    PersonnelProject,
+    UpdatePersonnelRequest,
+} from "@/types/personnel";
 import { usePersonnel } from "@/hooks/usePersonnel";
-import { useCompanies } from "@/hooks/useCompany";
+import { useCompanies, useLeads } from "@/hooks/useCompany";
 import { useProject } from "@/hooks/useProject";
 import { toast } from "sonner";
 import { useUserData } from "@/hooks/useUserData";
 import { projectColumns } from "@/config/columnSettings";
 import ScheduleTable from "@/components/EmployeTimeLine";
 import { InfoSection, TitleWrapper } from "@/components/wrapperElement";
+import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+
+interface ProjectTableData {
+    id: number;
+    name: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+    leadName: string;
+    contractValue: number;
+}
+
+const projectTableColumns: ColumnDef<ProjectTableData>[] = [
+    {
+        accessorKey: "id",
+        header: () => <h1 className="pl-8">ID</h1>,
+        cell: ({ row }) => <h1 className="pl-8">{row.original.id}</h1>,
+    },
+    {
+        accessorKey: "name",
+        header: "Project Name",
+        cell: ({ row }) => (
+            <div className="font-medium">
+                {row.original.name || `Project ${row.original.id}`}
+            </div>
+        ),
+    },
+    {
+        accessorKey: "leadName",
+        header: "Lead",
+        cell: ({ row }) => <div>{row.original.leadName || "N/A"}</div>,
+    },
+    {
+        accessorKey: "status",
+        header: "Status",
+       
+    },
+    {
+        accessorKey: "contractValue",
+        header: "Contract Value",
+        cell: ({ row }) => (
+            <div className="font-medium">
+                {row.original.contractValue?.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                })}
+            </div>
+        ),
+    },
+    {
+        accessorKey: "startDate",
+        header: "Start Date",
+        cell: ({ row }) => (
+            <div>
+                {row.original.startDate ?
+                    format(new Date(row.original.startDate), "MMM dd, yyyy")
+                :   "N/A"}
+            </div>
+        ),
+    },
+    {
+        accessorKey: "endDate",
+        header: "End Date",
+        cell: ({ row }) => (
+            <div>
+                {row.original.endDate ?
+                    format(new Date(row.original.endDate), "MMM dd, yyyy")
+                :   "N/A"}
+            </div>
+        ),
+    },
+    {
+        id: "actions",
+        cell: ({ row }) => (
+           <Link
+                    to={`/projects/$projectId`}
+                    params={{
+                        projectId:row.original.id.toString(),
+                    }}
+                >
+                    <Button
+                        variant="outline"
+                        className="w-20 h-full border"
+                    >
+                        DETAIL
+                    </Button>
+                </Link>
+        ),
+    },
+];
 
 export const Route = createFileRoute(
     "/company/$companyId/companyPersonnel/$companyPersonnelId/"
@@ -32,18 +129,14 @@ function CompanyPersonnelDetailsPage() {
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
 
-    const { 
-        personnel,
-        loading,
-        error,
-        updatePersonnel,
-        fetchPersonnel
-    } = usePersonnel(Number(companyPersonnelId));
+    const { personnel, loading, error, updatePersonnel, fetchPersonnel } =
+        usePersonnel(Number(companyPersonnelId));
 
     const { company } = useCompanies(Number(companyId));
     const [isEditing, setIsEditing] = useState(false);
     const [editedPersonnel, setEditedPersonnel] = useState<EditedPersonnel>({});
     const [personnelLeads, setPersonnelLeads] = useState<Lead[]>([]);
+    const { updateLead } = useLeads();
 
     useEffect(() => {
         if (personnel?.leads) {
@@ -55,7 +148,9 @@ function CompanyPersonnelDetailsPage() {
                 addedOn: lead.createdAt || new Date().toISOString(),
                 manager: personnel?.manager?.email || "Unassigned",
                 contractValue: `${lead.contractValue?.toLocaleString() || 0} USD`,
-                status: lead.status.toLowerCase(),
+                status:
+                    lead.status.charAt(0).toUpperCase() +
+                    lead.status.slice(1).toLowerCase(), // Proper case conversion
             }));
             setPersonnelLeads(transformedLeads);
         }
@@ -63,38 +158,54 @@ function CompanyPersonnelDetailsPage() {
 
     const kanbanColumns: KanbanColumnTypes[] = [
         {
-            id: "active",
+            id: "Active",
             title: "Active",
             color: "bg-blue-500",
-            leads: personnelLeads.filter((lead) => lead.status === "active") || [],
+            leads:
+                personnelLeads.filter((lead) => lead.status === "Active") || [],
         },
         {
-            id: "pending",
+            id: "Pending",
             title: "Pending",
             color: "bg-yellow-500",
-            leads: personnelLeads.filter((lead) => lead.status === "pending") || [],
+            leads:
+                personnelLeads.filter((lead) => lead.status === "Pending") ||
+                [],
         },
         {
-            id: "completed",
+            id: "Completed",
             title: "Completed",
             color: "bg-green-500",
-            leads: personnelLeads.filter((lead) => lead.status === "completed") || [],
+            leads:
+                personnelLeads.filter((lead) => lead.status === "Completed") ||
+                [],
         },
     ];
 
     const handleColumnUpdate = async (updatedColumns: KanbanColumnTypes[]) => {
         try {
             if (!updatedColumns) return;
-            
+
             const allLeads = updatedColumns.reduce<Lead[]>((acc, column) => {
-                if (column.leads) {
-                    return [...acc, ...column.leads];
-                }
-                return acc;
+                const leadsWithUpdatedStatus = column.leads.map((lead) => ({
+                    ...lead,
+                    status: column.id as "Active" | "Pending" | "Completed",
+                }));
+                return [...acc, ...leadsWithUpdatedStatus];
             }, []);
-            
+
+            // Update local state
             setPersonnelLeads(allLeads);
+
+            // Process each lead update sequentially
+            for (const lead of allLeads) {
+                await updateLead(parseInt(lead.id), {
+                    status: lead.status, // Now using proper case status
+                });
+            }
+
             await fetchPersonnel();
+            toast.success("Leads updated successfully");
         } catch (error) {
             console.error("Update failed:", error);
             toast.error("Failed to update leads");
@@ -126,7 +237,8 @@ function CompanyPersonnelDetailsPage() {
                 }
             });
 
-            if (Object.keys(updateData).length === 2) { // Only has workspaceid and personnelid
+            if (Object.keys(updateData).length === 2) {
+                // Only has workspaceid and personnelid
                 toast.error("No changes detected");
                 return;
             }
@@ -196,16 +308,21 @@ function CompanyPersonnelDetailsPage() {
     if (error) return <div>Error: {error}</div>;
     if (!personnel) return <div>No personnel found</div>;
 
-    const getProjectsFromLeads = () => {
+    const getProjectsData = (): ProjectTableData[] => {
         if (!personnel?.leads) return [];
-        
-        return personnel.leads.reduce<PersonnelProject[]>((acc, lead) => {
+
+        return personnel.leads.reduce<ProjectTableData[]>((acc, lead) => {
             if (lead.projects && Array.isArray(lead.projects)) {
-                return [...acc, ...lead.projects.map(project => ({
-                    ...project,
-                    startDate: project.startDate || project.startdate,
-                    endDate: project.endDate || project.enddate,
-                }))];
+                const projectsData = lead.projects.map((project) => ({
+                    id: project.projectId,
+                    name: project.name,
+                    status: project.status,
+                    startDate: project.startDate,
+                    endDate: project.endDate,
+                    leadName: lead.name || `Lead ${lead.leadId}`,
+                    contractValue: lead.contractValue,
+                }));
+                return [...acc, ...projectsData];
             }
             return acc;
         }, []);
@@ -437,15 +554,15 @@ function CompanyPersonnelDetailsPage() {
                             </TabsList>
                             <TabsContent value="list" className="m-0">
                                 <DataTable
-                                    columns={projectColumns}
-                                    data={getProjectsFromLeads()}
+                                    columns={projectTableColumns}
+                                    data={getProjectsData()}
                                     loading={loading}
                                 />
                             </TabsContent>
 
                             <TabsContent value="timeline" className="m-0">
                                 <ScheduleTable
-                                    projects={getProjectsFromLeads()}
+                                    projects={getProjectsData()}
                                     // onCreateProject={handleCreateProject}
                                 />
                             </TabsContent>

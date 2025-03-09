@@ -547,27 +547,30 @@ const companySlice = createSlice({
 
             // Update Lead
             .addCase(updateLead.fulfilled, (state, action) => {
+                if (!state.leads) {
+                    state.leads = [];
+                    return;
+                }
+
                 const index = state.leads.findIndex(
-                    (lead) => lead.leadId === action.payload.leadid
+                    (lead) => lead.leadId === action.payload.leadId // Make sure property names match
                 );
+
                 if (index !== -1) {
                     // Adjust total values based on status change
                     const oldLead = state.leads[index];
                     if (oldLead.status !== action.payload.status) {
+                        // Update totals only if status changed
                         if (oldLead.status.toLowerCase() === "active") {
                             state.totalValue.active -= oldLead.contractValue;
-                        } else if (oldLead.status.toLowerCase() === "closed") {
+                        } else if (oldLead.status.toLowerCase() === "completed") {
                             state.totalValue.closed -= oldLead.contractValue;
                         }
 
                         if (action.payload.status.toLowerCase() === "active") {
-                            state.totalValue.active +=
-                                action.payload.contractvalue;
-                        } else if (
-                            action.payload.status.toLowerCase() === "closed"
-                        ) {
-                            state.totalValue.closed +=
-                                action.payload.contractvalue;
+                            state.totalValue.active += action.payload.contractValue;
+                        } else if (action.payload.status.toLowerCase() === "completed") {
+                            state.totalValue.closed += action.payload.contractValue;
                         }
                     }
                     state.leads[index] = action.payload;

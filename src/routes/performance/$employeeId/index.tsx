@@ -48,7 +48,7 @@ function RouteComponent() {
 		{
 			id: 'actions',
 			cell: ({ row }: any) => (
-				<div className="w-full flex justify-end">
+				<div className="flex justify-end w-full">
 					<Link
 						to={`/performance/$employeeId/$sheetId`}
 						params={{
@@ -57,7 +57,7 @@ function RouteComponent() {
 						}}>
 						<Button
 							variant="outline"
-							className="w-20 border-r border-l border-t-0 border-b-0">
+							className="w-20 border-t-0 border-b-0 border-l border-r">
 							DETAIL
 						</Button>
 					</Link>
@@ -91,7 +91,7 @@ function RouteComponent() {
 						]}
 					/>
 					<Link
-						className="text-xs pr-5"
+						className="pr-5 text-xs"
 						to="/performance/setting">
 						Setting
 					</Link>
