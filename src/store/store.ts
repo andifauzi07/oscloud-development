@@ -1,4 +1,4 @@
-import {configureStore} from "@reduxjs/toolkit"
+import { configureStore } from "@reduxjs/toolkit"
 import authReducer from "./slices/authSlice"
 import workspaceReducer from "./slices/workspaceSlice"
 import employeeReducer from "./slices/employeeSlice"
@@ -9,6 +9,7 @@ import projectReducer from './slices/projectSlice';
 import companyReducer from './slices/companySlice';
 import departmentReducer from './slices/departmentSlice';
 import availabilityReducer from './slices/availabilitySlice';
+import personnelReducer from './slices/personnelSlice';
 
 export const store = configureStore({
     reducer: {
@@ -22,9 +23,9 @@ export const store = configureStore({
         company: companyReducer,
         department: departmentReducer,
         availability: availabilityReducer,
+        personnel: personnelReducer,
     }
-
 })
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch

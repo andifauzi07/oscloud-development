@@ -65,6 +65,30 @@ export const leadsColumns = [
 	},
 ];
 
+export const personnelColumns = [
+	{
+		header: () => <h1 className="pl-8">ID</h1>,
+		accessorKey: 'personnelid',
+		cell: ({ row }: any) => <h1 className="pl-8">{row.original.personnelid}</h1>,
+	},
+	{
+		header: 'Name',
+		accessorKey: 'name',
+	},
+	{
+		header: 'Status',
+		accessorKey: 'status',
+	},
+	{
+		header: 'Email',
+		accessorKey: 'email',
+	},
+	{
+		header: 'Description',
+		accessorKey: 'description',
+	}
+];
+
 // Component to render the DataTable
 export const CompanyPersonnelLeadsListDataTable = ({ data, companyName, personnelName }: { data: Lead[]; companyName: string; personnelName: string }) => {
 	// Add companyName and personnelName to each lead

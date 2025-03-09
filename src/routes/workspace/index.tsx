@@ -5,6 +5,7 @@ import { useUserData } from '@/hooks/useUserData';
 import { useWorkspace } from '@/hooks/useWorkspace';
 import { createFileRoute } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
+import { InviteUserDialog } from '@/components/InviteUserDialog';
 
 export const Route = createFileRoute('/workspace/')({
 	component: RouteComponent,
@@ -59,9 +60,12 @@ function RouteComponent() {
 
 	return (
 		<>
-			<TitleWrapper className="border-b-0">
+			<TitleWrapper className="border-b">
 				<h1>Users</h1>
 			</TitleWrapper>
+			<div className="flex justify-end w-full bg-white border-b">
+				<InviteUserDialog />
+			</div>
 			<DataTable
 				columns={usersColumn}
 				data={selectedWorkspace?.users || []}

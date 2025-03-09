@@ -3,20 +3,14 @@ import { Link, useLocation, useParams } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import MenuList from "@/components/menuList";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { Company } from "@/types/company";
 import { useCompanies } from "@/hooks/useCompany";
 import { supabase } from "@/backend/supabase/supabaseClient";
-import { InfoSection } from "@/components/wrapperElement";
 import Loading from "@/components/Loading";
 import { cn } from "@/lib/utils";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { InfoSection } from "@/components/wrapperElement";
 
 export const Route = createFileRoute("/company/$companyId/")({
     component: CompanyDetail,
@@ -29,7 +23,14 @@ function CompanyDetail() {
     const location = useLocation();
     const isCurrentPath = location.pathname === `/company/${companyId}`;
 
-    const { selectedCompany, loading, error, fetchCompany, updateCompany, updateCompanyLogo, isUploadingLogo } = useCompanies();
+    const { selectedCompany, loading, error, fetchCompany, updateCompany } =
+        useCompanies();
+    const { uploadImage, isUploading } = useImageUpload({
+        bucketName: "company_logos",
+        folderPath: "logos",
+        maxSizeInMB: 3,
+        allowedFileTypes: ["image/jpeg", "image/png", "image/svg+xml"],
+    });
 
     useEffect(() => {
         if (companyId) {
@@ -44,20 +45,30 @@ function CompanyDetail() {
         }));
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        try {
-            const file = e.target.files?.[0];
-            if (!file || !selectedCompany?.companyId) return;
+    const handleImageUpload = async (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        if (!e.target.files?.[0]) return;
 
-            const publicUrl = await updateCompanyLogo(selectedCompany.companyId, file);
-            
-            setEditedCompany((prev) => ({
-                ...prev,
-                logo: publicUrl,
-            }));
+        try {
+            const file = e.target.files[0];
+            const imgUrl = await uploadImage(file);
+
+            if (!selectedCompany?.companyId) {
+                alert("Company ID not found");
+                return;
+            }
+
+            await updateCompany(selectedCompany.companyId, {
+                ...editedCompany,
+                logo: imgUrl,
+            });
+
+            alert("Logo updated successfully");
+            setEditedCompany((prev) => ({ ...prev, logo: imgUrl }));
         } catch (error) {
-            // Error handling is already done in the hook
-            console.error('Error in handleImageUpload:', error);
+            alert("Failed to upload image");
+            console.error("Upload error:", error);
         }
     };
 
@@ -172,7 +183,7 @@ function CompanyDetail() {
 
                     <div className="flex-none border-b">
                         <div className="flex justify-end w-full bg-white border-t">
-                            {isEditing ? (
+                            {isEditing ?
                                 <>
                                     <Button
                                         className="w-20 h-10 text-black bg-transparent border-l border-r link"
@@ -190,14 +201,13 @@ function CompanyDetail() {
                                         CANCEL
                                     </Button>
                                 </>
-                            ) : (
-                                <Button
+                            :   <Button
                                     className="w-20 h-10 text-black bg-transparent border-l border-r link"
                                     onClick={() => setIsEditing(true)}
                                 >
                                     EDIT
                                 </Button>
-                            )}
+                            }
                         </div>
                     </div>
 
@@ -206,7 +216,9 @@ function CompanyDetail() {
                             <figure className="w-full h-[400px] relative">
                                 <img
                                     className="object-cover w-full h-full"
-                                    src={editedCompany.logo || "/placeholder.png"}
+                                    src={
+                                        editedCompany.logo || "/placeholder.png"
+                                    }
                                     alt="Company Profile"
                                 />
                             </figure>
@@ -220,10 +232,15 @@ function CompanyDetail() {
                                         htmlFor="profile_upload"
                                         className={cn(
                                             "cursor-pointer bg-[#f2f2f2] w-48 h-12 flex justify-center items-center hover:bg-muted transition",
-                                            (isUploadingLogo || !isEditing) && "opacity-50 cursor-not-allowed"
+                                            (isUploading || !isEditing) &&
+                                                "opacity-50 cursor-not-allowed"
                                         )}
                                     >
-                                        {isUploadingLogo ? "UPLOADING..." : isEditing ? "UPLOAD" : "EDIT TO UPLOAD"}
+                                        {isUploading ?
+                                            "UPLOADING..."
+                                        : isEditing ?
+                                            "UPLOAD"
+                                        :   "EDIT TO UPLOAD"}
                                     </label>
                                     <Input
                                         id="profile_upload"
@@ -232,11 +249,13 @@ function CompanyDetail() {
                                         enableEmoji={false}
                                         accept="image/jpeg,image/png"
                                         onChange={handleImageUpload}
-                                        disabled={isUploadingLogo || !isEditing}
+                                        disabled={isUploading || !isEditing}
                                         onClick={(e) => {
                                             if (!isEditing) {
                                                 e.preventDefault();
-                                                alert("Please enable editing first");
+                                                alert(
+                                                    "Please enable editing first"
+                                                );
                                             }
                                         }}
                                     />

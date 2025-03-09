@@ -16,8 +16,14 @@ const preloadImage = (src: string) => {
 };
 
 
+// Add a type helper for the column definition
+type ColumnDefWithAccessor<TData, TValue> = ColumnDef<TData, TValue> & {
+    accessorKey?: string;
+    id?: string;
+};
+
 export interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
+    columns: ColumnDefWithAccessor<TData, TValue>[];  // Update this type
     data: TData[];
     loading?: boolean;
     enableRowDragAndDrop?: boolean;
@@ -30,6 +36,11 @@ export interface DataTableProps<TData, TValue> {
     currentPage?: number;
     onPageChange?: (page: number) => void;
     pageSize?: number;
+    selectFields?: {
+        [key: string]: {
+            options: { value: string; label: string; }[];
+        };
+    };
 }
 
 interface EditableCellProps<TData> {
@@ -95,13 +106,14 @@ export function DataTable<TData, TValue>({
     enableRowDragAndDrop = false,
     enableColumnDragAndDrop = false,
     isEditable = false,
-    nonEditableColumns = [],
+    nonEditableColumns = [], // Provide empty array as default
     onSave,
     onRowDragEnd,
     total = 0,
     currentPage = 1,
     onPageChange,
-    pageSize = 10
+    pageSize = 10,
+    selectFields
 }: DataTableProps<TData, TValue>) {
 	const [tableData, setTableData] = useState<TData[]>(data);
 	const [tableColumns, setTableColumns] = useState(() => columns);
@@ -114,46 +126,76 @@ export function DataTable<TData, TValue>({
 	// Update columns when isEditable, columns or nonEditableColumns change
 	useEffect(() => {
 		const editableColumns = columns.map((col) => {
+			const columnId = col.id || col.accessorKey || '';
+			
 			const shouldEdit =
 				isEditable &&
 				!nonEditableColumns.some((pattern) => {
+					if (typeof pattern !== 'string') return false;
 					if (pattern.endsWith('*')) {
 						const prefix = pattern.slice(0, -1);
-						return col.id?.startsWith(prefix) || col.id?.startsWith(prefix);
+						return columnId.startsWith(prefix);
 					}
-					return col.id === pattern || col.id === pattern;
+					return columnId === pattern;
 				});
 
-			if (shouldEdit && col.cell) {
-				return {
-					...col,
-					cell: (props: CellContext<TData, TValue>) => {
-						return (
-							<EditableCell
-								value={props.getValue()}
-								row={{ index: props.row.index, original: props.row.original }}
-								column={{ id: props.column.id || '' }}
-								updateData={(index: number, id: string, value: any) => {
+			if (shouldEdit) {
+				const isSelectField = selectFields && columnId && selectFields[columnId];
+
+				if (isSelectField) {
+					return {
+						...col,
+						cell: (props: CellContext<TData, TValue>) => (
+							<select
+								value={props.getValue() as string}
+								onChange={(e) => {
 									setTableData((prevData) => {
 										return prevData.map((row, rowIndex) => {
-											if (rowIndex === index) {
-												return { ...row, [id]: value };
+											if (rowIndex === props.row.index) {
+												return { ...row, [columnId]: e.target.value };
 											}
 											return row;
 										});
 									});
 								}}
-								isEditable={isEditable}
-							/>
-						);
-					},
+								className="h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
+							>
+								{selectFields[columnId].options.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						),
+					};
+				}
+
+				return {
+					...col,
+					cell: (props: CellContext<TData, TValue>) => (
+						<EditableCell
+							value={props.getValue()}
+							row={{ index: props.row.index, original: props.row.original }}
+							column={{ id: columnId }}
+							updateData={(index: number, id: string, value: any) => {
+								setTableData((prevData) => {
+									return prevData.map((row, rowIndex) => {
+										if (rowIndex === index) {
+											return { ...row, [id]: value };
+										}
+										return row;
+									});
+								});
+							}}
+							isEditable={isEditable}
+						/>
+					),
 				};
-			} else {
-				return col;
 			}
+			return col;
 		});
 		setTableColumns(editableColumns);
-	}, [isEditable, columns, nonEditableColumns]);
+	}, [isEditable, columns, selectFields]); // Remove nonEditableColumns from dependencies
 
 	const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 

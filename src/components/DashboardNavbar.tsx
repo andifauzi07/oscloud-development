@@ -21,7 +21,7 @@ const DashboardNavbar = () => {
 	};
 
 	return (
-		<nav className="border-b border-t h-10 flex flex-col justify-center  z-50 fixed top-0 w-full bg-white flex-none">
+		<nav className="fixed top-0 z-50 flex flex-col justify-center flex-none w-full h-10 bg-white border-t border-b">
 			<ul className="flex justify-between">
 				<div className="flex">
 					{links.map(({ name, path, image }) => (
@@ -44,22 +44,22 @@ const DashboardNavbar = () => {
 						</li>
 					))}
 				</div>
-				<div className="items-center border-r flex">
+				<div className="flex items-center border-r">
 					{/* Username Login */}
 					<DropdownMenu>
-						<DropdownMenuTrigger className="m-0 flex px-4 justify-center items-center border-l h-full">
+						<DropdownMenuTrigger className="flex items-center justify-center h-full px-4 m-0 border-l">
 							<h1 className="w-full text-xs text-black">Username</h1>
 						</DropdownMenuTrigger>
-						<div className="border-l h-full text-xs py-1 px-4 flex items-center">
+						<div className="flex items-center h-full px-4 py-1 text-xs border-l">
 							JP <ChevronDown size={18} />
 						</div>
 
-						<DropdownMenuContent className="px-8 border bg-white py-2 mx-1 border-black">
+						<DropdownMenuContent className="px-8 py-2 mx-1 bg-white border border-black">
 							<DropdownMenuItem className="border-none cursor-pointer hover:bg-slate-50">
-								<Link to="/">Profile</Link>
+								<Link to="/workspace/setting/profile">Profile</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem className="border-none cursor-pointer hover:bg-slate-50">
-								<Link to="/">Security</Link>
+								<Link to="/workspace/setting/security">Security</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								className="border-none cursor-pointer hover:bg-slate-50"

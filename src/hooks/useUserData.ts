@@ -97,22 +97,3 @@ export const useUserData = () => {
 		clearAllUsers,
 	};
 };
-
-// Optional: Add a helper hook for ensuring workspace context
-export const useEnsureWorkspace = () => {
-	const { currentUser, loading, error } = useUserData();
-	
-	if (loading) {
-		throw new Promise((resolve) => setTimeout(resolve, 100)); // Suspense fallback
-	}
-	
-	if (error) {
-		throw new Error(error);
-	}
-	
-	if (!currentUser?.workspaceid) {
-		throw new Error('No workspace ID available');
-	}
-	
-	return currentUser.workspaceid;
-};
