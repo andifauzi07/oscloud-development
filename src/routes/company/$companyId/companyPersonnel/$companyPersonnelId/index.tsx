@@ -436,7 +436,7 @@ function CompanyPersonnelDetailsPage() {
 			{/* Tabs Section */}
 			<Tabs
 				defaultValue="profile"
-				className="w-full bg-white border-t [&>*]:p-0 [&>*]:m-0 rounded-none [&>*]:rounded-none">
+				className="w-full bg-white [&>*]:p-0 [&>*]:m-0 rounded-none [&>*]:rounded-none">
 				<div className="px-8">
 					<TabsList className=" justify-start border-r w-full gap-8 bg-gray-100 [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
 						<TabsTrigger
@@ -467,11 +467,13 @@ function CompanyPersonnelDetailsPage() {
 							title="Basic Information"
 							isEditing={isEditing}
 							onValueChange={handleValueChange}
+							className="border-l-0"
 						/>
 						<InfoSection
 							items={managerInfo}
 							title="Management Information"
 							isEditing={false}
+							className="border-l-0"
 						/>
 					</div>
 				</TabsContent>
@@ -568,7 +570,7 @@ function CompanyPersonnelDetailsPage() {
 					value="projects"
 					className="m-0 overflow-x-hidden">
 					<div>
-						<div className="flex flex-col gap-4 px-8 pt-4 border-t border-b border-r md:flex-row md:gap-16">
+						<div className="flex flex-col gap-4 px-8 pt-4 border-t border-r md:flex-row md:gap-16">
 							{/* Search and Filter Controls */}
 							<div className="flex flex-col w-full space-y-2 md:w-auto">
 								<Label htmlFor="keyword">Keyword</Label>
@@ -591,7 +593,7 @@ function CompanyPersonnelDetailsPage() {
 								</div>
 							</div>
 							<div className="flex flex-col space-y-2 md:p-5 md:m-0">
-								<AdvancedFilterPopover />
+								<AdvancedFilterPopover fields={field} />
 							</div>
 						</div>
 

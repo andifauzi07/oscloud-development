@@ -73,7 +73,7 @@ function RouteComponent() {
 			label: 'Employee ID',
 			value: employee?.employeeid?.toString() || '-',
 			key: 'employeeId',
-			nonEditable: true,  // Make ID non-editable
+			nonEditable: true, // Make ID non-editable
 		},
 		{
 			label: 'Name',
@@ -197,11 +197,7 @@ function RouteComponent() {
 									title="Basic Information"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
-									nonEditableFields={['employeeId']}  // Add nonEditableFields prop
-								/>
-								<InfoSection
-									items={contractInfo}
-									title="Contact"
+									nonEditableFields={['employeeId']} // Add nonEditableFields prop
 								/>
 							</div>
 						</div>

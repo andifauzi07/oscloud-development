@@ -256,16 +256,12 @@ function RouteComponent() {
 			</div>
 
 			<div className="flex justify-end flex-none w-full bg-white">
-				{loadingEmployeeCategories || loadingDepartments ? (
-					<div>Loading...</div>
-				) : (
-					<AddRecordDialog
-						columns={columns}
-						onSave={handleAddRecord}
-						nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
-						selectFields={selectFields}
-					/>
-				)}
+				<AddRecordDialog
+					columns={columns}
+					onSave={handleAddRecord}
+					nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
+					selectFields={selectFields}
+				/>
 				<Button
 					onClick={() => setEditable((prev) => !prev)}
 					className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">

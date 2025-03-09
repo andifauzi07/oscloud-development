@@ -1,4 +1,3 @@
-// src/routes/company/setting/index.tsx
 import { createFileRoute, Link } from '@tanstack/react-router';
 import React, { useCallback, useMemo } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -18,53 +17,54 @@ export const Route = createFileRoute('/company/setting/')({
 function RouteComponent() {
 	const { settings, saveSettings, reorderColumns } = useColumnSettings<CompanyDisplay>({
 		storageKey: 'companyColumnSettings',
-		defaultSettings: defaultCompanyColumnSettings
+		defaultSettings: defaultCompanyColumnSettings,
 	});
 
-	const handleStatusChange = useCallback((accessorKey: string, checked: boolean) => {
-		saveSettings((prevSettings: BaseColumnSetting<CompanyDisplay>[]) => 
-			prevSettings.map((setting) =>
-				setting.accessorKey === accessorKey
-					? { ...setting, status: checked ? "shown" : "hidden" }
-					: setting
-			)
-		);
-	}, [saveSettings]);
+	const handleStatusChange = useCallback(
+		(accessorKey: string, checked: boolean) => {
+			saveSettings((prevSettings: BaseColumnSetting<CompanyDisplay>[]) => prevSettings.map((setting) => (setting.accessorKey === accessorKey ? { ...setting, status: checked ? 'shown' : 'hidden' } : setting)));
+		},
+		[saveSettings]
+	);
 
-	const handleDragEnd = useCallback((result: { oldIndex: number; newIndex: number }) => {
-		if (result.oldIndex === result.newIndex) return;
-		reorderColumns(result.oldIndex, result.newIndex);
-	}, [reorderColumns]);
+	const handleDragEnd = useCallback(
+		(result: { oldIndex: number; newIndex: number }) => {
+			if (result.oldIndex === result.newIndex) return;
+			reorderColumns(result.oldIndex, result.newIndex);
+		},
+		[reorderColumns]
+	);
 
-	const columns = useMemo<ColumnDef<BaseColumnSetting<CompanyDisplay>>[]>(() => [
-		{
-			accessorKey: 'label',
-			header: 'Data field shown in the Company',
-			cell: ({ row }) => <div className="py-2 pl-8">{row.original.label}</div>,
-		},
-		{
-			accessorKey: 'type',
-			header: 'Type',
-		},
-		{
-			accessorKey: 'date_created',
-			header: 'Date Created',
-		},
-		{
-			accessorKey: 'status',
-			header: 'Status',
-			cell: ({ row }) => (
-				<div className="flex items-center justify-center">
-					<Switch
-						checked={row.original.status === "shown"}
-						onCheckedChange={(checked) => 
-							handleStatusChange(row.original.accessorKey.toString(), checked)
-						}
-					/>
-				</div>
-			),
-		},
-	], [handleStatusChange]);
+	const columns = useMemo<ColumnDef<BaseColumnSetting<CompanyDisplay>>[]>(
+		() => [
+			{
+				accessorKey: 'label',
+				header: () => <h1 className="pl-4">Data field shown in the Company</h1>,
+				cell: ({ row }) => <div className="py-2 pl-8">{row.original.label}</div>,
+			},
+			{
+				accessorKey: 'type',
+				header: 'Type',
+			},
+			{
+				accessorKey: 'date_created',
+				header: 'Date Created',
+			},
+			{
+				accessorKey: 'status',
+				header: 'Status',
+				cell: ({ row }) => (
+					<div className="flex items-center justify-center">
+						<Switch
+							checked={row.original.status === 'shown'}
+							onCheckedChange={(checked) => handleStatusChange(row.original.accessorKey.toString(), checked)}
+						/>
+					</div>
+				),
+			},
+		],
+		[handleStatusChange]
+	);
 
 	const handleResetToDefault = useCallback(() => {
 		saveSettings(defaultCompanyColumnSettings);
@@ -81,13 +81,12 @@ function RouteComponent() {
 					Company
 				</Link>
 			</TitleWrapper>
-			
+
 			<div className="flex items-center justify-between px-8 py-4 bg-white border-r">
 				<h2 className="text-lg font-semibold">Column Settings</h2>
-				<Button 
+				<Button
 					variant="outline"
-					onClick={handleResetToDefault}
-				>
+					onClick={handleResetToDefault}>
 					Reset to Default
 				</Button>
 			</div>
@@ -103,5 +102,3 @@ function RouteComponent() {
 		</div>
 	);
 }
-
-

@@ -7,6 +7,7 @@ export const TitleWrapper: React.FC<{ children: React.ReactNode; className?: str
 };
 
 interface InfoSectionProps {
+	className?: string;
 	title: React.ReactNode;
 	items: {
 		label: string;
@@ -20,38 +21,26 @@ interface InfoSectionProps {
 	nonEditableFields?: string[];
 }
 
-export const InfoSection: React.FC<InfoSectionProps> = ({
-	title,
-	items,
-	isEditing,
-	onValueChange,
-	nonEditableFields = []
-}) => (
-	<div className="flex flex-col border-l">
-		<h2 className="px-4 py-4 text-sm font-medium bg-gray-100 border-b border-r">{title}</h2>
+export const InfoSection: React.FC<InfoSectionProps> = ({ className, title, items, isEditing, onValueChange, nonEditableFields = [] }) => (
+	<div className={`flex flex-col border-l ${className}`}>
+		<h2 className="px-8 py-2 text-sm font-medium bg-gray-100 border-b border-r">{title}</h2>
 		<div className="bg-white">
 			{items.map((item, index) => {
-				const isFieldEditable = isEditing && 
-					item.key && 
-					onValueChange && 
-					!nonEditableFields.includes(item.key) &&
-					!item.nonEditable;
+				const isFieldEditable = isEditing && item.key && onValueChange && !nonEditableFields.includes(item.key) && !item.nonEditable;
 
 				return (
 					<div
 						key={index}
-						className="flex gap-8 border-b border-r"
-					>
-						<div className="w-32 px-4 py-2 text-sm font-medium text-gray-600 bg-white">
+						className="flex gap-8 border-b border-r">
+						<div className="w-48 px-8 py-2 text-sm font-medium text-gray-600 bg-white">
 							<span>{item.label}</span>
 						</div>
-						<div className="flex-1 px-4 py-2 text-sm bg-white">
+						<div className="flex-1 px-8 py-2 text-sm bg-white">
 							{isFieldEditable ? (
 								item.options ? (
 									<Select
 										value={item.value}
-										onValueChange={(value) => onValueChange(item.key!, value)}
-									>
+										onValueChange={(value) => onValueChange(item.key!, value)}>
 										<SelectTrigger>
 											<SelectValue placeholder={`Select ${item.label}`} />
 										</SelectTrigger>
@@ -59,8 +48,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
 											{item.options.map((option) => (
 												<SelectItem
 													key={option.value}
-													value={option.value}
-												>
+													value={option.value}>
 													{option.label}
 												</SelectItem>
 											))}

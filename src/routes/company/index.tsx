@@ -87,6 +87,7 @@ function RouteComponent() {
 				};
 			});
 	}, [settings]);
+	console.log(columns);
 
 	const filteredCompanies = useMemo(() => {
 		return companies.filter((company) => {

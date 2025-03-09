@@ -42,6 +42,36 @@ type DepartmentData = {
 	score: string;
 };
 
+const searchField = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
+
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
+
 function RouteComponent() {
 	const { departmentName } = Route.useParams();
 	const decodedDepartmentName = revertUrlString(departmentName as string);
@@ -140,7 +170,7 @@ function RouteComponent() {
 						variant="outline"
 						className="border-b-0 border-t-0"
 						onClick={() => handleRemove(props.row.original.id)}>
-						Remove
+						ADD
 					</Button>
 				</div>
 			),
@@ -215,7 +245,7 @@ function RouteComponent() {
 										className="w-20 py-2 border rounded-none"
 										size="sm"
 										onClick={() => console.log('Removing', name)}>
-										ASSIGN
+										REMOVE
 									</Button>
 								</div>
 							))}
@@ -223,7 +253,7 @@ function RouteComponent() {
 					</div>
 					<div className="w-full">
 						<div className="flex items-center p-4 border-r border-l">
-							<h1>Sub Department</h1>
+							<h1>Adding Staff Department</h1>
 						</div>
 
 						<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border border-b-0 md:flex-row">
@@ -258,7 +288,7 @@ function RouteComponent() {
 								{/* Advanced Search */}
 								<div className="flex flex-col space-y-2">
 									<Label>‎</Label>
-									<AdvancedFilterPopover />
+									<AdvancedFilterPopover fields={searchField} />
 								</div>
 							</div>
 						</div>

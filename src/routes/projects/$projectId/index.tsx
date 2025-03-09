@@ -178,6 +178,65 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 	},
 ];
 
+const advSearchField = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
+
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
+const field = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
+
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
+
 // Columns for Payment Staff
 const paymentStaffColumns: ColumnDef<PaymentStaff>[] = [
 	{
@@ -446,7 +505,7 @@ function ProjectView() {
 									{/* Advanced Search */}
 									<div className="flex flex-col space-y-2">
 										<Label>‎</Label>
-										<AdvancedFilterPopover />
+										<AdvancedFilterPopover fields={field} />
 									</div>
 								</div>
 							</div>
@@ -500,7 +559,7 @@ function ProjectView() {
 								</div>
 								{/* Advanced Search */}
 								<div className="flex flex-col mt-5">
-									<AdvancedFilterPopover />
+									<AdvancedFilterPopover fields={advSearchField} />
 								</div>
 							</div>
 							<DataTable

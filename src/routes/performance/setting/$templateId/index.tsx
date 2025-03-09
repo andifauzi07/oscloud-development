@@ -301,6 +301,7 @@ function RouteComponent() {
 						<Accordion
 							type="single"
 							collapsible
+							defaultValue={template.categories[0].id}
 							className="w-full">
 							{template.categories.map((category, index) => (
 								<AccordionItem
@@ -330,6 +331,7 @@ function RouteComponent() {
 															<PopoverTrigger asChild>
 																<Button
 																	variant="outline"
+																	disabled={editable ? false : true}
 																	className="text-xs underline px-2 w-20 h-8 p-0 border-none"
 																	style={{
 																		backgroundColor: category.color || `hsl(var(--chart-${index + 1}))`,
@@ -350,13 +352,18 @@ function RouteComponent() {
 														</Popover>
 														<div className="flex items-center w-full gap-2">
 															<Label className="text-xs text-black">Weight</Label>
-															<Input
-																type="number"
-																className="w-14 h-7 rounded-xs bg-white border-0"
-																value={category.weight || 0}
-																enableEmoji={false}
-																onChange={(e) => handleWeightChange(category.id, Number(e.target.value))}
-															/>
+															{editable ? (
+																<Input
+																	type="number"
+																	disabled={editable ? false : true}
+																	className="w-14 h-7 rounded-xs bg-white border-0"
+																	value={String(category.weight) || ''}
+																	enableEmoji={false}
+																	onChange={(e) => handleWeightChange(category.id, Number(e.target.value))}
+																/>
+															) : (
+																<div className="w-14 h-7 rounded-xs bg-white border-0 flex items-center justify-center">{String(category.weight) || ''}</div>
+															)}
 														</div>
 													</div>
 												</div>
@@ -433,19 +440,6 @@ function RouteComponent() {
 													)}
 												</div>
 											))}
-											{/* <div className="flex items-center gap-2">
-												<Input
-													placeholder="New item name"
-													value={newItemName}
-													onChange={(e) => setNewItemName(e.target.value)}
-												/>
-												<Button
-													variant="outline"
-													size="icon"
-													onClick={() => handleAddItem(category.id)}>
-													<Plus className="w-4 h-4" />
-												</Button>
-											</div> */}
 										</div>
 									</AccordionContent>
 								</AccordionItem>
