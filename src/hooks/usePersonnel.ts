@@ -8,24 +8,34 @@ import {
     updatePersonnel,
     deletePersonnel,
     clearSelectedPersonnel,
+    fetchAllPersonnel,
 } from "@/store/slices/personnelSlice";
-import type { CreatePersonnelRequest, UpdatePersonnelRequest } from "@/types/personnel";
+import type { CreatePersonnelRequest, UpdatePersonnelRequest, Personnel } from "@/types/personnel";
 
 export const usePersonnel = (personnelId?: number) => {
     const dispatch = useDispatch<AppDispatch>();
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
     
-    const { selectedPersonnel, loading, error } = useSelector(
+    const { selectedPersonnel, personnel, loading, error } = useSelector(
         (state: RootState) => state.personnel
     );
 
-    const fetchPersonnel = useCallback(async () => {
-        if (!workspaceid || !personnelId) return;
+    const fetchAllWorkspacePersonnel = useCallback(async () => {
+        if (!workspaceid) return;
+        return dispatch(
+            fetchAllPersonnel({
+                workspaceId: Number(workspaceid)
+            })
+        ).unwrap();
+    }, [dispatch, workspaceid]);
+
+    const fetchPersonnel = useCallback(async ({ workspaceId, personnelId }: { workspaceId: number; personnelId: number }) => {
+        if (!workspaceId || !personnelId) return;
         return dispatch(
             fetchPersonnelById({
-                workspaceId: Number(workspaceid),
-                personnelId
+                workspaceId: Number(workspaceId),
+                personnelId: Number(personnelId)
             })
         ).unwrap();
     }, [dispatch, workspaceid, personnelId]);
@@ -70,18 +80,22 @@ export const usePersonnel = (personnelId?: number) => {
 
     useEffect(() => {
         if (personnelId) {
-            fetchPersonnel();
+            fetchPersonnel({ workspaceId: Number(workspaceid), personnelId: Number(personnelId) });
+        } else {
+            fetchAllWorkspacePersonnel();
         }
         return () => {
             dispatch(clearSelectedPersonnel());
         };
-    }, [personnelId, fetchPersonnel, dispatch]);
+    }, [personnelId, workspaceid, dispatch, fetchPersonnel, fetchAllWorkspacePersonnel]);
 
     return {
-        personnel: selectedPersonnel,
+        selectedPersonnel,
+        personnel,
         loading,
         error,
         fetchPersonnel,
+        fetchAllPersonnel: fetchAllWorkspacePersonnel,
         addPersonnel,
         updatePersonnel: updatePersonnelDetails,
         deletePersonnel: removePersonnel,

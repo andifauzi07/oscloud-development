@@ -43,24 +43,48 @@ export interface PersonnelCompany {
 }
 
 export interface Personnel {
-    personnelId: number;
+    personnelid: number;
+    companyid: number;
     name: string;
-    email: string;
-    status: string;
-    description?: string;
-    createdAt: string | null;
-    manager?: {
-        userId: string;
-        email: string;
-        status: string;
-        role: string;
-    };
-    company?: {
-        companyId: number;
+    status: 'Active' | 'Inactive';
+    email: string | null;
+    description: string | null;
+    leadid: number | null;
+    managerid: string;
+    company: {
+        city: string | null;
+        logo: string;
         name: string;
-        logo?: string;
+        email: string | null;
+        product: string | null;
+        companyid: number;
+        managerid: string;
+        created_at: string;
+        workspaceid: number;
+        category_group: string | null;
     };
-    leads: PersonnelLead[];
+    lead: {
+        name: string;
+        leadid: number;
+        status: string;
+        companyid: number;
+        created_at: string;
+        personnelid: number;
+        workspaceid: number;
+        contractvalue: number;
+        company: {
+            // ... same as above company interface
+        };
+    } | null;
+    app_user: {
+        role: string;
+        email: string;
+        image: string;
+        status: string;
+        userid: string;
+        backup_email: string | null;
+        phone_number: string | null;
+    };
 }
 
 export interface CreatePersonnelRequest {
@@ -68,6 +92,7 @@ export interface CreatePersonnelRequest {
     email: string;
     status: string;
     description: string;
+    companyid: number;
     leadid?: number;
     managerid?: string;
 }
@@ -86,4 +111,16 @@ export interface EditedPersonnel {
     email?: string;
     status?: string;
     description?: string;
+}
+
+export interface PersonnelData {
+    id: number;
+    name: string;
+    email: string;
+    manager: string;
+    activeLeads: number;
+    closedLeads: number;
+    status: string;
+    addedAt: string;
+    company?: Personnel['company'];
 }
