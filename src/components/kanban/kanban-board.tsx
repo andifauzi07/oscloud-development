@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { KanbanBoardProps, KanbanColumnTypes, Lead } from './types';
 import { KanbanColumnContainer } from './kanban-column';
 import { Button } from '@/components/ui/button';
@@ -10,18 +10,34 @@ import { KanbanCardItem } from './kanban-card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCompanies } from '@/hooks/useCompany';
+import { SelectField } from '@/components/select-field';
 
-export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanBoardProps) {
+interface Company {
+    companyid: number;
+    name: string;
+}
+
+interface KanbanBoardProps {
+    columns: KanbanColumnTypes[];
+    onColumnUpdate: (columns: KanbanColumnTypes[]) => Promise<void>;
+    disabled?: boolean;
+}
+
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({
+    columns: initialColumns,
+    onColumnUpdate,
+    disabled
+}) => {
+	// Column states
 	const [columns, setColumns] = useState<KanbanColumnTypes[]>(initialColumns);
-	const [activeColumn, setActiveColumn] = useState<KanbanColumnTypes | null>(null);
-	const [activeLead, setActiveLead] = useState<Lead | null>(null);
-	const [isUpdatingFromProps, setIsUpdatingFromProps] = useState(false);
-
-	// Dialog states
 	const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
 	const [newColumnTitle, setNewColumnTitle] = useState('');
 	const [newColumnColor, setNewColumnColor] = useState('bg-gray-500');
+
+	// Card states
 	const [isCardDialogOpen, setIsCardDialogOpen] = useState(false);
+	const [isEditMode, setIsEditMode] = useState(false);
 	const [currentColumnId, setCurrentColumnId] = useState<string | null>(null);
 	const [currentLead, setCurrentLead] = useState<Lead>({
 		id: '',
@@ -31,56 +47,10 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 		addedOn: '',
 		manager: '',
 		contractValue: '',
-		status: '',
+		status: 'Pending'
 	});
-	const [isEditMode, setIsEditMode] = useState(false);
 
-	// Only update columns from props on initial render or when the structure changes significantly
-	useEffect(() => {
-		// Deep comparison to check if the columns structure has actually changed
-		const columnsChanged =
-			JSON.stringify(
-				initialColumns.map((col) => ({
-					id: col.id,
-					title: col.title,
-					color: col.color,
-					leadsCount: col.leads.length,
-				}))
-			) !==
-			JSON.stringify(
-				columns.map((col) => ({
-					id: col.id,
-					title: col.title,
-					color: col.color,
-					leadsCount: col.leads.length,
-				}))
-			);
-
-		if (columnsChanged) {
-			setIsUpdatingFromProps(true);
-			setColumns(initialColumns);
-		}
-	}, [initialColumns]);
-
-	// Notify parent component when columns change, but only due to user actions
-	const notifyColumnUpdate = useCallback(
-		(updatedColumns: KanbanColumnTypes[]) => {
-			if (onColumnUpdate && !isUpdatingFromProps) {
-				onColumnUpdate(updatedColumns);
-			}
-		},
-		[onColumnUpdate, isUpdatingFromProps]
-	);
-
-	// Update columns and notify parent
-	const updateColumns = useCallback(
-		(newColumns: KanbanColumnTypes[]) => {
-			setColumns(newColumns);
-			notifyColumnUpdate(newColumns);
-		},
-		[notifyColumnUpdate]
-	);
-
+	// DnD sensors
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
@@ -89,157 +59,79 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 		})
 	);
 
-	const onDragStart = (event: DragStartEvent) => {
-		if (event.active.data.current?.type === 'Column') {
-			setActiveColumn(event.active.data.current.column);
-			return;
-		}
+	// Add these new states for drag animation
+	const [activeId, setActiveId] = useState<string | null>(null);
+	const [activeLead, setActiveLead] = useState<Lead | null>(null);
 
-		if (event.active.data.current?.type === 'Card') {
-			setActiveLead(event.active.data.current.lead);
-			return;
+	// Add this to your existing state declarations
+	const [isSaving, setIsSaving] = useState(false);
+
+	// Helper function to update columns and notify parent
+	const updateColumns = (newColumns: KanbanColumnTypes[]) => {
+		setColumns(newColumns);
+		if (onColumnUpdate) {
+			onColumnUpdate(newColumns);
 		}
 	};
 
-	const onDragEnd = (event: DragEndEvent) => {
-		setActiveColumn(null);
-		setActiveLead(null);
+	useEffect(() => {
+		setColumns(initialColumns);
+	}, [initialColumns]);
 
-		const { active, over } = event;
-		if (!over) return;
-
-		const activeColumnId = active.id;
-		const overColumnId = over.id;
-
-		if (activeColumnId === overColumnId) return;
-
-		updateColumns(
-			arrayMove(
-				columns,
-				columns.findIndex((col) => col.id === activeColumnId),
-				columns.findIndex((col) => col.id === overColumnId)
-			)
-		);
+	const handleDragStart = (event: DragStartEvent) => {
+		const { active } = event;
+		setActiveId(active.id as string);
+		
+		const draggedLead = columns
+			.flatMap(col => col.leads)
+			.find(lead => lead.id === active.id);
+			
+		if (draggedLead) {
+			setActiveLead(draggedLead);
+		}
 	};
 
-	const onDragOver = (event: DragOverEvent) => {
+	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
+		
 		if (!over) return;
 
 		const activeId = active.id;
 		const overId = over.id;
 
-		if (activeId === overId) return;
+		const sourceColumn = columns.find(col => 
+			col.leads.some(lead => lead.id === activeId)
+		);
 
-		const isActiveACard = active.data.current?.type === 'Card';
-		const isOverACard = over.data.current?.type === 'Card';
+		const targetColumn = columns.find(col => col.id === overId);
 
-		if (!isActiveACard) return;
+		if (!sourceColumn || !targetColumn) return;
 
-		// Dropping a Card over another Card
-		if (isActiveACard && isOverACard) {
-			const activeLeadData = active.data.current?.lead as Lead;
-			const overLeadData = over.data.current?.lead as Lead;
+		const draggedLead = sourceColumn.leads.find(lead => lead.id === activeId);
+		if (!draggedLead) return;
 
-			// Find the columns
-			const activeColumn = columns.find((col) => col.leads.some((lead) => lead.id === activeLeadData.id));
+		const sourceLeads = [...sourceColumn.leads];
+		const targetLeads = [...targetColumn.leads];
 
-			const overColumn = columns.find((col) => col.leads.some((lead) => lead.id === overLeadData.id));
+		// Remove from source column
+		sourceLeads.splice(sourceLeads.indexOf(draggedLead), 1);
 
-			if (!activeColumn || !overColumn) return;
+		// Add to target column
+		targetLeads.push(draggedLead);
 
-			// Find the indices
-			const activeLeadIndex = activeColumn.leads.findIndex((lead) => lead.id === activeLeadData.id);
-
-			const overLeadIndex = overColumn.leads.findIndex((lead) => lead.id === overLeadData.id);
-
-			// If in the same column
-			if (activeColumn.id === overColumn.id) {
-				const newLeads = arrayMove(activeColumn.leads, activeLeadIndex, overLeadIndex);
-
-				const newColumns = columns.map((col) => {
-					if (col.id === activeColumn.id) {
-						return { ...col, leads: newLeads };
-					}
-					return col;
-				});
-
-				updateColumns(newColumns);
-			} else {
-				// If in different columns
-				// Update the status of the lead to match the new column
-				const updatedLead = {
-					...activeLeadData,
-					status: overColumn.id,
-				};
-
-				const newColumns = columns.map((col) => {
-					// Remove from active column
-					if (col.id === activeColumn.id) {
-						const newLeads = [...col.leads];
-						newLeads.splice(activeLeadIndex, 1);
-						return { ...col, leads: newLeads };
-					}
-
-					// Add to over column
-					if (col.id === overColumn.id) {
-						const newLeads = [...col.leads];
-						newLeads.splice(overLeadIndex, 0, updatedLead);
-						return { ...col, leads: newLeads };
-					}
-
-					return col;
-				});
-
-				updateColumns(newColumns);
+		const updatedColumns = columns.map(col => {
+			if (col.id === sourceColumn.id) {
+				return { ...col, leads: sourceLeads };
 			}
-		}
+			if (col.id === targetColumn.id) {
+				return { ...col, leads: targetLeads };
+			}
+			return col;
+		});
 
-		const isOverAColumn = over.data.current?.type === 'Column';
-
-		// Dropping a Card over a Column
-		if (isActiveACard && isOverAColumn) {
-			const activeLeadData = active.data.current?.lead as Lead;
-			const overColumnId = over.id as string;
-
-			// Find the columns
-			const activeColumn = columns.find((col) => col.leads.some((lead) => lead.id === activeLeadData.id));
-
-			const overColumn = columns.find((col) => col.id === overColumnId);
-
-			if (!activeColumn || !overColumn) return;
-
-			// Find the index
-			const activeLeadIndex = activeColumn.leads.findIndex((lead) => lead.id === activeLeadData.id);
-
-			// If in the same column
-			if (activeColumn.id === overColumn.id) return;
-
-			// Update the status of the lead to match the new column
-			const updatedLead = {
-				...activeLeadData,
-				status: overColumn.id,
-			};
-
-			// If in different columns
-			const newColumns = columns.map((col) => {
-				// Remove from active column
-				if (col.id === activeColumn.id) {
-					const newLeads = [...col.leads];
-					newLeads.splice(activeLeadIndex, 1);
-					return { ...col, leads: newLeads };
-				}
-
-				// Add to over column
-				if (col.id === overColumn.id) {
-					return { ...col, leads: [...col.leads, updatedLead] };
-				}
-
-				return col;
-			});
-
-			updateColumns(newColumns);
-		}
+		setActiveId(null);
+		setActiveLead(null);
+		updateColumns(updatedColumns);
 	};
 
 	const addColumn = () => {
@@ -267,13 +159,14 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 
 		setCurrentLead({
 			id: uuidv4(),
-			company: 'COMPANY A',
-			personnel: 'Personnel A',
-			title: 'Web dev for their corp site',
+			companyId: undefined,  // Add this line
+			company: '',
+			personnel: '',
+			title: '',
 			addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-			manager: 'John Brown',
-			contractValue: '300,000 USD',
-			status: column?.id || '',
+			manager: '',
+			contractValue: '',
+			status: 'Pending'
 		});
 
 		setIsCardDialogOpen(true);
@@ -302,58 +195,139 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 		updateColumns(newColumns);
 	};
 
-	const saveCard = () => {
-		if (!currentColumnId) return;
+	const handleCompanyChange = (value: string) => {
+		const selectedCompany = companies?.find(c => c.companyid.toString() === value);
+		if (selectedCompany) {
+			setCurrentLead(prev => ({
+				...prev,
+				companyId: selectedCompany.companyid,
+				company: selectedCompany.name
+			}));
+		}
+	};
 
-		if (isEditMode) {
-			// Update existing card
-			const newColumns = columns.map((col) => {
-				const leadIndex = col.leads.findIndex((lead) => lead.id === currentLead.id);
-				if (leadIndex !== -1) {
-					const newLeads = [...col.leads];
-					newLeads[leadIndex] = currentLead;
-					return { ...col, leads: newLeads };
-				}
-				return col;
-			});
-
-			updateColumns(newColumns);
-		} else {
-			// Add new card
-			const newColumns = columns.map((col) => {
-				if (col.id === currentColumnId) {
-					return {
-						...col,
-						leads: [...col.leads, currentLead],
-					};
-				}
-				return col;
-			});
-
-			updateColumns(newColumns);
+	const saveCard = async () => {
+		if (!currentColumnId || !currentLead) {
+			alert("Invalid card data");
+			return;
 		}
 
-		setIsCardDialogOpen(false);
+		// Validate required fields
+		if (!currentLead.companyId || !currentLead.title) {
+			alert("Please fill in all required fields (Company and Title)");
+			return;
+		}
+
+		setIsSaving(true);
+
+		try {
+			const updatedColumns = columns.map((col) => {
+				if (isEditMode) {
+					const hasExistingCard = col.leads.some(lead => lead.id === currentLead.id);
+					
+					if (hasExistingCard) {
+						if (col.id !== currentColumnId) {
+							return {
+								...col,
+								leads: col.leads.filter(lead => lead.id !== currentLead.id)
+							};
+						}
+						return {
+							...col,
+							leads: col.leads.map(lead => 
+								lead.id === currentLead.id 
+									? { 
+										...currentLead,
+										status: col.title,
+										company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+									}
+									: lead
+							)
+						};
+					}
+					
+					if (col.id === currentColumnId) {
+						return {
+							...col,
+							leads: [...col.leads, { 
+								...currentLead,
+								status: col.title,
+								company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+							}]
+						};
+					}
+				} else {
+					if (col.id === currentColumnId) {
+						return {
+							...col,
+							leads: [...col.leads, { 
+								...currentLead,
+								status: col.title,
+								addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+								company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+							}]
+						};
+					}
+				}
+				return col;
+			});
+
+			await updateColumns(updatedColumns);
+			alert(isEditMode ? "Card updated successfully!" : "New card added successfully!");
+			setIsCardDialogOpen(false);
+			
+			// Reset states
+			setCurrentLead({
+				id: '',
+				company: '',
+				companyId: undefined,
+				personnel: '',
+				title: '',
+				addedOn: '',
+				manager: '',
+				contractValue: '',
+				status: 'Pending'
+			});
+			setCurrentColumnId(null);
+			setIsEditMode(false);
+
+		} catch (error) {
+			console.error("Error saving card:", error);
+			alert("Failed to save card. Please try again.");
+		} finally {
+			setIsSaving(false);
+		}
 	};
+
+	const { companies } = useCompanies();
+
+	// Transform companies data for SelectField
+	const companyOptions = useMemo(() => 
+		companies?.map(company => ({
+			value: company.companyid.toString(),
+			label: company.name
+		})) || [], 
+	[companies]);
 
 	return (
 		<div className="p-4">
-			{/* <div className="flex justify-between items-center mb-6">
+			{/* <div className="flex items-center justify-between mb-6">
 				<Button onClick={() => setIsAddColumnOpen(true)}>
-					<Plus className="mr-2 h-4 w-4" />
+					<Plus className="w-4 h-4 mr-2" />
 					Add Column
 				</Button>
 			</div> */}
 
 			<DndContext
 				sensors={sensors}
-				onDragStart={onDragStart}
-				onDragEnd={onDragEnd}
-				onDragOver={onDragOver}>
-				<div className="flex gap-4 pb-4">
+				onDragStart={handleDragStart}
+				onDragEnd={handleDragEnd}
+			>
+				<div className="flex h-full gap-4">
 					<SortableContext
-						items={columns.map((col) => col.id)}
-						strategy={horizontalListSortingStrategy}>
+						items={columns.map(col => col.id)}
+						strategy={horizontalListSortingStrategy}
+					>
 						{columns.map((column) => (
 							<KanbanColumnContainer
 								key={column.id}
@@ -365,17 +339,13 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 						))}
 					</SortableContext>
 				</div>
-
 				<DragOverlay>
-					{activeColumn && (
-						<KanbanColumnContainer
-							column={activeColumn}
-							onAddCard={handleAddCard}
-							onEditCard={handleEditCard}
-							onDeleteCard={handleDeleteCard}
+					{activeId && activeLead ? (
+						<KanbanCardItem
+							lead={activeLead}
+							// ... other props ...
 						/>
-					)}
-					{activeLead && <KanbanCardItem lead={activeLead} />}
+					) : null}
 				</DragOverlay>
 			</DndContext>
 
@@ -404,7 +374,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								id="column-color"
 								value={newColumnColor}
 								onChange={(e) => setNewColumnColor(e.target.value)}
-								className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+								className="flex w-full h-10 px-3 py-2 text-sm border rounded-md border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
 								<option value="bg-blue-500">Blue</option>
 								<option value="bg-green-500">Green</option>
 								<option value="bg-yellow-500">Yellow</option>
@@ -437,11 +407,13 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 					<div className="grid gap-4 py-4">
 						<div className="grid grid-cols-2 gap-4">
 							<div className="grid gap-2">
-								<Label htmlFor="company">Company</Label>
-								<Input
-									id="company"
-									value={currentLead.company}
-									onChange={(e) => setCurrentLead({ ...currentLead, company: e.target.value })}
+								<SelectField
+									label="Company"
+									options={companyOptions}
+									value={currentLead.companyId?.toString() || ''}
+									onChange={handleCompanyChange}
+									disabled={isSaving}
+									className="w-full"
 								/>
 							</div>
 							<div className="grid gap-2">
@@ -449,7 +421,8 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								<Input
 									id="personnel"
 									value={currentLead.personnel}
-									onChange={(e) => setCurrentLead({ ...currentLead, personnel: e.target.value })}
+									disabled={true}
+									className="bg-gray-100"
 								/>
 							</div>
 						</div>
@@ -459,6 +432,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								id="title"
 								value={currentLead.title}
 								onChange={(e) => setCurrentLead({ ...currentLead, title: e.target.value })}
+								disabled={isSaving}
 							/>
 						</div>
 						<div className="grid grid-cols-2 gap-4">
@@ -468,6 +442,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 									id="addedOn"
 									value={currentLead.addedOn}
 									onChange={(e) => setCurrentLead({ ...currentLead, addedOn: e.target.value })}
+									disabled={isSaving}
 								/>
 							</div>
 							<div className="grid gap-2">
@@ -476,6 +451,7 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 									id="manager"
 									value={currentLead.manager}
 									onChange={(e) => setCurrentLead({ ...currentLead, manager: e.target.value })}
+									disabled={isSaving}
 								/>
 							</div>
 						</div>
@@ -485,16 +461,30 @@ export function KanbanBoard({ columns: initialColumns, onColumnUpdate }: KanbanB
 								id="contractValue"
 								value={currentLead.contractValue}
 								onChange={(e) => setCurrentLead({ ...currentLead, contractValue: e.target.value })}
+								disabled={isSaving}
 							/>
 						</div>
 					</div>
 					<DialogFooter>
 						<Button
 							variant="outline"
-							onClick={() => setIsCardDialogOpen(false)}>
+							onClick={() => setIsCardDialogOpen(false)}
+							disabled={isSaving}>
 							Cancel
 						</Button>
-						<Button onClick={saveCard}>{isEditMode ? 'Save Changes' : 'Add Card'}</Button>
+						<Button 
+							onClick={saveCard}
+							disabled={isSaving}
+						>
+							{isSaving ? (
+								<div className="flex items-center gap-2">
+									<div className="w-4 h-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
+									Saving...
+								</div>
+							) : (
+								isEditMode ? 'Save Changes' : 'Add Card'
+							)}
+						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>

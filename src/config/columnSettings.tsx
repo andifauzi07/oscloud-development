@@ -153,6 +153,27 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<CompanyDisplay>[] =
         },
     ];
 
+import { ColumnDef } from "@tanstack/react-table";
+
+export const projectColumns: ColumnDef<Project>[] = [
+    {
+        accessorKey: "name",
+        header: "Project Name",
+    },
+    {
+        accessorKey: "status",
+        header: "Status",
+    },
+    {
+        accessorKey: "startdate",
+        header: "Start Date",
+    },
+    {
+        accessorKey: "enddate",
+        header: "End Date",
+    }
+];
+
 export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] = [
     {
         accessorKey: "name",

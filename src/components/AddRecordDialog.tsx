@@ -24,6 +24,7 @@ interface AddRecordDialogProps {
 			label: string;
 		};
 	};
+    enableCosts?: boolean;
 }
 
 export function AddRecordDialog({ 
@@ -31,7 +32,8 @@ export function AddRecordDialog({
 	onSave, 
 	nonEditableColumns = [], 
 	selectFields,
-	customFields 
+	customFields,
+    enableCosts = false,
 }: AddRecordDialogProps) {
 	const [formData, setFormData] = React.useState<Record<string, any>>({});
 	const [costs, setCosts] = React.useState<Record<string, number>>({
@@ -195,10 +197,12 @@ export function AddRecordDialog({
 							))}
 
 							{/* Add Costs Management */}
-							<div className="grid gap-2">
-								<Label className="text-sm font-medium">Project Costs</Label>
-								<CostsDialog costs={costs} onChange={setCosts} />
-							</div>
+							{enableCosts && (
+								<div className="grid gap-2">
+									<Label className="text-sm font-medium">Project Costs</Label>
+									<CostsDialog costs={costs} onChange={setCosts} />
+								</div>
+							)}
 						</div>
 						<div className="flex justify-end mt-4">
 							<Button

@@ -11,12 +11,22 @@ import {
     fetchLeads,
     deleteCompany,
     clearSelectedCompany,
+    updatePersonnel,
+    deletePersonnel,
+    createPersonnel,
+    fetchPersonnelById,
+    fetchCompanyPersonnel,
+    createLead,
+    updateLead,
+    deleteLead,
 } from "@/store/slices/companySlice";
 import {
     createProjectLead,
     deleteProjectLead,
 } from "@/store/slices/projectSlice";
 import { useImageUpload } from './useImageUpload';
+import { CreateLeadRequest, UpdateLeadRequest } from "@/types/company";
+import { CreatePersonnelRequest, UpdatePersonnelRequest } from "@/types/personnel";
 
 export interface CompanyFilters {
     category?: string;
@@ -42,22 +52,24 @@ export const useCompanies = (filters?: CompanyFilters) => {
     const memoizedFilters = useMemo(() => filters, [filters]);
 
     useEffect(() => {
-        if (workspaceid) {
-            dispatch(
-                fetchCompanies({
-                    workspaceId: Number(workspaceid),
-                    search: filters?.search,
-                    category: filters?.category,
-                    page: filters?.page,
-                    limit: filters?.limit
-                })
-            );
-        }
+        if (!workspaceid) return; // Early return if no workspace ID
+
+        dispatch(
+            fetchCompanies({
+                workspaceId: Number(workspaceid),
+                search: filters?.search,
+                category: filters?.category,
+                page: filters?.page,
+                limit: filters?.limit
+            })
+        );
     }, [dispatch, workspaceid, memoizedFilters]);
 
     const fetchCompany = useCallback(
         async (companyId: number) => {
-            if (!workspaceid) throw new Error("No workspace ID available");
+            if (!workspaceid) {
+                throw new Error("No workspace ID available");
+            }
             return dispatch(
                 fetchCompanyById({
                     workspaceId: Number(workspaceid),
@@ -118,35 +130,6 @@ export const useCompanies = (filters?: CompanyFilters) => {
         dispatch(clearSelectedCompany());
     }, [dispatch]);
 
-    const { uploadImage, isUploading: isUploadingLogo } = useImageUpload({
-        bucketName: 'companies',
-        folderPath: 'company-images',
-        maxSizeInMB: 3,
-        allowedFileTypes: ['image/jpeg', 'image/png']
-    });
-
-    const updateCompanyLogo = useCallback(
-        async (companyId: number, file: File) => {
-            try {
-                if (!workspaceid) throw new Error("No workspace ID available");
-                
-                const publicUrl = await uploadImage(file);
-                
-                await updateCompanyDetails(companyId, {
-                    logo: publicUrl
-                });
-
-                alert('Company logo updated successfully');
-                return publicUrl;
-            } catch (error) {
-                const message = error instanceof Error ? error.message : 'Failed to update company logo';
-                alert(message);
-                throw error;
-            }
-        },
-        [workspaceid, uploadImage, updateCompanyDetails]
-    );
-
     return {
         companies,
         selectedCompany,
@@ -158,8 +141,7 @@ export const useCompanies = (filters?: CompanyFilters) => {
         updateCompany: updateCompanyDetails,
         deleteCompany: removeCompany,
         clearCompany,
-        updateCompanyLogo,
-        isUploadingLogo,
+        workspaceid, // Expose workspaceid in the return object
     };
 };
 
@@ -172,51 +154,52 @@ export const useLeads = (filters?: LeadFilters) => {
     );
 
     useEffect(() => {
-        if (workspaceid) {
-            dispatch(
-                fetchLeads({
-                    workspaceId: Number(workspaceid),
-                    status: filters?.status,
-                    companyId: filters?.companyId,
-                    minValue: filters?.minValue,
-                    maxValue: filters?.maxValue
-                })
-            );
-        }
+        if (!workspaceid) return;
+
+        dispatch(
+            fetchLeads({
+                workspaceId: Number(workspaceid),
+                status: filters?.status,
+                companyId: filters?.companyId,
+                minValue: filters?.minValue,
+                maxValue: filters?.maxValue
+            })
+        );
     }, [dispatch, workspaceid, filters]);
 
-    const addLead = useCallback(
-        async (projectId: number, leadId: number) => {
+    const createNewLead = useCallback(
+        async (data: CreateLeadRequest) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
-                createProjectLead({
+                createLead({
                     workspaceId: Number(workspaceid),
-                    data: {
-                        project_id: projectId,
-                        lead_id: leadId
-                    }
+                    data
                 })
             ).unwrap();
         },
         [dispatch, workspaceid]
     );
 
-    const updateStatus = useCallback(
-        async (projectId: number, leadId: number, status: string) => {
+    const updateLeadStatus = useCallback(
+        async (leadId: number, data: UpdateLeadRequest) => {
             if (!workspaceid) throw new Error("No workspace ID available");
-            // Note: This needs to be implemented in the projectSlice
-            throw new Error("updateStatus not implemented");
+            return dispatch(
+                updateLead({
+                    workspaceId: Number(workspaceid),
+                    leadId,
+                    data
+                })
+            ).unwrap();
         },
         [dispatch, workspaceid]
     );
 
     const removeLead = useCallback(
-        async (projectId: number, leadId: number) => {
+        async (leadId: number) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(
-                deleteProjectLead({
+                deleteLead({
                     workspaceId: Number(workspaceid),
-                    projectId,
                     leadId
                 })
             ).unwrap();
@@ -229,9 +212,103 @@ export const useLeads = (filters?: LeadFilters) => {
         loading,
         error,
         totalValue,
-        addLead,
-        updateStatus,
+        createLead: createNewLead,
+        updateLead: updateLeadStatus,
         deleteLead: removeLead,
+        workspaceid,
+    };
+};
+
+export const useCompanyPersonnel = (companyId?: number) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
+    const { personnel, selectedPersonnel, loadingPersonnel, errorPersonnel } = 
+        useSelector((state: RootState) => state.company);
+
+    const fetchCompanyPersonnelList = useCallback(async () => {
+        if (!workspaceid || !companyId) return;
+        
+        try {
+            await dispatch(fetchCompanyPersonnel({ 
+                workspaceId: Number(workspaceid), 
+                companyId 
+            })).unwrap();
+        } catch (error) {
+            console.error('Failed to fetch personnel list:', error);
+        }
+    }, [dispatch, workspaceid, companyId]);
+
+    useEffect(() => {
+        if (workspaceid && companyId) {
+            fetchCompanyPersonnelList();
+        }
+    }, [workspaceid, companyId, fetchCompanyPersonnelList]);
+
+    const fetchPersonnel = useCallback(
+        async (personnelId: number) => {
+            if (!workspaceid) return;
+            return dispatch(
+                fetchPersonnelById({
+                    workspaceId: Number(workspaceid),
+                    personnelId,
+                })
+            ).unwrap();
+        },
+        [dispatch, workspaceid]
+    );
+
+    const addPersonnel = useCallback(
+        async (data: CreatePersonnelRequest) => {
+            if (!workspaceid || !companyId) return;
+            return dispatch(
+                createPersonnel({
+                    workspaceId: Number(workspaceid),
+                    companyId,
+                    data,
+                })
+            ).unwrap();
+        },
+        [dispatch, workspaceid, companyId]
+    );
+
+    const updatePersonnelDetails = useCallback(
+        async (personnelId: number, data: UpdatePersonnelRequest) => {
+            if (!workspaceid) return;
+            return dispatch(
+                updatePersonnel({
+                    workspaceId: Number(workspaceid),
+                    personnelId,
+                    data,
+                })
+            ).unwrap();
+        },
+        [dispatch, workspaceid]
+    );
+
+    const removePersonnel = useCallback(
+        async (personnelId: number) => {
+            if (!workspaceid) return;
+            return dispatch(
+                deletePersonnel({
+                    workspaceId: Number(workspaceid),
+                    personnelId,
+                })
+            ).unwrap();
+        },
+        [dispatch, workspaceid]
+    );
+
+    return {
+        personnel,
+        selectedPersonnel,
+        loading: loadingPersonnel,
+        error: errorPersonnel,
+        fetchPersonnel,
+        addPersonnel,
+        updatePersonnel: updatePersonnelDetails,
+        deletePersonnel: removePersonnel,
+        refetchPersonnel: fetchCompanyPersonnelList
     };
 };
 

@@ -1,22 +1,70 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
 
-interface Personnel {
-    personnelId: number;
+interface PersonnelManager {
+    userId: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    role: string;
+}
+
+interface PersonnelProject {
+    projectId: number;
     name: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+}
+
+interface PersonnelLead {
+    leadId: number;
+    status: string;
+    contractValue: number;
+    createdAt: string | null;
+    projects: PersonnelProject[];
+}
+
+interface PersonnelStatistics {
+    totalLeads: number;
+    activeLeads: number;
+    totalContractValue: number;
+    activeContractValue: number;
+    connectedProjects: number;
+}
+
+interface Personnel {
+    personnelid: number;
+    companyid: number;
+    name: string;
+    status: string;
+    email: string;
+    leadid?: number;
+    managerid?: number;
+    description?: string;
 }
 
 interface Company {
-    companyId: number;
+    companyid: number;
     name: string;
     logo: string | null;
+    workspaceid: number;
+    created_at: string;
     city: string | null;
     product: string | null;
     email: string | null;
     category_group: string | null;
-    created_at: string;
-    managerid: number;
-    personnel: Personnel[];
+    managerid: string | null;
+    personnel: {
+        personnelid: number;
+        companyid: number;
+        name: string;
+        status: string;
+        email: string;
+        description: string | null;
+        leadid: number | null;
+        managerid: string | null;
+    }[];
     activeLeads: number;
     totalContractValue: number;
 }
@@ -27,6 +75,20 @@ interface Lead {
     personnelId: number;
     contractValue: number;
     status: string;
+}
+
+interface CreateLeadRequest {
+    companyId: number;
+    personnelId: number;
+    contractValue: number;
+    status: string;
+}
+
+interface UpdateLeadRequest {
+    status: string;
+    name?: string;
+    contract_value?: number;
+    company_id?: number;
 }
 
 interface CompanyState {
@@ -44,6 +106,10 @@ interface CompanyState {
         active: number;
         closed: number;
     };
+    personnel: Personnel[];
+    selectedPersonnel: Personnel | null;
+    loadingPersonnel: boolean;
+    errorPersonnel: string | null;
 }
 
 const initialState: CompanyState = {
@@ -55,12 +121,16 @@ const initialState: CompanyState = {
     pagination: {
         total: 0,
         page: 1,
-        limit: 10
+        limit: 10,
     },
     totalValue: {
         active: 0,
-        closed: 0
-    }
+        closed: 0,
+    },
+    personnel: [],
+    selectedPersonnel: null,
+    loadingPersonnel: false,
+    errorPersonnel: null,
 };
 
 interface FetchCompaniesParams {
@@ -70,30 +140,84 @@ interface FetchCompaniesParams {
     page?: number;
     limit?: number;
 }
-
-export const fetchCompanies = createAsyncThunk(
+interface CompanyStats {
+    totalLeads: number;
+    activeLeads: number;
+    totalContractValue: number;
+    activeContractValue: number;
+    personnelCount: number;
+}
+interface CompanyListItem {
+    companyid: number;
+    name: string;
+    logo: string | null;
+    workspaceid: number;
+    created_at: string;
+    city: string | null;
+    product: string | null;
+    email: string | null;
+    category_group: string | null;
+    managerid: string | null;
+    personnel: {
+        personnelid: number;
+        companyid: number;
+        name: string;
+        status: string;
+        email: string;
+        description: string | null;
+        leadid: number | null;
+        managerid: string | null;
+    }[];
+    activeLeads: number;
+    totalContractValue: number;
+}
+interface CompanyDetail {
+    companyId: number;
+    workspaceId: number;
+    name: string;
+    logo: string | null;
+    city: string | null;
+    product: string | null;
+    email: string | null;
+    categoryGroup: string | null;
+    createdAt: string;
+    manager: any | null; // Update this type based on manager structure if available
+    personnel: Personnel[];
+    stats: CompanyStats;
+}
+interface FetchCompaniesResponse {
+    companies: CompanyListItem[];
+    total: number;
+    page: number;
+    limit: number;
+}
+export const fetchCompanies = createAsyncThunk<
+    FetchCompaniesResponse,
+    FetchCompaniesParams
+>(
     "company/fetchAll",
-    async ({ workspaceId, search, category, page, limit }: FetchCompaniesParams) => {
+    async ({ workspaceId, search, category, page, limit }) => {
         const params = new URLSearchParams();
-        if (search) params.append('search', search);
-        if (category) params.append('category', category);
-        if (page) params.append('page', page.toString());
-        if (limit) params.append('limit', limit.toString());
+        if (search) params.append("search", search);
+        if (category) params.append("category", category);
+        if (page) params.append("page", page.toString());
+        if (limit) params.append("limit", limit.toString());
 
-        const response = await apiClient.get(
-            `/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ''}`
+        const response = await apiClient.get<FetchCompaniesResponse>(
+            `/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ""}`
         );
         return response.data;
     }
 );
-
-export const fetchCompanyById = createAsyncThunk(
-    "company/fetchOne",
-    async ({ workspaceId, companyId }: { workspaceId: number; companyId: number }) => {
-        const response = await apiClient.get(`/workspaces/${workspaceId}/crm/companies/${companyId}`);
-        return response.data;
-    }
-);
+export const fetchCompanyById = createAsyncThunk<
+    CompanyDetail,
+    { workspaceId: number; companyId: number }
+>("company/fetchOne", async ({ workspaceId, companyId }) => {
+    const response = await apiClient.get<CompanyDetail>(
+        `/workspaces/${workspaceId}/crm/companies/${companyId}`
+    );
+    return response.data;
+});
 
 interface CreateCompanyRequest {
     name: string;
@@ -102,8 +226,17 @@ interface CreateCompanyRequest {
 
 export const createCompany = createAsyncThunk(
     "company/create",
-    async ({ workspaceId, data }: { workspaceId: number; data: CreateCompanyRequest }) => {
-        const response = await apiClient.post(`/workspaces/${workspaceId}/crm/companies`, data);
+    async ({
+        workspaceId,
+        data,
+    }: {
+        workspaceId: number;
+        data: CreateCompanyRequest;
+    }) => {
+        const response = await apiClient.post(
+            `/workspaces/${workspaceId}/crm/companies`,
+            data
+        );
         return response.data;
     }
 );
@@ -120,16 +253,35 @@ interface UpdateCompanyRequest {
 
 export const updateCompany = createAsyncThunk(
     "company/update",
-    async ({ workspaceId, companyId, data }: { workspaceId: number; companyId: number; data: UpdateCompanyRequest }) => {
-        const response = await apiClient.patch(`/workspaces/${workspaceId}/crm/companies/${companyId}`, data);
+    async ({
+        workspaceId,
+        companyId,
+        data,
+    }: {
+        workspaceId: number;
+        companyId: number;
+        data: UpdateCompanyRequest;
+    }) => {
+        const response = await apiClient.patch(
+            `/workspaces/${workspaceId}/crm/companies/${companyId}`,
+            data
+        );
         return response.data;
     }
 );
 
 export const deleteCompany = createAsyncThunk(
     "company/delete",
-    async ({ workspaceId, companyId }: { workspaceId: number; companyId: number }) => {
-        await apiClient.delete(`/workspaces/${workspaceId}/crm/companies/${companyId}`);
+    async ({
+        workspaceId,
+        companyId,
+    }: {
+        workspaceId: number;
+        companyId: number;
+    }) => {
+        await apiClient.delete(
+            `/workspaces/${workspaceId}/crm/companies/${companyId}`
+        );
         return companyId;
     }
 );
@@ -146,15 +298,160 @@ export const fetchLeads = createAsyncThunk(
     "company/fetchLeads",
     async (params: FetchLeadsParams) => {
         const queryParams = new URLSearchParams();
-        if (params.status) queryParams.append('status', params.status);
-        if (params.companyId) queryParams.append('companyId', params.companyId.toString());
-        if (params.minValue !== undefined) queryParams.append('minValue', params.minValue.toString());
-        if (params.maxValue !== undefined) queryParams.append('maxValue', params.maxValue.toString());
+        if (params.status) queryParams.append("status", params.status);
+        if (params.companyId)
+            queryParams.append("companyId", params.companyId.toString());
+        if (params.minValue !== undefined)
+            queryParams.append("minValue", params.minValue.toString());
+        if (params.maxValue !== undefined)
+            queryParams.append("maxValue", params.maxValue.toString());
 
         const response = await apiClient.get(
-            `/workspaces/${params.workspaceId}/crm/leads${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+            `/workspaces/${params.workspaceId}/crm/leads${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
         );
         return response.data;
+    }
+);
+
+export const createLead = createAsyncThunk(
+    "company/createLead",
+    async ({
+        workspaceId,
+        data,
+    }: {
+        workspaceId: number;
+        data: CreateLeadRequest;
+    }) => {
+        const response = await apiClient.post(
+            `/workspaces/${workspaceId}/crm/leads`,
+            data
+        );
+        return response.data;
+    }
+);
+
+export const updateLead = createAsyncThunk(
+    'company/updateLead',
+    async ({ workspaceId, leadId, data }: {
+        workspaceId: number;
+        leadId: number;
+        data: UpdateLeadRequest;
+    }) => {
+        try {
+            const response = await apiClient.patch(
+                `/workspaces/${workspaceId}/crm/leads/${leadId}`,
+                data
+            );
+            return response.data;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+);
+
+export const deleteLead = createAsyncThunk(
+    "company/deleteLead",
+    async ({
+        workspaceId,
+        leadId,
+    }: {
+        workspaceId: number;
+        leadId: number;
+    }) => {
+        await apiClient.delete(
+            `/workspaces/${workspaceId}/crm/leads/${leadId}`
+        );
+        return leadId;
+    }
+);
+
+export const fetchCompanyPersonnel = createAsyncThunk(
+    "company/fetchCompanyPersonnel",
+    async ({
+        workspaceId,
+        companyId,
+    }: {
+        workspaceId: number;
+        companyId: number;
+    }) => {
+        const response = await apiClient.get(
+            `/workspaces/${workspaceId}/crm/companies/${companyId}/personnel`
+        );
+        return response.data;
+    }
+);
+
+export const fetchPersonnelById = createAsyncThunk(
+    "company/fetchPersonnelById",
+    async ({
+        workspaceId,
+        personnelId,
+    }: {
+        workspaceId: number;
+        personnelId: number;
+    }) => {
+        const response = await apiClient.get(
+            `/workspaces/${workspaceId}/crm/personnel/${personnelId}`
+        );
+        return response.data;
+    }
+);
+
+export const createPersonnel = createAsyncThunk(
+    "company/createPersonnel",
+    async ({
+        workspaceId,
+        companyId,
+        data,
+    }: {
+        workspaceId: number;
+        companyId: number;
+        data: Omit<Personnel, "personnelid">;
+    }) => {
+        const response = await apiClient.post(
+            `/workspaces/${workspaceId}/crm/companies/${companyId}/personnel`,
+            {
+                ...data,
+                companyid: companyId,
+            }
+        );
+        return response.data;
+    }
+);
+
+export const updatePersonnel = createAsyncThunk(
+    "company/updatePersonnel",
+    async ({
+        workspaceId,
+        personnelId,
+        data,
+    }: {
+        workspaceId: number;
+        personnelId: number;
+        data: any;
+    }) => {
+        const response = await apiClient.put(
+            `/workspaces/${workspaceId}/crm/personnel/${personnelId}`,
+            data
+        );
+        return response.data;
+    }
+);
+
+export const deletePersonnel = createAsyncThunk(
+    "company/deletePersonnel",
+    async ({
+        workspaceId,
+        personnelId,
+    }: {
+        workspaceId: number;
+        personnelId: number;
+    }) => {
+        await apiClient.delete(
+            `/workspaces/${workspaceId}/crm/personnel/${personnelId}`
+        );
+        return personnelId;
     }
 );
 
@@ -164,6 +461,9 @@ const companySlice = createSlice({
     reducers: {
         clearSelectedCompany: (state) => {
             state.selectedCompany = null;
+        },
+        clearSelectedPersonnel: (state) => {
+            state.selectedPersonnel = null;
         },
     },
     extraReducers: (builder) => {
@@ -179,12 +479,13 @@ const companySlice = createSlice({
                 state.pagination = {
                     total: action.payload.total,
                     page: action.payload.page,
-                    limit: action.payload.limit
+                    limit: action.payload.limit,
                 };
             })
             .addCase(fetchCompanies.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.error.message || "Failed to fetch companies";
+                state.error =
+                    action.error.message || "Failed to fetch companies";
             })
 
             // Fetch Single Company
@@ -200,7 +501,6 @@ const companySlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message || "Failed to fetch company";
             })
-
             // Create Company
             .addCase(createCompany.fulfilled, (state, action) => {
                 state.companies.push(action.payload);
@@ -214,7 +514,10 @@ const companySlice = createSlice({
                 if (index !== -1) {
                     state.companies[index] = action.payload;
                 }
-                if (state.selectedCompany?.companyId === action.payload.companyId) {
+                if (
+                    state.selectedCompany?.companyId ===
+                    action.payload.companyId
+                ) {
                     state.selectedCompany = action.payload;
                 }
             })
@@ -233,9 +536,154 @@ const companySlice = createSlice({
             .addCase(fetchLeads.fulfilled, (state, action) => {
                 state.leads = action.payload.leads;
                 state.totalValue = action.payload.totalValue;
+            })
+
+            // Create Lead
+            .addCase(createLead.fulfilled, (state, action) => {
+                state.leads.push(action.payload);
+                // Update total values
+                if (action.payload.status.toLowerCase() === "active") {
+                    state.totalValue.active += action.payload.contractvalue;
+                } else if (action.payload.status.toLowerCase() === "closed") {
+                    state.totalValue.closed += action.payload.contractvalue;
+                }
+            })
+
+            // Update Lead
+            .addCase(updateLead.fulfilled, (state, action) => {
+                if (!state.leads) {
+                    state.leads = [];
+                    return;
+                }
+
+                const index = state.leads.findIndex(
+                    (lead) => lead.leadId === action.payload.leadId // Make sure property names match
+                );
+
+                if (index !== -1) {
+                    // Adjust total values based on status change
+                    const oldLead = state.leads[index];
+                    if (oldLead.status !== action.payload.status) {
+                        // Update totals only if status changed
+                        if (oldLead.status.toLowerCase() === "active") {
+                            state.totalValue.active -= oldLead.contractValue;
+                        } else if (oldLead.status.toLowerCase() === "completed") {
+                            state.totalValue.closed -= oldLead.contractValue;
+                        }
+
+                        if (action.payload.status.toLowerCase() === "active") {
+                            state.totalValue.active += action.payload.contractValue;
+                        } else if (action.payload.status.toLowerCase() === "completed") {
+                            state.totalValue.closed += action.payload.contractValue;
+                        }
+                    }
+                    state.leads[index] = action.payload;
+                }
+            })
+
+            // Delete Lead
+            .addCase(deleteLead.fulfilled, (state, action) => {
+                const deletedLead = state.leads.find(
+                    (lead) => lead.leadId === action.payload
+                );
+                if (deletedLead) {
+                    // Adjust total values
+                    if (deletedLead.status.toLowerCase() === "active") {
+                        state.totalValue.active -= deletedLead.contractValue;
+                    } else if (deletedLead.status.toLowerCase() === "closed") {
+                        state.totalValue.closed -= deletedLead.contractValue;
+                    }
+                }
+                state.leads = state.leads.filter(
+                    (lead) => lead.leadId !== action.payload
+                );
+            })
+
+            // Personnel reducers
+            .addCase(fetchCompanyPersonnel.pending, (state) => {
+                state.loadingPersonnel = true;
+                state.errorPersonnel = null;
+            })
+            .addCase(fetchCompanyPersonnel.fulfilled, (state, action) => {
+                state.personnel = action.payload;
+                state.loadingPersonnel = false;
+            })
+            .addCase(fetchCompanyPersonnel.rejected, (state, action) => {
+                state.loadingPersonnel = false;
+                state.errorPersonnel =
+                    action.error.message || "Failed to fetch personnel";
+            })
+            .addCase(fetchPersonnelById.pending, (state) => {
+                state.loadingPersonnel = true;
+                state.errorPersonnel = null;
+            })
+            .addCase(fetchPersonnelById.fulfilled, (state, action) => {
+                state.selectedPersonnel = action.payload;
+                state.loadingPersonnel = false;
+            })
+            .addCase(fetchPersonnelById.rejected, (state, action) => {
+                state.loadingPersonnel = false;
+                state.errorPersonnel =
+                    action.error.message || "Failed to fetch personnel";
+            })
+            .addCase(createPersonnel.pending, (state) => {
+                state.loadingPersonnel = true;
+                state.errorPersonnel = null;
+            })
+            .addCase(createPersonnel.fulfilled, (state, action) => {
+                state.personnel.push(action.payload);
+                state.loadingPersonnel = false;
+            })
+            .addCase(createPersonnel.rejected, (state, action) => {
+                state.loadingPersonnel = false;
+                state.errorPersonnel =
+                    action.error.message || "Failed to create personnel";
+            })
+            .addCase(updatePersonnel.pending, (state) => {
+                state.loadingPersonnel = true;
+                state.errorPersonnel = null;
+            })
+            .addCase(updatePersonnel.fulfilled, (state, action) => {
+                const index = state.personnel.findIndex(
+                    (p) => p.personnelid === action.payload.personnelId
+                );
+                if (index !== -1) {
+                    state.personnel[index] = action.payload;
+                }
+                if (
+                    state.selectedPersonnel?.personnelid ===
+                    action.payload.personnelId
+                ) {
+                    state.selectedPersonnel = action.payload;
+                }
+                state.loadingPersonnel = false;
+            })
+            .addCase(updatePersonnel.rejected, (state, action) => {
+                state.loadingPersonnel = false;
+                state.errorPersonnel =
+                    action.error.message || "Failed to update personnel";
+            })
+            .addCase(deletePersonnel.pending, (state) => {
+                state.loadingPersonnel = true;
+                state.errorPersonnel = null;
+            })
+            .addCase(deletePersonnel.fulfilled, (state, action) => {
+                state.personnel = state.personnel.filter(
+                    (p) => p.personnelid !== action.payload
+                );
+                if (state.selectedPersonnel?.personnelid === action.payload) {
+                    state.selectedPersonnel = null;
+                }
+                state.loadingPersonnel = false;
+            })
+            .addCase(deletePersonnel.rejected, (state, action) => {
+                state.loadingPersonnel = false;
+                state.errorPersonnel =
+                    action.error.message || "Failed to delete personnel";
             });
     },
 });
 
-export const { clearSelectedCompany } = companySlice.actions;
+export const { clearSelectedCompany, clearSelectedPersonnel } =
+    companySlice.actions;
 export default companySlice.reducer;

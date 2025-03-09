@@ -16,7 +16,7 @@ interface ImageUploadResult {
 
 export const useImageUpload = ({
   maxSizeInMB = 3,
-  allowedFileTypes = ['image/jpeg', 'image/png'],
+  allowedFileTypes = ['image/jpeg', 'image/png', 'image/svg+xml'], // Added SVG support
   bucketName,
   folderPath,
 }: ImageUploadOptions): ImageUploadResult => {
@@ -29,7 +29,7 @@ export const useImageUpload = ({
     }
 
     if (!allowedFileTypes.includes(file.type)) {
-      throw new Error(`Only ${allowedFileTypes.join(', ')} files are allowed`);
+      throw new Error(`Only ${allowedFileTypes.map(type => type.split('/')[1]).join(', ')} files are allowed`);
     }
   };
 

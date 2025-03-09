@@ -2,17 +2,44 @@ export interface Personnel {
     personnelid: number;
     companyid: number;
     name: string;
-    status: string;
+    status: 'Active' | 'Inactive' | 'Blocked';
     email: string;
+    leadid?: number;
+    managerid?: number;
+    description?: string;
 }
 
 export interface Lead {
-    leadid: number;
-    companyid: number;
+    leadId: number;
+    name: string;
     status: string;
-    contractvalue: number;
-    personnelid: number;
-    workspaceid: number;
+    contractValue: number;
+    createdAt: string;
+    company: {
+        companyId: number;
+        name: string;
+        logo: string;
+        city: string;
+        product: string;
+        email: string;
+        categoryGroup: string | null;
+        createdAt: string | null;
+    };
+    personnel: {
+        personnelId: number;
+        name: string;
+        email: string;
+        status: string;
+        description: string;
+        manager: any | null;
+    };
+    projects: {
+        projectId: number;
+        name: string;
+        status: string;
+        startDate: string;
+        endDate: string;
+    }[];
 }
 
 export interface ProjectCosts {
@@ -43,21 +70,6 @@ export interface Project {
 export interface Manager {
     userId: number;
     name: string;
-}
-
-export interface Company {
-    companyid?: number;
-    companyId?: number;
-    name: string;
-    logo?: string;
-    city?: string;
-    product?: string;
-    email?: string;
-    category_group?: string;
-    workspaceid?: number;
-    managerid?: number;
-    created_at?: string;
-    // ... other fields
 }
 
 export interface StaffMember {
@@ -166,9 +178,9 @@ export interface UpdateCompanyRequest {
 }
 
 export interface CreateLeadRequest {
-    companyid: number;
-    personnelid: number;
-    contractvalue: number;
+    companyId: number;
+    personnelId: number;
+    contractValue: number;
     status: string;
 }
 

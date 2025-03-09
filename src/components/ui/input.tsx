@@ -1,50 +1,54 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Smile } from 'lucide-react'; // Icon for the emoji trigger button
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'; // Import the emoji picker
+import { Smile } from 'lucide-react';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 interface InputProps extends React.ComponentProps<'input'> {
-	onEmojiSelect?: (emoji: string) => void; // Callback for when an emoji is selected
-	enableEmoji?: boolean; // Optional prop to enable/disable emoji functionality
+	onEmojiSelect?: (emoji: string) => void;
+	enableEmoji?: boolean;
+	value?: string;
+	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-	(
-		{ className, type, onEmojiSelect, enableEmoji = true, ...props }, // Default enableEmoji to true
-		ref
-	) => {
+	({ className, type, onEmojiSelect, enableEmoji = true, value, onChange, ...props }, ref) => {
 		const [isEmojiPickerOpen, setIsEmojiPickerOpen] = React.useState(false);
+		const inputRef = (ref as React.MutableRefObject<HTMLInputElement>) || React.useRef<HTMLInputElement>(null);
 
-		// Handle emoji selection
 		const handleEmojiClick = (emojiData: EmojiClickData) => {
 			if (onEmojiSelect) {
-				onEmojiSelect(emojiData.emoji); // Pass the selected emoji to the parent
+				onEmojiSelect(emojiData.emoji);
 			}
 
-			// Use the ref to access the input element and append the emoji
-			if (ref && typeof ref !== 'function') {
-				const inputElement = (ref as React.MutableRefObject<HTMLInputElement>).current;
-				if (inputElement) {
-					const start = inputElement.selectionStart || 0; // Get cursor position
-					const end = inputElement.selectionEnd || 0; // Get cursor position
-					const currentValue = inputElement.value;
+			const input = inputRef.current;
+			if (input) {
+				const start = input.selectionStart || 0;
+				const end = input.selectionEnd || 0;
+				const newValue = (value || input.value).slice(0, start) + emojiData.emoji + (value || input.value).slice(end);
 
-					// Insert the emoji at the cursor position
-					const newValue = currentValue.slice(0, start) + emojiData.emoji + currentValue.slice(end);
-					inputElement.value = newValue;
+				// Create a synthetic event
+				const syntheticEvent = {
+					target: { value: newValue },
+					currentTarget: { value: newValue },
+				} as React.ChangeEvent<HTMLInputElement>;
 
-					// Move the cursor after the inserted emoji
-					inputElement.setSelectionRange(start + emojiData.emoji.length, start + emojiData.emoji.length);
-
-					// Trigger an input event to notify React of the change
-					const event = new Event('input', { bubbles: true });
-					inputElement.dispatchEvent(event);
-
-					inputElement.focus(); // Keep focus on the input field
+				// Call the onChange handler if it exists
+				if (onChange) {
+					onChange(syntheticEvent);
 				}
+
+				// Update the input value directly if it's an uncontrolled component
+				if (value === undefined) {
+					input.value = newValue;
+				}
+
+				// Set cursor position after the inserted emoji
+				requestAnimationFrame(() => {
+					input.setSelectionRange(start + emojiData.emoji.length, start + emojiData.emoji.length);
+				});
 			}
 
-			setIsEmojiPickerOpen(false); // Close the picker
+			setIsEmojiPickerOpen(false);
 		};
 
 		return (
@@ -55,10 +59,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 						'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
 						className
 					)}
-					ref={ref}
+					ref={inputRef}
+					value={value}
+					onChange={onChange}
 					{...props}
 				/>
-				{/* Render emoji trigger button only if enableEmoji is true */}
 				{enableEmoji && (
 					<>
 						<button
@@ -68,13 +73,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 							aria-label="Open emoji picker">
 							<Smile size={16} />
 						</button>
-						{/* Emoji picker */}
 						{isEmojiPickerOpen && (
 							<div className="absolute right-0 z-10 mt-2">
 								<EmojiPicker
 									onEmojiClick={handleEmojiClick}
 									lazyLoadEmojis={true}
-									previewConfig={{ showPreview: false }} // Disable the preview section
+									previewConfig={{ showPreview: false }}
 								/>
 							</div>
 						)}
