@@ -14,6 +14,8 @@ export interface PersonnelProject {
     status: string;
     startDate: string;
     endDate: string;
+    startdate?: string; // for backward compatibility
+    enddate?: string; // for backward compatibility
 }
 
 export interface PersonnelLead {
@@ -43,14 +45,22 @@ export interface PersonnelCompany {
 export interface Personnel {
     personnelId: number;
     name: string;
-    email: string | null;
+    email: string;
     status: string;
-    description: string | null;
+    description?: string;
     createdAt: string | null;
-    manager: Manager | null;
-    company: PersonnelCompany;
+    manager?: {
+        userId: string;
+        email: string;
+        status: string;
+        role: string;
+    };
+    company?: {
+        companyId: number;
+        name: string;
+        logo?: string;
+    };
     leads: PersonnelLead[];
-    statistics: PersonnelStatistics;
 }
 
 export interface CreatePersonnelRequest {
@@ -63,6 +73,17 @@ export interface CreatePersonnelRequest {
 }
 
 export interface UpdatePersonnelRequest {
+    workspaceid?: number;
+    personnelid?: number;
+    name?: string;
+    email?: string;
+    status?: string;
+    description?: string;
+}
+
+export interface EditedPersonnel {
+    name?: string;
+    email?: string;
     status?: string;
     description?: string;
 }

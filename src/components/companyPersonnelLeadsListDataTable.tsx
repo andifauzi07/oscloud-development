@@ -18,12 +18,13 @@ export interface Lead {
 export const leadsColumns = [
 	{
 		header: () => <h1 className="pl-8">ID</h1>,
-		accessorKey: 'id',
-		cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.id}</h1>,
+		accessorKey: 'leadId',
+		cell: ({ row }: any) => <h1 className="py-2 pl-8">{row.original.id}</h1>,
 	},
 	{
 		header: 'Contract Name',
-		accessorKey: 'projectName',
+		accessorKey: 'name',
+		cell: ({ row }: any) => <span>{row.original.name || `Lead ${row.original.id}`}</span>,
 	},
 	{
 		header: 'Manager',
@@ -42,22 +43,30 @@ export const leadsColumns = [
 		accessorKey: 'status',
 	},
 	{
-		header: 'Added At',
-		accessorKey: 'startDate',
+		header: 'Start Date',
+		accessorKey: 'createdAt',
+        cell: ({ row }: any) => {
+            const project = row.original.createdAt || row.original.createdat || row.original.created_at
+            return <span>{project?.split('T')[0] || 'No start date'}</span>;
+        },
 	},
 	{
 		header: 'Contract Value',
-		accessorKey: 'value',
+		accessorKey: 'contractValue',
+		cell: ({ row }: any) => (
+			<span>
+				{row.original.contractValue?.toLocaleString()}
+			</span>
+		),
 	},
 	{
 		header: '',
 		id: 'actions',
-		accessorKey: 'actions', // Use 'id' as the accessorKey for actions
 		cell: () => (
-			<div className="w-full flex justify-end">
+			<div className="flex justify-end w-full">
 				<Button
 					variant="outline"
-					className="border-b-0 border-t-0 border-r-0">
+					className="border-t-0 border-b-0 border-r-0">
 					View
 				</Button>
 			</div>

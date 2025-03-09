@@ -11,116 +11,205 @@ import { leadsColumns } from "@/components/companyPersonnelLeadsListDataTable";
 import AdvancedFilterPopover from "@/components/search/advanced-search";
 import { KanbanColumnTypes, Lead } from "@/components/kanban/types";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
-import { PersonnelLead } from "@/types/personnel";
+import { PersonnelLead, UpdatePersonnelRequest } from "@/types/personnel";
 import { usePersonnel } from "@/hooks/usePersonnel";
 import { useCompanies } from "@/hooks/useCompany";
 import { useProject } from "@/hooks/useProject";
+import { toast } from "sonner";
+import { useUserData } from "@/hooks/useUserData";
+import { projectColumns } from "@/config/columnSettings";
 import ScheduleTable from "@/components/EmployeTimeLine";
+import { InfoSection, TitleWrapper } from "@/components/wrapperElement";
 
 export const Route = createFileRoute(
     "/company/$companyId/companyPersonnel/$companyPersonnelId/"
 )({
-    component: RouteComponent,
+    component: CompanyPersonnelDetailsPage,
 });
 
-const projectColumns = [
-    { header: "Project Name", accessorKey: "name" },
-    { header: "Status", accessorKey: "status" },
-    { header: "Start Date", accessorKey: "startDate" },
-    { header: "End Date", accessorKey: "endDate" },
-];
-
-function RouteComponent() {
+function CompanyPersonnelDetailsPage() {
     const { companyId, companyPersonnelId } = useParams({ strict: false });
-    const [advancedSearchFilter] = useState("");
+    const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
 
-    // Fetch company data
-    const { selectedCompany: company, fetchCompany } = useCompanies();
+    const { 
+        personnel,
+        loading,
+        error,
+        updatePersonnel,
+        fetchPersonnel
+    } = usePersonnel(Number(companyPersonnelId));
 
-    // Fetch personnel data using the new hook
-    const { personnel, loading, error, updatePersonnel, fetchPersonnel } =
-        usePersonnel(Number(companyPersonnelId));
-
-    const { addProject } = useProject();
-
-    useEffect(() => {
-        if (companyId) fetchCompany(Number(companyId));
-    }, [companyId, fetchCompany]);
-
-    // Kanban data transformations
-    const transformLeadsToKanbanFormat = (
-        apiLeads: PersonnelLead[]
-    ): Lead[] => {
-        return apiLeads.map((lead) => ({
-            id: lead.leadId.toString(),
-            company: company?.name || "",
-            personnel: personnel?.name || "",
-            title: lead.name || `Lead ${lead.leadId}`,
-            addedOn: lead.createdAt || new Date().toISOString(),
-            manager: personnel?.manager?.email || "Unassigned",
-            contractValue: `${lead.contractValue.toLocaleString()} USD`,
-            status: lead.status.toLowerCase(),
-        }));
-    };
-
+    const { company } = useCompanies(Number(companyId));
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedPersonnel, setEditedPersonnel] = useState<EditedPersonnel>({});
     const [personnelLeads, setPersonnelLeads] = useState<Lead[]>([]);
 
     useEffect(() => {
         if (personnel?.leads) {
-            setPersonnelLeads(transformLeadsToKanbanFormat(personnel.leads));
+            const transformedLeads = personnel.leads.map((lead) => ({
+                id: lead.leadId.toString(),
+                company: company?.name || "",
+                personnel: personnel?.name || "",
+                title: lead.name || `Lead ${lead.leadId}`,
+                addedOn: lead.createdAt || new Date().toISOString(),
+                manager: personnel?.manager?.email || "Unassigned",
+                contractValue: `${lead.contractValue?.toLocaleString() || 0} USD`,
+                status: lead.status.toLowerCase(),
+            }));
+            setPersonnelLeads(transformedLeads);
         }
-    }, [personnel]);
+    }, [personnel, company]);
 
-    // Kanban columns configuration
     const kanbanColumns: KanbanColumnTypes[] = [
         {
             id: "active",
             title: "Active",
             color: "bg-blue-500",
-            leads: personnelLeads.filter((lead) => lead.status === "active"),
+            leads: personnelLeads.filter((lead) => lead.status === "active") || [],
         },
         {
             id: "pending",
             title: "Pending",
-            color: "bg-green-500",
-            leads: personnelLeads.filter((lead) => lead.status === "pending"),
+            color: "bg-yellow-500",
+            leads: personnelLeads.filter((lead) => lead.status === "pending") || [],
         },
         {
             id: "completed",
             title: "Completed",
-            color: "bg-yellow-500",
-            leads: personnelLeads.filter((lead) => lead.status === "completed"),
+            color: "bg-green-500",
+            leads: personnelLeads.filter((lead) => lead.status === "completed") || [],
         },
     ];
 
     const handleColumnUpdate = async (updatedColumns: KanbanColumnTypes[]) => {
         try {
-            const allLeads = updatedColumns.flatMap((column) => column.leads);
+            if (!updatedColumns) return;
+            
+            const allLeads = updatedColumns.reduce<Lead[]>((acc, column) => {
+                if (column.leads) {
+                    return [...acc, ...column.leads];
+                }
+                return acc;
+            }, []);
+            
             setPersonnelLeads(allLeads);
-            // Implement the update logic here
             await fetchPersonnel();
         } catch (error) {
             console.error("Update failed:", error);
+            toast.error("Failed to update leads");
+        }
+    };
+    const handleValueChange = (key: string, value: string) => {
+        setEditedPersonnel((prev: any) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    const handleProfileSave = async () => {
+        try {
+            if (!Object.keys(editedPersonnel).length) {
+                toast.error("No changes to save");
+                return;
+            }
+
+            const updateData: UpdatePersonnelRequest = {
+                workspaceid: Number(workspaceid),
+                personnelid: Number(companyPersonnelId),
+            };
+
+            // Only include changed fields
+            Object.entries(editedPersonnel).forEach(([key, value]) => {
+                if (value !== personnel?.[key as keyof typeof personnel]) {
+                    updateData[key as keyof UpdatePersonnelRequest] = value;
+                }
+            });
+
+            if (Object.keys(updateData).length === 2) { // Only has workspaceid and personnelid
+                toast.error("No changes detected");
+                return;
+            }
+
+            await updatePersonnel(updateData);
+            await fetchPersonnel(); // Refresh the data after update
+
+            setIsEditing(false);
+            setEditedPersonnel({});
+            toast.success("Personnel updated successfully");
+        } catch (error: any) {
+            console.error("Error updating personnel:", error);
+            toast.error(error?.message || "Failed to update personnel");
         }
     };
 
-    const handleCreateProject = async (leadId: number, data: any) => {
-        try {
-            await addProject(leadId, {
-                name: data.name,
-                status: data.status,
-                startDate: data.startDate,
-                endDate: data.endDate,
-            });
-            await fetchPersonnel();
-        } catch (error) {
-            console.error("Project creation failed:", error);
-        }
+    const handleCancel = () => {
+        setIsEditing(false);
+        setEditedPersonnel({});
     };
+
+    const basicInfo = [
+        {
+            label: "Name",
+            value: editedPersonnel.name || personnel?.name || "-",
+            key: "name",
+        },
+        {
+            label: "Email",
+            value: editedPersonnel.email || personnel?.email || "-",
+            key: "email",
+        },
+        {
+            label: "Status",
+            value: editedPersonnel.status || personnel?.status || "-",
+            key: "status",
+            type: "select",
+            options: [
+                { label: "Active", value: "Active" },
+                { label: "Inactive", value: "Inactive" },
+            ],
+        },
+        {
+            label: "Description",
+            value: editedPersonnel.description || personnel?.description || "-",
+            key: "description",
+            type: "textarea",
+        },
+    ];
+
+    const managerInfo = [
+        {
+            label: "Manager",
+            value: personnel?.manager?.email || "-",
+            key: "manager",
+            nonEditable: true,
+        },
+        {
+            label: "Company",
+            value: personnel?.company?.name || "-",
+            key: "company",
+            nonEditable: true,
+        },
+    ];
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
     if (!personnel) return <div>No personnel found</div>;
+
+    const getProjectsFromLeads = () => {
+        if (!personnel?.leads) return [];
+        
+        return personnel.leads.reduce<PersonnelProject[]>((acc, lead) => {
+            if (lead.projects && Array.isArray(lead.projects)) {
+                return [...acc, ...lead.projects.map(project => ({
+                    ...project,
+                    startDate: project.startDate || project.startdate,
+                    endDate: project.endDate || project.enddate,
+                }))];
+            }
+            return acc;
+        }, []);
+    };
 
     return (
         <div className="flex-1 h-full">
@@ -145,19 +234,38 @@ function RouteComponent() {
             </div>
 
             {/* Personnel Name */}
-            <div className="flex items-center justify-start bg-white border border-l-0 px-9 min-h-14">
-                <h2 className="text-base font-semibold">
-                    {personnel?.name || "Loading..."}
-                </h2>
-            </div>
 
             {/* Edit Button */}
-            <div className="flex justify-end flex-none w-full bg-white">
-                <Button className="w-1/2 h-10 text-black bg-transparent border-l border-r md:w-20">
-                    EDIT
-                </Button>
-            </div>
+            <TitleWrapper>
+                <h2>{personnel?.name}</h2>
+            </TitleWrapper>
 
+            <div className="border-b">
+                <div className="flex justify-end flex-none w-full bg-white">
+                    {isEditing ?
+                        <>
+                            <Button
+                                onClick={handleProfileSave}
+                                className="w-20 h-10 text-black bg-transparent border-l border-r link"
+                            >
+                                SAVE
+                            </Button>
+                            <Button
+                                onClick={handleCancel}
+                                className="w-20 h-10 text-black bg-transparent border-r link"
+                            >
+                                CANCEL
+                            </Button>
+                        </>
+                    :   <Button
+                            onClick={() => setIsEditing(true)}
+                            className="w-20 h-10 text-black bg-transparent border-l border-r link"
+                        >
+                            EDIT
+                        </Button>
+                    }
+                </div>
+            </div>
             {/* Tabs Section */}
             <Tabs
                 defaultValue="profile"
@@ -188,44 +296,18 @@ function RouteComponent() {
 
                 {/* Profile Tab */}
                 <TabsContent value="profile" className="m-0 overflow-x-hidden">
-                    <div className="flex flex-col text-xs">
-                        <div className="flex justify-start w-full pl-4 border-t">
-                            <div className="flex justify-start p-4 w-1/8 gap-14">
-                                <h1>Name</h1>
-                            </div>
-                            <div className="flex justify-start p-4 w-1/8 gap-14">
-                                <h1>{company?.name || "Loading company..."}</h1>
-                            </div>
-                        </div>
-                        <div className="flex justify-start w-full pl-4 border-t">
-                            <div className="flex justify-start p-4 w-1/8 gap-14">
-                                <h1>Email</h1>
-                            </div>
-                            <div className="flex justify-start p-4 w-1/8 gap-14">
-                                <h1>
-                                    {personnel?.email || "No email available"}
-                                </h1>
-                            </div>
-                        </div>
-                        <div className="flex justify-start w-full pl-4 border-t">
-                            <div className="flex justify-start p-4 w-1/8 gap-14">
-                                <h1>Manager</h1>
-                            </div>
-                            <div className="flex justify-start p-4 w-1/8 gap-14">
-                                <h1>
-                                    {personnel?.manager?.name ||
-                                        personnel?.manager?.email ||
-                                        (company?.managerid ?
-                                            "Manager " + company.managerid
-                                        :   "Unassigned")}
-                                </h1>
-                            </div>
-                        </div>
-                        <div className="flex justify-start w-full h-24 pl-4 border-t border-b">
-                            <p className="px-4 py-4">
-                                {personnel?.description || "No description"}
-                            </p>
-                        </div>
+                    <div className="flex flex-col text-xs border-t">
+                        <InfoSection
+                            items={basicInfo}
+                            title="Basic Information"
+                            isEditing={isEditing}
+                            onValueChange={handleValueChange}
+                        />
+                        <InfoSection
+                            items={managerInfo}
+                            title="Management Information"
+                            isEditing={false}
+                        />
                     </div>
                 </TabsContent>
 
@@ -339,47 +421,31 @@ function RouteComponent() {
                         </div>
 
                         <Tabs defaultValue="list">
-                        <TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
-									<TabsTrigger
-										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
-										value="list">
-										List View
-									</TabsTrigger>
-									<TabsTrigger
-										className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
-										value="timeline">
-										Timeline
-									</TabsTrigger>
-								</TabsList>
+                            <TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
+                                <TabsTrigger
+                                    className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
+                                    value="list"
+                                >
+                                    List View
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
+                                    value="timeline"
+                                >
+                                    Timeline
+                                </TabsTrigger>
+                            </TabsList>
                             <TabsContent value="list" className="m-0">
                                 <DataTable
                                     columns={projectColumns}
-                                    data={
-                                        personnel?.leads.flatMap((lead: any) =>
-                                            lead.projects.map(
-                                                (project: any) => ({
-                                                    ...project,
-                                                    startDate:
-                                                        project.startDate ||
-                                                        project.startdate,
-                                                    endDate:
-                                                        project.endDate ||
-                                                        project.enddate,
-                                                })
-                                            )
-                                        ) || []
-                                    }
+                                    data={getProjectsFromLeads()}
                                     loading={loading}
                                 />
                             </TabsContent>
 
                             <TabsContent value="timeline" className="m-0">
                                 <ScheduleTable
-                                    projects={
-                                        personnel?.leads.flatMap(
-                                            (lead: any) => lead.projects
-                                        ) || []
-                                    }
+                                    projects={getProjectsFromLeads()}
                                     // onCreateProject={handleCreateProject}
                                 />
                             </TabsContent>
