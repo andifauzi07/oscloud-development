@@ -9,7 +9,10 @@ import {
     updateEmployee,
     deleteEmployee,
     fetchEmployeeCategories,
-    clearSelectedEmployee
+    clearSelectedEmployee,
+    createEmployeeCategory,
+    updateEmployeeCategory,
+    deleteEmployeeCategory
 } from "@/store/slices/employeeSlice";
 import { Employee, EmployeeFilters } from "@/types/employee";
 import { useImageUpload } from "@/hooks/useImageUpload";
@@ -156,9 +159,41 @@ export const useEmployeeCategories = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
-    const { categories, loading, error } = useSelector(
-        (state: RootState) => state.employee
-    );
+    const { categories } = useSelector((state: RootState) => state.employee);
+
+    const addCategory = useCallback(async (data: {
+        categoryName: string;
+        parentCategoryId?: number;
+    }) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(
+            createEmployeeCategory({ workspaceId: Number(workspaceid), data })
+        ).unwrap();
+    }, [dispatch, workspaceid]);
+
+    const updateCategory = useCallback(async (categoryId: number, data: {
+        categoryName?: string;
+        parentCategoryId?: number;
+    }) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(
+            updateEmployeeCategory({
+                workspaceId: Number(workspaceid),
+                categoryId,
+                data
+            })
+        ).unwrap();
+    }, [dispatch, workspaceid]);
+
+    const removeCategory = useCallback(async (categoryId: number) => {
+        if (!workspaceid) throw new Error("No workspace ID available");
+        return dispatch(
+            deleteEmployeeCategory({
+                workspaceId: Number(workspaceid),
+                categoryId
+            })
+        ).unwrap();
+    }, [dispatch, workspaceid]);
 
     useEffect(() => {
         if (workspaceid) {
@@ -181,8 +216,9 @@ export const useEmployeeCategories = () => {
 
     return {
         categories,
-        loading,
-        error,
-        getCategoryById
+        getCategoryById,
+        addCategory,
+        updateCategory,
+        removeCategory
     };
 };

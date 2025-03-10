@@ -100,6 +100,54 @@ export const fetchEmployeeCategories = createAsyncThunk(
     }
 );
 
+export const createEmployeeCategory = createAsyncThunk(
+    "employee/createCategory",
+    async ({ workspaceId, data }: { 
+        workspaceId: number; 
+        data: { 
+            categoryName: string;
+            parentCategoryId?: number;
+        } 
+    }) => {
+        const response = await apiClient.post(
+            `/workspaces/${workspaceId}/employees/employee-categories`,
+            data
+        );
+        return response.data.category;
+    }
+);
+
+export const updateEmployeeCategory = createAsyncThunk(
+    "employee/updateCategory",
+    async ({ workspaceId, categoryId, data }: { 
+        workspaceId: number;
+        categoryId: number;
+        data: {
+            categoryName?: string;
+            parentCategoryId?: number;
+        }
+    }) => {
+        const response = await apiClient.put(
+            `/workspaces/${workspaceId}/employees/employee-categories/${categoryId}`,
+            data
+        );
+        return response.data.category;
+    }
+);
+
+export const deleteEmployeeCategory = createAsyncThunk(
+    "employee/deleteCategory",
+    async ({ workspaceId, categoryId }: { 
+        workspaceId: number;
+        categoryId: number;
+    }) => {
+        await apiClient.delete(
+            `/workspaces/${workspaceId}/employees/employee-categories/${categoryId}`
+        );
+        return categoryId;
+    }
+);
+
 const employeeSlice = createSlice({
     name: "employee",
     initialState,
@@ -164,6 +212,25 @@ const employeeSlice = createSlice({
             // Fetch categories
             .addCase(fetchEmployeeCategories.fulfilled, (state, action) => {
                 state.categories = action.payload;
+            })
+            // Create category
+            .addCase(createEmployeeCategory.fulfilled, (state, action) => {
+                state.categories.push(action.payload);
+            })
+            // Update category
+            .addCase(updateEmployeeCategory.fulfilled, (state, action) => {
+                const index = state.categories.findIndex(
+                    cat => cat.categoryid === action.payload.categoryid
+                );
+                if (index !== -1) {
+                    state.categories[index] = action.payload;
+                }
+            })
+            // Delete category
+            .addCase(deleteEmployeeCategory.fulfilled, (state, action) => {
+                state.categories = state.categories.filter(
+                    cat => cat.categoryid !== action.payload
+                );
             });
     },
 });
