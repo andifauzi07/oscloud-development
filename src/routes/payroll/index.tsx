@@ -12,6 +12,8 @@ import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { Employee } from '@/types/payroll';
 import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
 import { useCreatePayment, usePayrollEmployees, useUpdatePaymentStatus } from '@/hooks/usePayroll';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEmployeeCategories } from '@/hooks/useEmployee';
 
 export const Route = createFileRoute('/payroll/')({
 	component: RouteComponent,
@@ -57,6 +59,44 @@ const columns: ColumnDef<PayrollRow>[] = [
 	{
 		accessorKey: 'employeeCategory',
 		header: 'Employee Category',
+		cell: ({ row, table }) => {
+			// Get editable state from table meta
+			const isEditable = table.options.meta?.editable as boolean;
+			
+			if (isEditable) {
+				return (
+					<Select
+						value={row.original.employeeCategory}
+						onValueChange={(value) => {
+							// Get the current data from table
+							const currentData = table.options.data as PayrollRow[];
+							const updatedData = [...currentData];
+							const rowIndex = updatedData.findIndex(item => item.id === row.original.id);
+							if (rowIndex !== -1) {
+								updatedData[rowIndex] = {
+									...updatedData[rowIndex],
+									employeeCategory: value
+								};
+								// Update through table meta
+								table.options.meta?.updateData?.(updatedData);
+							}
+						}}
+					>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder="Select category" />
+						</SelectTrigger>
+						<SelectContent>
+							{(table.options.meta?.employeeCategoryOptions as Array<{ value: string; label: string }>)?.map((option: { value: string; label: string }) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				);
+			}
+			return <div>{row.original.employeeCategory}</div>;
+		},
 	},
 	{
 		accessorKey: 'hourlyRateA',
@@ -134,12 +174,44 @@ function RouteComponent() {
 	const workspaceid = currentUser?.workspaceid;
 	const [searchKeyword, setSearchKeyword] = useState('');
 	const [editable, setEditable] = useState(false);
+	const [localData, setLocalData] = useState<PayrollRow[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const { categories, loading: loadingCategories } = useEmployeeCategories();
+	const [employeeCategoryOptions, setEmployeeCategoryOptions] = useState<Array<{ value: string; label: string }>>([]);
+
+	// Add this useEffect to transform categories into options
+	useEffect(() => {
+		if (categories) {
+			const options = categories.map((category) => ({
+				value: category.categoryid.toString(),
+				label: category.categoryname,
+			}));
+			setEmployeeCategoryOptions(options);
+		}
+	}, [categories]);
 
 	// Using the payroll hooks with proper typing
-	const { employees, loading, error } = usePayrollEmployees();
-	console.log(employees);
+	const { employees, loading: employeesLoading } = usePayrollEmployees();
 	const { createPayment, loading: creatingPayment } = useCreatePayment();
 	const { updatePaymentStatus, loading: updatingStatus } = useUpdatePaymentStatus();
+
+	// Update local data when employees change
+	useEffect(() => {
+		if (employees) {
+			const tableData: PayrollRow[] = employees.map((employee) => ({
+				image: employee.profileimage || '',
+				id: employee.employeeId?.toString() || '',
+				name: employee.name || 'Unknown',
+				employeeCategory: employee.employeecategory?.categoryname || 'Uncategorized',
+				hourlyRateA: employee.rates?.find((r: any) => r.type === 'A')?.ratevalue?.toFixed(2) || '-',
+				hourlyRateB: employee.rates?.find((r: any) => r.type === 'B')?.ratevalue?.toFixed(2) || '-',
+				totalPayment: `¥${employee.totalPayment?.toFixed(2) || '0.00'}`,
+				numberOfPayment: employee.numberOfPayments?.toString() || '0',
+				joinedOn: employee.joineddate ? new Date(employee.joineddate).toISOString().split('T')[0] : 'Unknown',
+			}));
+			setLocalData(tableData);
+		}
+	}, [employees]);
 
 	const handleAddRecord = async (data: Partial<Employee>) => {
 		try {
@@ -160,41 +232,53 @@ function RouteComponent() {
 		}
 	};
 
-	const handleSaveEdits = useCallback(
-		async (updatedData: Partial<PayrollRow>[]) => {
-			try {
-				await Promise.all(
-					updatedData.map(async (row) => {
-						if (row.id) {
-							await updatePaymentStatus(Number(row.id), 'Updated');
-						}
-					})
-				);
+	const handleUpdateData = useCallback(async (updatedData: PayrollRow[]) => {
+		setIsLoading(true);
+		try {
+			const changes = updatedData.filter((newRow) => {
+				const originalRow = localData.find(row => row.id === newRow.id);
+				return originalRow && JSON.stringify(originalRow) !== JSON.stringify(newRow);
+			});
+
+			if (changes.length === 0) {
 				setEditable(false);
-			} catch (error) {
-				console.error('Failed to save updates:', error);
+				return;
 			}
-		},
-		[updatingStatus]
-	);
+
+			await Promise.all(
+				changes.map(async (row) => {
+					const employee = employees?.find(e => e.employeeId?.toString() === row.id);
+					if (!employee) return;
+
+					const updatePayload = {
+						employeecategory: {
+							categoryname: row.employeeCategory
+						},
+						// Add other fields that need updating
+					};
+
+					await updatePaymentStatus(Number(row.id), {
+						status: 'Updated',
+						data: updatePayload
+					});
+				})
+			);
+
+			setLocalData(updatedData);
+			setEditable(false);
+		} catch (error) {
+			console.error('Failed to save updates:', error);
+			// Optionally show error toast/alert here
+		} finally {
+			setIsLoading(false);
+		}
+	}, [localData, employees, updatePaymentStatus]);
 
 	// Enhanced filtering with type safety
 	const filteredEmployees =
 		employees?.filter(
 			(employee) => employee.name?.toLowerCase().includes(searchKeyword.toLowerCase()) || employee.employeeId?.toString().includes(searchKeyword) || employee.employeecategory?.categoryname?.toLowerCase().includes(searchKeyword)
 		) || [];
-
-	const tableData: PayrollRow[] = filteredEmployees.map((employee) => ({
-		image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		id: employee.employeeId?.toString() || '',
-		name: employee.name || 'Unknown',
-		employeeCategory: employee.employeecategory?.categoryname || 'Uncategorized',
-		hourlyRateA: employee.rates?.find((r: any) => r.type === 'A')?.ratevalue?.toFixed(2) || '-',
-		hourlyRateB: employee.rates?.find((r: any) => r.type === 'B')?.ratevalue?.toFixed(2) || '-',
-		totalPayment: `¥${employee.totalPayment?.toFixed(2) || '0.00'}`,
-		numberOfPayment: employee.numberOfPayments?.toString() || '0',
-		joinedOn: employee.joineddate ? new Date(employee.joineddate).toISOString().split('T')[0] : 'Unknown',
-	}));
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -259,6 +343,11 @@ function RouteComponent() {
 							columns={columns}
 							onSave={handleAddRecord}
 							nonEditableColumns={['image', 'id', 'joinedOn', 'numberOfPayment', 'action']}
+							selectFields={{
+								employeeCategory: {
+									options: employeeCategoryOptions,
+								},
+							}}
 						/>
 						<Button
 							onClick={() => setEditable((prev) => !prev)}
@@ -268,11 +357,17 @@ function RouteComponent() {
 					</div>
 					<DataTable
 						columns={columns}
-						data={tableData}
-						loading={loading || creatingPayment || updatingStatus}
+						data={localData}
+						loading={employeesLoading || creatingPayment || updatingStatus || isLoading}
 						isEditable={editable}
 						nonEditableColumns={['image', 'joinedOn', 'numberOfPayment', 'id', 'action']}
-						onSave={handleSaveEdits}
+						onSave={handleUpdateData}
+						meta={{
+							editable,
+							isLoading,
+							employeeCategoryOptions,
+							updateData: handleUpdateData
+						}}
 						// error={error?.toString()}
 					/>
 				</TabsContent>

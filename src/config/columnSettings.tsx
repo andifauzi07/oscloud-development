@@ -183,7 +183,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
         date_created: new Date().toISOString(),
         status: "shown",
         order: 1,
-        cell: ({ row }) => <h1 className="pl-8">{row.original.name}</h1>,
+        cell: ({ row }) => <h1 className="">{row.original.name}</h1>,
     },
     {
         accessorKey: "managerid", // Changed from "manager.name" to match Project type
