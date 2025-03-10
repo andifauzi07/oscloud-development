@@ -56,14 +56,14 @@ export function KanbanColumnContainer({ column, onAddCard, onEditCard, onDeleteC
 					variant="ghost"
 					size="icon"
 					onClick={() => onAddCard(id)}
-					className="h-8 w-8">
-					<Plus className="h-4 w-4" />
+					className="w-8 h-8">
+					<Plus className="w-4 h-4" />
 					<span className="sr-only">Add card</span>
 				</Button>
 			</div>
 
 			<div className="mb-2">
-				<div className="flex justify-between items-center">
+				<div className="flex items-center justify-between">
 					<span className="text-sm">Contract value :</span>
 					<span className="font-medium">{formattedTotalValue}</span>
 				</div>

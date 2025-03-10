@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import type { KanbanBoardProps, KanbanColumnTypes, Lead } from './types';
+import type { KanbanColumnTypes, Lead } from './types';
 import { KanbanColumnContainer } from './kanban-column';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -12,10 +12,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCompanies } from '@/hooks/useCompany';
 import { SelectField } from '@/components/select-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Company {
     companyid: number;
     name: string;
+}
+
+interface Personnel {
+    personnelid: number;
+    name: string;
+    email: string;
 }
 
 interface KanbanBoardProps {
@@ -124,7 +131,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 		sourceLeads.splice(sourceLeads.indexOf(draggedLead), 1);
 
 		// Add to target column
-		targetLeads.push(updatedLead);
+		const validStatuses = ['Active', 'Pending', 'Completed'] as const;
+		if (validStatuses.includes(targetColumn.title as any)) {
+			targetLeads.push({
+				...updatedLead,
+				status: targetColumn.title as 'Active' | 'Pending' | 'Completed'
+			});
+		}
 
 		const updatedColumns = columns.map(col => {
 			if (col.id === sourceColumn.id) {
@@ -161,19 +174,23 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 		setCurrentColumnId(columnId);
 		setIsEditMode(false);
 
-		// Find the column to get its id for the status
-		const column = columns.find((col) => col.id === columnId);
+		if (!currentCompany || !currentPersonnel) {
+			alert("Company or personnel information not found");
+			return;
+		}
 
 		setCurrentLead({
 			id: uuidv4(),
-			companyId: undefined,  // Add this line
-			company: '',
-			personnel: '',
+			companyId: currentCompany.companyid,
+			company: currentCompany.name,
+			personnel: currentPersonnel.email, // Set default personnel
 			title: '',
 			addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-			manager: '',
+			manager: currentCompany.manager?.email || '',
 			contractValue: '',
-			status: 'Pending'
+			status: (['Active', 'Pending', 'Completed'].includes(columns.find(col => col.id === columnId)?.title || '') 
+				? columns.find(col => col.id === columnId)?.title as 'Active' | 'Pending' | 'Completed' 
+				: 'Pending')
 		});
 
 		setIsCardDialogOpen(true);
@@ -181,10 +198,20 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
 	const handleEditCard = (lead: Lead) => {
 		const columnId = columns.find((col) => col.leads.some((l) => l.id === lead.id))?.id || null;
+		
+		if (!currentCompany) {
+			alert("Company information not found");
+			return;
+		}
 
+		setCurrentLead({
+			...lead,
+			companyId: currentCompany.companyid,
+			company: currentCompany.name
+		});
+		
 		setCurrentColumnId(columnId);
 		setIsEditMode(true);
-		setCurrentLead(lead);
 		setIsCardDialogOpen(true);
 	};
 
@@ -202,16 +229,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 		updateColumns(newColumns);
 	};
 
-	const handleCompanyChange = (value: string) => {
-		const selectedCompany = companies?.find(c => c.companyid.toString() === value);
-		if (selectedCompany) {
-			setCurrentLead(prev => ({
-				...prev,
-				companyId: selectedCompany.companyid,
-				company: selectedCompany.name
-			}));
-		}
-	};
+	// handleCompanyChange function removed
 
 	const saveCard = async () => {
 		if (!currentColumnId || !currentLead) {
@@ -219,15 +237,25 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 			return;
 		}
 
+		// Get the current company from the URL
+		const currentCompanyId = Number(window.location.pathname.split('/').pop());
+		const currentCompany = companies?.find(c => c.companyid === currentCompanyId);
+
+		if (!currentCompany) {
+			alert("Company information not found");
+			return;
+		}
+
 		// Validate required fields
-		if (!currentLead.companyId || !currentLead.title) {
-			alert("Please fill in all required fields (Company and Title)");
+		if (!currentLead.title) {
+			alert("Please fill in the Title field");
 			return;
 		}
 
 		setIsSaving(true);
 
 		try {
+			const validStatuses = ['Active', 'Pending', 'Completed'] as const;
 			const updatedColumns = columns.map((col) => {
 				if (isEditMode) {
 					const hasExistingCard = col.leads.some(lead => lead.id === currentLead.id);
@@ -245,33 +273,36 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 								lead.id === currentLead.id 
 									? { 
 										...currentLead,
-										status: col.title,
-										company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+										status: col.title as 'Active' | 'Pending' | 'Completed',
+										companyId: currentCompany.companyid,
+										company: currentCompany.name
 									}
 									: lead
 							)
 						};
 					}
 					
-					if (col.id === currentColumnId) {
+					if (col.id === currentColumnId && validStatuses.includes(col.title as any)) {
 						return {
 							...col,
 							leads: [...col.leads, { 
 								...currentLead,
-								status: col.title,
-								company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+								status: col.title as 'Active' | 'Pending' | 'Completed',
+								companyId: currentCompany.companyid,
+								company: currentCompany.name
 							}]
 						};
 					}
 				} else {
-					if (col.id === currentColumnId) {
+					if (col.id === currentColumnId && validStatuses.includes(col.title as any)) {
 						return {
 							...col,
 							leads: [...col.leads, { 
 								...currentLead,
-								status: col.title,
+								status: col.title as 'Active' | 'Pending' | 'Completed',
 								addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-								company: companies?.find(c => c.companyid === currentLead.companyId)?.name || ''
+								companyId: currentCompany.companyid,
+								company: currentCompany.name
 							}]
 						};
 					}
@@ -307,6 +338,24 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 	};
 
 	const { companies } = useCompanies();
+	
+	// Get current company ID and personnel ID from URL
+	const pathSegments = window.location.pathname.split('/');
+	const companyIdIndex = pathSegments.indexOf('company') + 1;
+	const currentCompanyId = Number(pathSegments[companyIdIndex]);
+	const currentPersonnelId = Number(pathSegments[pathSegments.length - 1]);
+	
+	// Get current company
+	const currentCompany = useMemo(() => 
+		companies?.find(c => c.companyid === currentCompanyId),
+		[companies, currentCompanyId]
+	);
+
+	// Get current personnel
+	const currentPersonnel = useMemo(() => 
+		currentCompany?.personnel?.find(p => p.personnelid === currentPersonnelId),
+		[currentCompany, currentPersonnelId]
+	);
 
 	// Transform companies data for SelectField
 	const companyOptions = useMemo(() => 
@@ -315,6 +364,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 			label: company.name
 		})) || [], 
 	[companies]);
+
+	// Transform personnel data for the select
+	const personnelOptions = useMemo(() => 
+		currentCompany?.personnel?.map((person) => ({
+			value: person.personnelid.toString(),
+			label: person.name
+		})) || [], 
+	[currentCompany]);
+
+	const handlePersonnelChange = (value: string) => {
+		setCurrentLead(prev => ({
+			...prev,
+			personnel: value
+		}));
+	};
 
 	return (
 		<div className="p-4">
@@ -409,27 +473,28 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{isEditMode ? 'Edit Card' : 'Add New Card'}</DialogTitle>
-						<DialogDescription>{isEditMode ? 'Edit the details of this card.' : 'Add a new card to this column.'}</DialogDescription>
+						<DialogDescription>
+							{isEditMode ? 'Edit the details of this card.' : 'Add a new card to this column.'}
+						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid grid-cols-2 gap-4">
 							<div className="grid gap-2">
-								<SelectField
-									label="Company"
-									options={companyOptions}
-									value={currentLead.companyId?.toString() || ''}
-									onChange={handleCompanyChange}
-									disabled={isSaving}
+								<Label>Company</Label>
+								<Input
+									type="text"
+									value={currentLead.company}
+									disabled={true}
 									className="w-full"
 								/>
 							</div>
 							<div className="grid gap-2">
-								<Label htmlFor="personnel">Personnel</Label>
+								<Label>Personnel</Label>
 								<Input
-									id="personnel"
-									value={currentLead.personnel}
+									type="text"
+									value={currentPersonnel?.name || ''}
 									disabled={true}
-									className="bg-gray-100"
+									className="w-full"
 								/>
 							</div>
 						</div>
