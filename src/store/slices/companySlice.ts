@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import apiClient from "@/api/apiClient";
+import { Company, CompaniesResponse } from '@/types/company';
 
 interface PersonnelManager {
     userId: string;
@@ -44,31 +45,6 @@ interface Personnel {
     description?: string;
 }
 
-interface Company {
-    companyid: number;
-    name: string;
-    logo: string | null;
-    workspaceid: number;
-    created_at: string;
-    city: string | null;
-    product: string | null;
-    email: string | null;
-    category_group: string | null;
-    managerid: string | null;
-    personnel: {
-        personnelid: number;
-        companyid: number;
-        name: string;
-        status: string;
-        email: string;
-        description: string | null;
-        leadid: number | null;
-        managerid: string | null;
-    }[];
-    activeLeads: number;
-    totalContractValue: number;
-}
-
 interface Lead {
     leadId: number;
     companyId: number;
@@ -89,6 +65,22 @@ interface UpdateLeadRequest {
     name?: string;
     contract_value?: number;
     company_id?: number;
+}
+
+interface CreatePersonnelRequest {
+    name: string;
+    email: string;
+    status: 'Active' | 'Inactive' | 'Blocked';
+    description?: string;
+    managerId: string;  // Changed to string to match the API
+}
+
+interface UpdatePersonnelRequest {
+    name?: string;
+    email?: string;
+    status?: 'Active' | 'Inactive' | 'Blocked';
+    description?: string;
+    managerId?: string;  // Changed to string to match the API
 }
 
 interface CompanyState {
@@ -191,29 +183,23 @@ interface FetchCompaniesResponse {
     page: number;
     limit: number;
 }
-export const fetchCompanies = createAsyncThunk<
-    FetchCompaniesResponse,
-    FetchCompaniesParams
->(
+export const fetchCompanies = createAsyncThunk<CompaniesResponse, FetchCompaniesParams>(
     "company/fetchAll",
     async ({ workspaceId, search, category, page, limit }) => {
-        const params = new URLSearchParams();
-        if (search) params.append("search", search);
-        if (category) params.append("category", category);
-        if (page) params.append("page", page.toString());
-        if (limit) params.append("limit", limit.toString());
-
-        const response = await apiClient.get<FetchCompaniesResponse>(
-            `/workspaces/${workspaceId}/crm/companies${params.toString() ? `?${params.toString()}` : ""}`
+        const response = await apiClient.get(
+            `/workspaces/${workspaceId}/crm/companies`,
+            {
+                params: { search, category, page, limit }
+            }
         );
         return response.data;
     }
 );
 export const fetchCompanyById = createAsyncThunk<
-    CompanyDetail,
+    Company,
     { workspaceId: number; companyId: number }
 >("company/fetchOne", async ({ workspaceId, companyId }) => {
-    const response = await apiClient.get<CompanyDetail>(
+    const response = await apiClient.get<Company>(
         `/workspaces/${workspaceId}/crm/companies/${companyId}`
     );
     return response.data;
@@ -245,7 +231,7 @@ interface UpdateCompanyRequest {
     city?: string;
     product?: string;
     email?: string;
-    category_group?: string;
+    categoryGroup?: string;
     logo?: string;
     name?: string;
     personnel?: { name: string }[];
@@ -398,23 +384,19 @@ export const fetchPersonnelById = createAsyncThunk(
     }
 );
 
-export const createPersonnel = createAsyncThunk(
+// Update the interface for create personnel payload
+interface CreatePersonnelPayload {
+    workspaceId: number;
+    companyId: number;
+    data: CreatePersonnelRequest;
+}
+
+export const createPersonnel = createAsyncThunk<Personnel, CreatePersonnelPayload>(
     "company/createPersonnel",
-    async ({
-        workspaceId,
-        companyId,
-        data,
-    }: {
-        workspaceId: number;
-        companyId: number;
-        data: Omit<Personnel, "personnelid">;
-    }) => {
+    async ({ workspaceId, companyId, data }) => {
         const response = await apiClient.post(
             `/workspaces/${workspaceId}/crm/companies/${companyId}/personnel`,
-            {
-                ...data,
-                companyid: companyId,
-            }
+            data
         );
         return response.data;
     }
@@ -425,13 +407,13 @@ export const updatePersonnel = createAsyncThunk(
     async ({
         workspaceId,
         personnelId,
-        data,
+        data
     }: {
         workspaceId: number;
         personnelId: number;
-        data: any;
+        data: UpdatePersonnelRequest;
     }) => {
-        const response = await apiClient.put(
+        const response = await apiClient.patch(
             `/workspaces/${workspaceId}/crm/personnel/${personnelId}`,
             data
         );
@@ -508,26 +490,24 @@ const companySlice = createSlice({
 
             // Update Company
             .addCase(updateCompany.fulfilled, (state, action) => {
+                const updatedCompany = action.payload as Company;
                 const index = state.companies.findIndex(
-                    (company) => company.companyId === action.payload.companyId
+                    (company) => company.companyid === updatedCompany.companyid
                 );
                 if (index !== -1) {
-                    state.companies[index] = action.payload;
+                    state.companies[index] = updatedCompany;
                 }
-                if (
-                    state.selectedCompany?.companyId ===
-                    action.payload.companyId
-                ) {
-                    state.selectedCompany = action.payload;
+                if (state.selectedCompany?.companyid === updatedCompany.companyid) {
+                    state.selectedCompany = updatedCompany;
                 }
             })
 
             // Delete Company
             .addCase(deleteCompany.fulfilled, (state, action) => {
                 state.companies = state.companies.filter(
-                    (company) => company.companyId !== action.payload
+                    (company) => company.companyid !== action.payload
                 );
-                if (state.selectedCompany?.companyId === action.payload) {
+                if (state.selectedCompany?.companyid === action.payload) {
                     state.selectedCompany = null;
                 }
             })

@@ -60,7 +60,7 @@ function RouteComponent() {
                 name: data.name,
                 email: data.email,
                 status: data.status,
-                managerid: currentUser.userid,
+                managerId: currentUser.userid, 
                 description: data.description || "",
             });
 
@@ -88,7 +88,7 @@ function RouteComponent() {
                             return;
                         }
 
-                        // Create the update payload according to your API structure
+                        // Create the update payload according API structure
                         const data = {
                             name: person.name,
                             email: person.email,
@@ -142,22 +142,19 @@ function RouteComponent() {
     const data: PersonnelData[] =
         personnel?.map((person) => {
             return {
-                id: person.personnelid,
+                id: person.personnelId, // Changed from personnelid
                 name: person.name,
                 email: person.email || "N/A",
-                manager: person.app_user?.email || "Unassigned",
-                // Since we only have one lead per personnel in the current data structure
-                activeLeads: person.lead?.status === "Active" ? 1 : 0,
-                closedLeads: person.lead?.status === "Completed" ? 1 : 0,
+                manager: person.manager.email || "Unassigned", // Changed from app_user
+                // Calculate active and closed leads from the leads array
+                activeLeads: person.leads.filter(lead => lead.status === "Active").length,
+                closedLeads: person.leads.filter(lead => lead.status === "Completed").length,
                 status: person.status,
-                addedAt:
-                    person.company?.created_at ?
-                        format(
-                            new Date(person.company.created_at),
-                            "yyyy-MM-dd"
-                        )
-                    :   "N/A",
-                company: person.company,
+                addedAt: person.createdAt ? 
+                    format(new Date(person.createdAt), "yyyy-MM-dd")
+                    : "N/A",
+                // If you need company information, you'll need to add it to the API response
+                // or fetch it separately
             };
         }) || [];
 

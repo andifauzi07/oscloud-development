@@ -1,6 +1,6 @@
 import { CellContext } from "@tanstack/react-table";
 import { BaseColumnSetting } from "@/types/table";
-import { CompanyDisplay, Project, ProjectDisplay } from "@/types/company";
+import { Company, Project, ProjectDisplay } from "@/types/company";
 import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ const CompanyLogoCell = memo(({ row }: { row: any }) => (
 ));
 CompanyLogoCell.displayName = "CompanyLogoCell";
 
-export const defaultCompanyColumnSettings: BaseColumnSetting<CompanyDisplay>[] =
+export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] =
     [
         {
             accessorKey: "logo",
@@ -29,7 +29,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<CompanyDisplay>[] =
             date_created: new Date().toISOString(),
             status: "shown",
             order: 1,
-            cell: ({ row }: CellContext<CompanyDisplay, any>) => (
+            cell: ({ row }: CellContext<Company, any>) => (
                 <CompanyLogoCell row={row} />
             ),
         },
@@ -59,7 +59,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<CompanyDisplay>[] =
             date_created: new Date().toISOString(),
             status: "shown",
             order: 4,
-            cell: ({ row }: CellContext<CompanyDisplay, any>) => (
+            cell: ({ row }: CellContext<Company, any>) => (
                 <div className="flex items-center justify-start h-full">
                     {row.original.personnel?.length}
                 </div>
@@ -84,7 +84,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<CompanyDisplay>[] =
             order: 6,
         },
         {
-            accessorKey: "created_at", // Type assertion
+            accessorKey: "createdAt", // Type assertion
             header: "Created at",
             label: "Created at",
             type: "date",
@@ -135,7 +135,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<CompanyDisplay>[] =
             date_created: new Date().toISOString(),
             status: "shown",
             order: 12,
-            cell: ({ row }: CellContext<CompanyDisplay, any>) => (
+            cell: ({ row }: CellContext<Company, any>) => (
                 <Link
                     to={`/company/$companyId`}
                     params={{
@@ -278,7 +278,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
         },
     },
     {
-        accessorKey: "projectid",
+        accessorKey: "detail",
         header: '',
         label: '',
         type: "text",

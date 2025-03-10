@@ -13,7 +13,7 @@ import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { useCompanies } from '@/hooks/useCompany';
 import useDebounce from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
-import { Company, CreateCompanyRequest, CompanyDisplay, UpdateCompanyRequest, CompanyUpdate } from '@/types/company';
+import { Company, CreateCompanyRequest, UpdateCompanyRequest, CompanyUpdate } from '@/types/company';
 import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { defaultCompanyColumnSettings } from '@/config/columnSettings';
 
@@ -21,7 +21,7 @@ export const Route = createFileRoute('/company/')({
 	component: RouteComponent,
 });
 
-const defaultCellRenderer = ({ getValue }: CellContext<CompanyDisplay, any>) => {
+const defaultCellRenderer = ({ getValue }: CellContext<Company, any>) => {
 	const value = getValue();
 	if (value === null || value === undefined) {
 		return <span className="text-xs whitespace-nowrap">-</span>;
@@ -66,11 +66,11 @@ function RouteComponent() {
 	const [isEditable, setIsEditable] = useState(false);
 	const filters = useMemo(() => ({ category: '' }), []);
 	const { companies, loading, addCompany, updateCompany } = useCompanies(filters); // This is the companies data
-	const { settings, saveSettings, reorderColumns } = useColumnSettings<CompanyDisplay>({
+	const { settings, saveSettings, reorderColumns } = useColumnSettings<Company>({
 		storageKey: 'companyColumnSettings',
 		defaultSettings: defaultCompanyColumnSettings,
 	});
-	const columns = useMemo<ColumnDef<CompanyDisplay, any>[]>(() => {
+	const columns = useMemo<ColumnDef<Company, any>[]>(() => {
 		return settings
 			.filter((setting) => setting.status === 'shown')
 			.sort((a, b) => a.order - b.order)
@@ -87,20 +87,45 @@ function RouteComponent() {
 				};
 			});
 	}, [settings]);
-	console.log(columns);
+
+	const transformedCompanies = useMemo(() => {
+		return companies.map((company: any) => ({
+			companyid: company.companyid,
+			name: company.name,
+			logo: company.logo,
+			email: company.email,
+			city: company.city,
+			product: company.product,
+			category_group: company.category_group,
+			created_at: company.created_at,
+			managerid: company.managerid, // Keep as string, don't convert to number
+			workspaceid: company.workspaceid,
+			personnel: company.personnel.map((p: any) => ({
+				...p,
+				status: p.status as 'Active' | 'Inactive' | 'Blocked',
+				managerid: p.managerid // Keep as string here too
+			})),
+			activeLeads: company.activeLeads || 0,
+			totalContractValue: company.totalContractValue || 0,
+			detail: company.detail || {}
+		}));
+	}, [companies]);
 
 	const filteredCompanies = useMemo(() => {
-		return companies.filter((company) => {
+		return transformedCompanies.filter((company) => {
 			if (!statusFilter) return true;
 			return true;
 		});
-	}, [companies, statusFilter]);
+	}, [transformedCompanies, statusFilter]);
 
 	const handleAddRecord = useCallback(
-		async (data: Partial<CompanyDisplay>) => {
+		async (data: Partial<Company>) => {
 			try {
 				if (!data.name) {
 					throw new Error('Company name is required');
+				}
+				if (!data.managerid) {
+					throw new Error('Manager ID is required');
 				}
 
 				const newCompanyRequest: CreateCompanyRequest = {
@@ -110,7 +135,7 @@ function RouteComponent() {
 					product: data.product || '',
 					email: data.email || '',
 					category_group: data.category_group || '',
-					managerid: Number(data.managerid) || 1,
+					managerid: data.managerid,  // Now we know it's not null/undefined
 					personnel: [],
 				};
 
@@ -127,34 +152,32 @@ function RouteComponent() {
 		async (updatedData: Partial<Company>[]) => {
 			try {
 				const updatePromises = updatedData.map(async (company) => {
-					const companyId = company.companyId || company.companyid;
+					const companyId = company.companyid;
 					if (!companyId) {
 						throw new Error(`Company ID is required for updates (Company: ${company.name || 'unknown'})`);
 					}
 
-					// Create update payload with only modified fields
 					const updatePayload: CompanyUpdate = {};
 					if (company.name !== undefined) updatePayload.name = company.name;
-					if (company.logo !== undefined) updatePayload.logo = company.logo;
-					if (company.city !== undefined) updatePayload.city = company.city;
-					if (company.product !== undefined) updatePayload.product = company.product;
-					if (company.email !== undefined) updatePayload.email = company.email;
-					if (company.category_group !== undefined) updatePayload.category_group = company.category_group;
-					if (company.managerid !== undefined) updatePayload.managerid = company.managerid;
+					if (company.logo !== undefined) updatePayload.logo = company.logo || undefined;
+					if (company.city !== undefined) updatePayload.city = company.city || undefined;
+					if (company.product !== undefined) updatePayload.product = company.product || undefined;
+					if (company.email !== undefined) updatePayload.email = company.email || undefined;
+					if (company.category_group !== undefined) updatePayload.categoryGroup = company.category_group || undefined;
+					if (company.managerid !== undefined) updatePayload.managerId = company.managerid; // Keep as string
 
-					// Only proceed if there are actual changes
 					if (Object.keys(updatePayload).length === 0) {
 						return Promise.resolve();
 					}
 
-					return updateCompany(Number(companyId), updatePayload);
+					return updateCompany(companyId, updatePayload);
 				});
 
 				await Promise.all(updatePromises);
 				setIsEditable(false);
 				alert('Companies updated successfully');
 			} catch (error: any) {
-				alert('Failed to save updates:' + error);
+				alert('Failed to save updates: ' + error);
 			}
 		},
 		[updateCompany]

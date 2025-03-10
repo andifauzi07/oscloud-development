@@ -1,3 +1,4 @@
+// Personnel interface
 export interface Personnel {
     personnelid: number;
     companyid: number;
@@ -5,10 +6,13 @@ export interface Personnel {
     status: 'Active' | 'Inactive' | 'Blocked';
     email: string;
     leadid?: number;
-    managerid?: number;
+    managerid?: string;  // Changed to string to match the API
     description?: string;
+    detail?: any;
+    actions?: any;
 }
 
+// Lead interface
 export interface Lead {
     leadId: number;
     name: string;
@@ -55,12 +59,13 @@ export interface ProjectCosts {
     transport_cost: number;
 }
 
+// Project interface
 export interface Project {
     projectid: number;
     name: string;
     startdate: string;
     enddate: string;
-    managerid: number;
+    managerid: string;  // Changed to string to match the API
     workspaceid: number;
     companyid: number;
     status: string;
@@ -68,7 +73,7 @@ export interface Project {
 }
 
 export interface Manager {
-    userId: number;
+    userId: string;
     name: string;
 }
 
@@ -90,7 +95,7 @@ export interface ProjectDisplay {
     name: string;
     startdate: string;
     enddate: string;
-    managerid: number;
+    managerid: string;  // Changed to string to match the API
     workspaceid: number;
     companyid: number;
     status: string;
@@ -100,6 +105,8 @@ export interface ProjectDisplay {
     assignedStaff: StaffMember[];
     connectedPersonnel: any[]; // Define type if needed
     financials: Financials;
+    detail: any;
+    actions: any;
 }
 
 export interface ProjectResponse {
@@ -109,38 +116,83 @@ export interface ProjectResponse {
     limit: number;
 }
 
+export interface CompanyLead {
+    leadId: number;
+    contractValue: string | number;  // Can be either string or number
+}
+
+export interface CompanyPersonnel {
+    personnelid: number;
+    companyid: number;
+    name: string;
+    status: 'Active' | 'Inactive' | 'Blocked';
+    email: string;
+    description?: string;
+    leadid?: number;
+    managerid: string;  // Changed to string to match the API
+}
+
+export interface CompanyManager {
+    userId: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    role: string;
+    image: string | null;
+    phoneNumber: string | null;
+}
+
+export interface CompanyStats {
+    totalLeads: number;
+    activeLeads: number;
+    totalContractValue: number;
+    activeContractValue: number;
+    personnelCount: number;
+}
+
+// Company Response interface
+export interface CompanyResponse {
+    companyId: number;
+    workspaceId: number;
+    name: string;
+    logo: string | null;
+    city: string | null;
+    product: string | null;
+    email: string | null;
+    categoryGroup: string | null;
+    createdAt: string;
+    manager: CompanyManager | null;
+    personnel: CompanyPersonnel[];
+    stats: CompanyStats;
+}
+
+// For internal state management (if needed)
 export interface Company {
     companyid: number;
     name: string;
-    logo: string;
+    logo: string | null;
     workspaceid: number;
-    created_at: string;
-    managerid: number;
-    city: string;
-    product: string;
-    email: string;
-    category_group: string;
-    personnel?: Personnel[];
-    projects?: Project[];
-    leads?: Lead[];
+    createdAt?: string;
+    city: string | null;
+    product: string | null;
+    email: string | null;
+    category_group: string | null;
+    managerid: string | null;
+    personnel: CompanyPersonnel[];
+    activeLeads: number;
+    totalContractValue: number;
+    detail?: any;
+    manager?: CompanyManager | null
 }
 
-// For display purposes in the UI
-export interface CompanyDisplay {
-    companyid: number;
-    name: string;
+export interface CompanyUpdate {
+    name?: string;
     logo?: string;
-    email?: string;
     city?: string;
     product?: string;
-    category_group?: string;
-    created_at?: string;
-    managerid?: number;
-    workspaceid?: number;
-    personnel?: Personnel[];
-    activeLeads?: number;
-    totalContractValue?: number;
-    detail: any;
+    email?: string;
+    categoryGroup?: string;
+    managerId?: string | null;
 }
 
 // API Response interfaces
@@ -164,8 +216,8 @@ export interface CreateCompanyRequest {
     product: string;
     email: string;
     category_group: string;
-    managerid: number;
-    personnel: never[];  // Empty array with no type
+    managerid: string;  // Keep as required string
+    personnel: never[];
 }
 
 export interface UpdateCompanyRequest {
@@ -193,11 +245,8 @@ export type CompanyId = {
     companyid?: number;
 }
 
-export interface Company extends CompanyId {
-    name: string;
-    logo: string;
-    // ... other fields
-}
+// Remove or comment out the duplicate Company interface that extends CompanyId
+// export interface Company extends CompanyId { ... }
 
 export interface CompanyUpdateResponse {
     companyId: number;
@@ -207,7 +256,7 @@ export interface CompanyUpdateResponse {
     product?: string;
     email?: string;
     category_group?: string;
-    managerid?: number;
+    managerid?: string;
 }
 
 export interface CompanyUpdate {
@@ -217,5 +266,12 @@ export interface CompanyUpdate {
     product?: string;
     email?: string;
     category_group?: string;
-    managerid?: number;
+    managerid?: string;  // Changed to string to match the API
+}
+
+export interface CompaniesResponse {
+    companies: Company[];
+    total: number;
+    page: number;
+    limit: number;
 }

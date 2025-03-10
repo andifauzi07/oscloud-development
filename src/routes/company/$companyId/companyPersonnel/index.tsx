@@ -27,6 +27,7 @@ function RouteComponent() {
 				email: data.email,
 				status: data.status,
 				description: data.description,
+				managerId: data.managerId,
 			});
 
 			// Refresh the data after successful addition

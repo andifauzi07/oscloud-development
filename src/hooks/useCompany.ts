@@ -100,6 +100,7 @@ export const useCompanies = (filters?: CompanyFilters) => {
             email?: string;
             category_group?: string;
             logo?: string;
+            name?: string;
         }) => {
             if (!workspaceid) throw new Error("No workspace ID available");
             return dispatch(

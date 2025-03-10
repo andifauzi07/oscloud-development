@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MenuList from '@/components/menuList';
 import { useEffect, useState } from 'react';
-import { Company } from '@/types/company';
+import { Company, CompanyUpdate } from '@/types/company';
 import { useCompanies } from '@/hooks/useCompany';
 import { supabase } from '@/backend/supabase/supabaseClient';
 import Loading from '@/components/Loading';
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/company/$companyId/')({
 function CompanyDetail() {
 	const { companyId } = useParams({ strict: false });
 	const [isEditing, setIsEditing] = useState(false);
-	const [editedCompany, setEditedCompany] = useState<Partial<Company>>({});
+	const [editedCompany, setEditedCompany] = useState<CompanyUpdate>({});
 	const location = useLocation();
 	const isCurrentPath = location.pathname === `/company/${companyId}`;
 
@@ -34,8 +34,12 @@ function CompanyDetail() {
 	useEffect(() => {
 		if (companyId) {
 			fetchCompany(Number(companyId));
+			console.log('Edited Logo URL:', selectedCompany?.logo);
 		}
 	}, [companyId, fetchCompany]);
+
+	useEffect(() => {
+	}, [selectedCompany?.logo, editedCompany.logo]);
 
 	const handleValueChange = (key: string, value: string) => {
 		setEditedCompany((prev) => ({
@@ -51,15 +55,16 @@ function CompanyDetail() {
 			const file = e.target.files[0];
 			const imgUrl = await uploadImage(file);
 
-			if (!selectedCompany?.companyId) {
+			if (!selectedCompany?.companyid) {
 				alert('Company ID not found');
 				return;
 			}
 
-			await updateCompany(selectedCompany.companyId, {
-				...editedCompany,
-				logo: imgUrl,
-			});
+			const updatePayload: CompanyUpdate = {
+				logo: imgUrl
+			};
+
+			await updateCompany(selectedCompany.companyid, updatePayload);
 
 			alert('Logo updated successfully');
 			setEditedCompany((prev) => ({ ...prev, logo: imgUrl }));
@@ -76,12 +81,29 @@ function CompanyDetail() {
 				return;
 			}
 
-			if (!selectedCompany?.companyId) {
+			if (!selectedCompany?.companyid) {
 				alert('Company ID is missing');
 				return;
 			}
 
-			await updateCompany(selectedCompany.companyId, editedCompany);
+			const updatePayload: CompanyUpdate = {
+				name: editedCompany.name,
+				logo: editedCompany.logo,
+				city: editedCompany.city,
+				product: editedCompany.product,
+				email: editedCompany.email,
+				categoryGroup: editedCompany.category_group,  // Keep as category_group
+				managerId: editedCompany.managerid,  // Keep as string for now
+			};
+
+			// Remove undefined properties
+			Object.keys(updatePayload).forEach(key => {
+				if (updatePayload[key as keyof CompanyUpdate] === undefined) {
+					delete updatePayload[key as keyof CompanyUpdate];
+				}
+			});
+
+			await updateCompany(selectedCompany.companyid, updatePayload);
 
 			setIsEditing(false);
 			setEditedCompany({});
@@ -125,7 +147,7 @@ function CompanyDetail() {
 		},
 		{
 			label: 'Created Date',
-			value: selectedCompany.created_at || '',
+			value: selectedCompany.createdAt?.split("T")[0] || '',
 			nonEditable: true,
 		},
 		{
@@ -147,8 +169,8 @@ function CompanyDetail() {
 
 	const managerInfo = [
 		{
-			label: 'Manager ID',
-			value: selectedCompany.managerid?.toString() || '',
+			label: 'Manager',
+			value: selectedCompany.managerid || selectedCompany.manager?.userId || 'Unassigned',  // Keep as string for now
 			nonEditable: true,
 		},
 	];
@@ -206,9 +228,19 @@ function CompanyDetail() {
 							<figure className="w-full h-[400px] relative">
 								<img
 									className="object-cover w-full h-full"
-									src={editedCompany.logo || '/placeholder.png'}
+									src={editedCompany.logo || selectedCompany?.logo || '/placeholder.png'}
 									alt="Company Profile"
+									onError={(e) => {
+										const target = e.target as HTMLImageElement;
+										target.src = '/placeholder.png';
+										target.onerror = null; // Prevent infinite loop if placeholder also fails
+									}}
 								/>
+								{isUploading && (
+									<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+										<Loading />
+									</div>
+								)}
 							</figure>
 							<div className="flex flex-col items-center p-4 bg-white">
 								<h4 className="py-3">Edit profile image</h4>

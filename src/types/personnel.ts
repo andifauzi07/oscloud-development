@@ -1,11 +1,13 @@
 import { Company, Project } from "./company";
 
-export interface Manager {
+export interface PersonnelManager {
     userId: string;
     email: string;
-    firstName: string | null;
-    lastName: string | null;
+    status: string;
     role: string;
+    image: string | null;
+    phoneNumber: string | null;
+    backupEmail: string | null;
 }
 
 export interface PersonnelProject {
@@ -14,16 +16,14 @@ export interface PersonnelProject {
     status: string;
     startDate: string;
     endDate: string;
-    startdate?: string; // for backward compatibility
-    enddate?: string; // for backward compatibility
 }
 
 export interface PersonnelLead {
     leadId: number;
-    name: string | null;
+    name: string;
     status: string;
     contractValue: number;
-    createdAt: string | null;
+    createdAt: string;
     projects: PersonnelProject[];
 }
 
@@ -43,67 +43,33 @@ export interface PersonnelCompany {
 }
 
 export interface Personnel {
-    personnelid: number;
-    companyid: number;
+    personnelId: number;
     name: string;
-    status: 'Active' | 'Inactive';
-    email: string | null;
+    email: string;
+    status: 'Active' | 'Inactive' | 'Blocked';
     description: string | null;
-    leadid: number | null;
-    managerid: string;
-    company: {
-        city: string | null;
-        logo: string;
-        name: string;
-        email: string | null;
-        product: string | null;
-        companyid: number;
-        managerid: string;
-        created_at: string;
-        workspaceid: number;
-        category_group: string | null;
-    };
-    lead: {
-        name: string;
-        leadid: number;
-        status: string;
-        companyid: number;
-        created_at: string;
-        personnelid: number;
-        workspaceid: number;
-        contractvalue: number;
-        company: {
-            // ... same as above company interface
-        };
-    } | null;
-    app_user: {
-        role: string;
-        email: string;
-        image: string;
-        status: string;
-        userid: string;
-        backup_email: string | null;
-        phone_number: string | null;
-    };
+    manager: PersonnelManager;
+    leads: PersonnelLead[];
+    statistics: PersonnelStatistics;
+    createdAt: string | null;
 }
 
 export interface CreatePersonnelRequest {
     name: string;
     email: string;
-    status: string;
-    description: string;
-    companyid: number;
-    leadid?: number;
-    managerid?: string;
+    status: 'Active' | 'Inactive' | 'Blocked';
+    description?: string;
+    managerId: string;
 }
 
 export interface UpdatePersonnelRequest {
-    workspaceid?: number;
-    personnelid?: number;
+    workspaceId?: number;
+    personnelId?: number;
     name?: string;
     email?: string;
-    status?: string;
+    status?: 'Active' | 'Inactive' | 'Blocked';
     description?: string;
+    managerId?: string;
 }
 
 export interface EditedPersonnel {
@@ -122,5 +88,47 @@ export interface PersonnelData {
     closedLeads: number;
     status: string;
     addedAt: string;
-    company?: Personnel['company'];
+    company?: PersonnelCompany;
+}
+
+export interface CompanyManager {
+    userId: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    role: string;
+    image: string | null;
+    phoneNumber: string | null;
+}
+
+export interface CompanyPersonnel {
+    personnelId: number;
+    name: string;
+    email: string;
+    status: 'Active' | 'Inactive' | 'Blocked';
+    description: string | null;
+    createdAt: string | null;
+}
+
+export interface CompanyStats {
+    totalLeads: number;
+    activeLeads: number;
+    totalContractValue: number;
+    activeContractValue: number;
+    personnelCount: number;
+}
+
+export interface CompanyResponse {
+    companyId: number;
+    workspaceId: number;
+    name: string;
+    logo: string;
+    city: string;
+    product: string;
+    email: string;
+    categoryGroup: string | null;
+    createdAt: string;
+    manager: CompanyManager;
+    personnel: CompanyPersonnel[];
+    stats: CompanyStats;
 }
