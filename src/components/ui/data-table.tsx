@@ -399,7 +399,7 @@ export function DataTable<TData, TValue>({
 										{headerGroup.headers.map((header) => (
 											<TableHead
 												key={header.id}
-												className="text-xs px-2 whitespace-nowrap text-left font-bold text-[#0a0a30]">
+												className="text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]">
 												{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 											</TableHead>
 										))}
@@ -415,7 +415,7 @@ export function DataTable<TData, TValue>({
 											{row.getVisibleCells().map((cell) => (
 												<TableCell
 													key={cell.id}
-													className={cell.column.id === 'actions' || cell.column.id === 'detail' ? 'text-xs whitespace-nowrap sticky right-0 z-10' : 'text-xs whitespace-nowrap px-2'}>
+													className={cell.column.id === 'actions' || cell.column.id === 'detail' ? 'text-xs whitespace-nowrap sticky right-0 z-10' : 'text-xs whitespace-nowrap'}>
 													{flexRender(cell.column.columnDef.cell, cell.getContext())}
 												</TableCell>
 											))}

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { revertUrlString } from '@/lib/utils';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDepartment, useDepartments, useFlatDepartmentList } from '@/hooks/useDepartment';
-import { number } from 'zod';
+import { useWorkspaceEmployees } from '@/hooks/useEmployee';
 
 export const Route = createFileRoute('/employee/setting/department/$departmentName/')({
 	component: RouteComponent,
@@ -40,6 +40,11 @@ type DepartmentData = {
 	email: string;
 	category: string;
 	score: string;
+};
+
+type Staff = {
+	name: string;
+	employeeid: number; // Sesuai tipe data yang digunakan pada proyek Anda
 };
 
 const searchField = [
@@ -74,10 +79,15 @@ const searchField = [
 
 function RouteComponent() {
 	const { departmentName } = Route.useParams();
-	const decodedDepartmentName = revertUrlString(departmentName as string);
+	const { employees, loading: employeeLoading, addEmployee, updateEmployeeData, removeEmployee } = useWorkspaceEmployees();
 	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 	const [editable, setEditable] = useState(false);
 	const { department, error, loading } = useDepartment(Number(departmentName));
+	const [addStaff, setAddStaff] = useState<Staff[]>([]);
+
+	const filteredEmployeesByDepartments = useMemo(() => employees.filter((employee) => employee.departmentid === Number(departmentName)), [employees, departmentName]);
+
+	console.log('Render dengan useMemo', filteredEmployeesByDepartments);
 
 	const handleAddRecord = async (data: any) => {
 		try {
@@ -87,16 +97,6 @@ function RouteComponent() {
 			console.error('Failed to add record:', error);
 		}
 	};
-
-	// const handleSaveEdits = useCallback(async (updatedData: any[]) => {
-	// 	try {
-	// 		console.log('Saving updates:', updatedData);
-	// 		// Add your API call here
-	// 		setEditable(false); // Turn off edit mode after saving
-	// 	} catch (error) {
-	// 		console.error('Failed to save updates:', error);
-	// 	}
-	// }, []);
 
 	const memberData: Member[] = [
 		{
@@ -145,23 +145,37 @@ function RouteComponent() {
 		},
 	];
 
-	const subDepartments = [
+	const employeeByDepartment = [
 		{
-			header: () => <h1 className="pl-4">Department Name</h1>,
+			accessorKey: 'profileimage',
+			header: '',
+			cell: ({ row }: any) => (
+				<div className="w-full flex justify-start">
+					<img
+						className="object-cover w-10 h-10"
+						src={row.original.profileimage || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+						alt={`${row.original.name}'s profile`}
+					/>
+				</div>
+			),
+		},
+		{
+			header: () => <h1 className="">Staff ID</h1>,
 			accessorKey: 'departmentname',
-			cell: ({ row }: any) => <h1 className="pl-4">{row.original.departmentname}</h1>,
+			cell: ({ row }: any) => <h1 className="">{row.original.employeeid}</h1>,
 		},
 		{
-			header: 'Employee',
-			accessorKey: 'employeeCount',
-			cell: ({ row }: any) => row.original.employeeCount || '-',
+			header: 'Name',
+			accessorKey: 'name',
+			cell: ({ row }: any) => row.original.name,
 		},
 		{
-			header: 'Manager',
-			accessorKey: 'managerCount',
-			cell: ({ row }: any) => row.original.managerCount || '-',
+			header: 'Email',
+			accessorKey: 'email',
+			cell: ({ row }: any) => row.original.email || '-',
 		},
 		{
+			id: 'actions',
 			header: '',
 			accessorKey: 'departmentid',
 			cell: (props: any) => (
@@ -169,8 +183,10 @@ function RouteComponent() {
 					<Button
 						variant="outline"
 						className="border-b-0 border-t-0"
-						onClick={() => handleRemove(props.row.original.id)}>
-						ADD
+						onClick={(e) => {
+							addStaff.some((data) => data.employeeid === props.row.original.employeeid) ? removeEmployee(props.row.original.employeeid) : handleAddStaff(props.row.original);
+						}}>
+						{addStaff.some((data) => data.employeeid === props.row.original.employeeid) ? 'REMOVE' : 'ADD'}
 					</Button>
 				</div>
 			),
@@ -178,8 +194,20 @@ function RouteComponent() {
 	];
 
 	// Handle remove action
-	const handleRemove = (id: string) => {
-		console.log('Removing user with ID:', id);
+	const handleAddStaff = (user: any) => {
+		setAddStaff((prevUsers) => {
+			const existingIndex = prevUsers.findIndex((u) => u.employeeid === user.employeeid);
+
+			if (existingIndex !== -1) {
+				// Perbarui data jika employeeid sudah ada
+				const updatedUsers = [...prevUsers];
+				updatedUsers[existingIndex] = { name: user.name, employeeid: user.employeeid };
+				return updatedUsers;
+			} else {
+				// Tambahkan data baru jika employeeid belum ada
+				return [...prevUsers, { name: user.name, employeeid: user.employeeid }];
+			}
+		});
 	};
 
 	return (
@@ -225,26 +253,27 @@ function RouteComponent() {
 					<h1>Member adjustment</h1>
 				</TitleWrapper>
 				<div className="flex flex-row bg-white">
-					<div className="w-1/3 py-2 px-8">
-						<div className="flex items-center justify-between">
-							<h3>Added</h3>
+					<div className="w-1/3">
+						<div className="flex items-center py-2 justify-between border-b">
+							<h3 className="pl-8">Added</h3>
 							<div className="flex items-center gap-2">
-								<span>2 / 13</span>
-								<Button className="w-20 py-2 border rounded-none">EDIT</Button>
+								<span className="pr-2">
+									{addStaff.length} / {filteredEmployeesByDepartments.length}
+								</span>
 							</div>
 						</div>
 						{/* Added Members List */}
-						<div className="flex flex-col gap-2 my-4">
-							{['John Brown', 'Sarah White'].map((name, index) => (
+						<div className="flex flex-col">
+							{addStaff.map((employee, index) => (
 								<div
 									key={index}
-									className="flex items-center justify-between">
-									<span>{name}</span>
+									className="flex items-center justify-between border-b">
+									<span className="text-xs font-bold pl-8">{employee.name}</span>
 									<Button
 										variant="outline"
-										className="w-20 py-2 border rounded-none"
+										className="w-20 border-t-0 border-r-0 border-b-0 rounded-none"
 										size="sm"
-										onClick={() => console.log('Removing', name)}>
+										onClick={() => removeEmployee(employee.employeeid)}>
 										REMOVE
 									</Button>
 								</div>
@@ -294,9 +323,9 @@ function RouteComponent() {
 						</div>
 						<div className="border-l">
 							<DataTable
-								columns={subDepartments}
-								data={department?.subDepartments || []}
-								loading={loading}
+								columns={employeeByDepartment}
+								data={filteredEmployeesByDepartments || []}
+								loading={employeeLoading}
 							/>
 						</div>
 					</div>

@@ -107,7 +107,7 @@ function RouteComponent() {
 				return {
 					id: String(setting.accessorKey),
 					accessorKey: setting.accessorKey as string,
-					header: setting.header || setting.label,
+					header: defaultSetting?.header || setting.header,
 					// Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
 					cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
 				};
