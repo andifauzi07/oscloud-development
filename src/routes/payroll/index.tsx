@@ -176,7 +176,7 @@ function RouteComponent() {
 	const [editable, setEditable] = useState(false);
 	const [localData, setLocalData] = useState<PayrollRow[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
-	const { categories, loading: loadingCategories } = useEmployeeCategories();
+	const { categories } = useEmployeeCategories();
 	const [employeeCategoryOptions, setEmployeeCategoryOptions] = useState<Array<{ value: string; label: string }>>([]);
 
 	// Add this useEffect to transform categories into options
