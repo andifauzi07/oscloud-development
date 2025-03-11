@@ -133,7 +133,7 @@ function RouteComponent() {
 			header: '',
 			accessorKey: 'id',
 			cell: (props: any) => (
-				<div className="w-full flex justify-end">
+				<div className="flex justify-end w-full">
 					<Button
 						variant="outline"
 						className="border-t-0 border-b-0"
@@ -150,7 +150,7 @@ function RouteComponent() {
 			accessorKey: 'profileimage',
 			header: '',
 			cell: ({ row }: any) => (
-				<div className="w-full flex justify-start">
+				<div className="flex justify-start w-full">
 					<img
 						className="object-cover w-10 h-10"
 						src={row.original.profileimage || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
@@ -179,10 +179,10 @@ function RouteComponent() {
 			header: '',
 			accessorKey: 'departmentid',
 			cell: (props: any) => (
-				<div className="w-full flex justify-end">
+				<div className="flex justify-end w-full">
 					<Button
 						variant="outline"
-						className="border-b-0 border-t-0"
+						className="border-t-0 border-b-0"
 						onClick={(e) => {
 							addStaff.some((data) => data.employeeid === props.row.original.employeeid) ? removeEmployee(props.row.original.employeeid) : handleAddStaff(props.row.original);
 						}}>
@@ -213,24 +213,24 @@ function RouteComponent() {
 	return (
 		<div className="flex-1 h-full">
 			{/* Header Section */}
-			<TitleWrapper>{loading ? <span className="loading"></span> : <h1 className="font-bold text-base">{department?.departmentName.toLocaleUpperCase()}</h1>}</TitleWrapper>
+			<TitleWrapper>{loading ? <span className="loading"></span> : <h1 className="text-base font-bold">{department?.departmentName.toLocaleUpperCase()}</h1>}</TitleWrapper>
 
 			{/* Managers Table */}
-			<div className="w-full flex justify-between border-b items-center bg-gray-100">
+			<div className="flex items-center justify-between w-full bg-gray-100 border-b">
 				<h2 className="px-8">Description</h2>
 				<Button
 					onClick={() => setEditable((prev) => !prev)}
-					className="text-black bg-transparent border-r md:w-20 link border-l min-h-10">
+					className="text-black bg-transparent border-l border-r md:w-20 link min-h-10">
 					EDIT+
 				</Button>
 			</div>
-			<div className="w-full flex gap-8 bg-white py-2 px-8 border-r border-b">
+			<div className="flex w-full gap-8 px-8 py-2 bg-white border-b border-r">
 				<div>
 					<h1>Department Name :</h1>
 				</div>
 				<div>{loading ? <span className="loading"></span> : <h1 className="font-bold">{department?.departmentName}</h1>}</div>
 			</div>
-			<div className="w-full flex gap-8 bg-white py-2 px-8 border-r border-b">
+			<div className="flex w-full gap-8 px-8 py-2 bg-white border-b border-r">
 				<div>
 					<h1>Parent Department :</h1>
 				</div>
@@ -254,7 +254,7 @@ function RouteComponent() {
 				</TitleWrapper>
 				<div className="flex flex-row bg-white">
 					<div className="w-1/3">
-						<div className="flex items-center py-2 justify-between border-b">
+						<div className="flex items-center justify-between py-2 border-b">
 							<h3 className="pl-8">Added</h3>
 							<div className="flex items-center gap-2">
 								<span className="pr-2">
@@ -268,10 +268,10 @@ function RouteComponent() {
 								<div
 									key={index}
 									className="flex items-center justify-between border-b">
-									<span className="text-xs font-bold pl-8">{employee.name}</span>
+									<span className="pl-8 text-xs font-bold">{employee.name}</span>
 									<Button
 										variant="outline"
-										className="w-20 border-t-0 border-r-0 border-b-0 rounded-none"
+										className="w-20 border-t-0 border-b-0 border-r-0 rounded-none"
 										size="sm"
 										onClick={() => removeEmployee(employee.employeeid)}>
 										REMOVE
@@ -281,7 +281,7 @@ function RouteComponent() {
 						</div>
 					</div>
 					<div className="w-full">
-						<div className="flex items-center p-4 border-r border-l">
+						<div className="flex items-center p-4 border-l border-r">
 							<h1>Adding Staff Department</h1>
 						</div>
 

@@ -1,9 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
     fetchWorkspaces,
     fetchWorkspaceById,
+    createWorkspace,
     updateWorkspace,
+    deleteWorkspace,
+    clearSelectedWorkspace,
     Workspace,
 } from "@/store/slices/workspaceSlice";
 import { RootState, AppDispatch } from "@/store/store";
@@ -18,7 +21,21 @@ export const useWorkspaces = () => {
         dispatch(fetchWorkspaces());
     }, [dispatch]);
 
-    return { workspaces, loading, error };
+    const create = useCallback(
+        (workspaceData: Partial<Workspace>) => {
+            return dispatch(createWorkspace(workspaceData));
+        },
+        [dispatch]
+    );
+
+    const remove = useCallback(
+        (workspaceId: number) => {
+            return dispatch(deleteWorkspace(workspaceId));
+        },
+        [dispatch]
+    );
+
+    return { workspaces, loading, error, create, remove };
 };
 
 export const useWorkspace = (workspaceId: number) => {
@@ -31,13 +48,31 @@ export const useWorkspace = (workspaceId: number) => {
         if (workspaceId) {
             dispatch(fetchWorkspaceById(workspaceId));
         }
+        return () => {
+            dispatch(clearSelectedWorkspace());
+        };
+    }, [dispatch, workspaceId]);
+
+    const update = useCallback(
+        (data: Partial<Workspace>) => {
+            if (workspaceId) {
+                return dispatch(updateWorkspace({ workspaceId, data }));
+            }
+        },
+        [dispatch, workspaceId]
+    );
+
+    const remove = useCallback(() => {
+        if (workspaceId) {
+            return dispatch(deleteWorkspace(workspaceId));
+        }
     }, [dispatch, workspaceId]);
 
     return {
-        selectedWorkspace,
+        workspace: selectedWorkspace,
         loading,
         error,
-        updateWorkspace: (data: Partial<Workspace>) =>
-            dispatch(updateWorkspace({ workspaceId, data })),
+        update,
+        remove,
     };
 };
