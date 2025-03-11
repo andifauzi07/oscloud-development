@@ -99,24 +99,29 @@ const employeeCategoryColumns = [
 
 const departmentColumns = [
 	{
+		id: 'departmentname',
 		header: () => <h1 className="pl-8">Category</h1>,
 		accessorKey: 'departmentname',
 		cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.departmentname}</h1>,
 	},
 	{
+		id: 'parentdepartmentid',
 		header: 'Parent Department',
 		accessorKey: 'parentdepartmentid',
 		cell: ({ row }: any) => <h1>{row.original.parentDepartmentId ? row.original.parentDepartmentId : '-'}</h1>,
 	},
 	{
+		id: 'managerCount',
 		header: 'Manager',
 		accessorKey: 'managerCount',
 	},
 	{
+		id: 'employeeCount',
 		header: 'Employees',
 		accessorKey: 'employeeCount',
 	},
 	{
+		id: 'actions',
 		header: '',
 		accessorKey: 'departmentid',
 		cell: ({ row }: any) => (
