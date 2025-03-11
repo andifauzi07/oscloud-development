@@ -1,6 +1,3 @@
-import { CompanyPersonnelLeadsListDataTable } from '@/components/companyPersonnelLeadsListDataTable';
-import { EmployeePerformanceCell } from '@/components/EmployeePerformanceCell';
-import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
@@ -8,17 +5,14 @@ import { Label } from '@/components/ui/label';
 import { TitleWrapper } from '@/components/wrapperElement';
 import useDebounce from '@/hooks/useDebounce';
 import { useWorkspaceEmployees } from '@/hooks/useEmployee';
-import { getCategoryScore, useEmployeePerformance, usePerformanceSheets, usePerformanceTemplates } from '@/hooks/usePerformance';
+import { useEmployeePerformance, usePerformanceSheets, usePerformanceTemplate, usePerformanceTemplates } from '@/hooks/usePerformance';
 import { useUserData } from '@/hooks/useUserData';
-import { fetchEmployeePerformance } from '@/store/slices/performanceSlice';
-import { AppDispatch, RootState } from '@/store/store';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCallback, useMemo, useState } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
-
 import { useReactTable, getCoreRowModel } from '@tanstack/react-table';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const Route = createFileRoute('/performance/')({
 	component: RouteComponent,
@@ -31,25 +25,25 @@ function RouteComponent() {
 	const debouncedSearch = useDebounce(searchQuery, 500);
 	const { employees, loading: employeesLoading } = useWorkspaceEmployees();
 	const { templates, loading: templatesLoading } = usePerformanceTemplates();
-	// const { sheets, loading: sheetsLoading } = usePerformanceSheets({
-	// 	startDate: dateRange.startDate,
-	// 	endDate: dateRange.endDate,
-	// });
+	const [selectedItems, setSelectedItems] = useState<number | undefined>(undefined);
+	const { template, categories, getTotalWeight, loading } = usePerformanceTemplate(selectedItems!);
+	const { sheets, loading: sheetsLoading, error } = usePerformanceSheets();
 
 	const { currentUser } = useUserData();
 	const workspaceid = currentUser?.workspaceid;
 
-	const defaultTemplate = templates[0];
+	const defaultTemplate = selectedItems !== undefined ? templates.find((temp) => temp.templateid === selectedItems) : templates[0];
+
 	const { performanceData, loading: employeePerformanceLoading } = useEmployeePerformance({
 		workspaceId: Number(workspaceid),
-		// templateId: defaultTemplate?.templateid,
+		// templateId: selectedItems,
 		// Pass employeeId if you want to fetch data for a specific employee
 		// employeeId: someEmployeeId,
 	});
 
-	const filteredEmployees = employees?.filter((employee: any) => employee.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
+	const filteredEmployees = useMemo(() => employees?.filter((employee: any) => employee.name.toLowerCase().includes(debouncedSearch.toLowerCase())), [employees, debouncedSearch]);
 
-	const columns: ColumnDef<any>[] = useMemo(
+	const columns = useMemo(
 		() => [
 			{
 				accessorKey: 'profileimage',
@@ -83,20 +77,13 @@ function RouteComponent() {
 				header: 'Employee Category',
 				cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-',
 			},
-			...(defaultTemplate?.categories?.map((category: any) => ({
-				accessorKey: `performance_${category.categoryid}`,
-				header: category.categoryname,
-				cell: (
-					{ row }: any // Add parentheses to return the component
-				) => (
-					<EmployeePerformanceCell
-						workspaceId={Number(workspaceid)}
-						employeeId={row.original.employeeid}
-						templateId={defaultTemplate.templateid}
-						categoryId={category.categoryid}
-					/>
-				),
-			})) || []),
+			...(defaultTemplate?.categories?.flatMap((category: any) =>
+				category.points.map((point: any) => ({
+					accessorKey: `performance_${category.categoryid}_${point.pointid}`,
+					header: `${point.pointname}`,
+					cell: ({ row }: any) => <p> {point.weight.toString().startsWith('0.') ? `${parseFloat(point.weight) * 100}%` : `${point.weight}%`}</p>,
+				}))
+			) || []),
 			{
 				id: 'actions',
 				header: '',
@@ -115,7 +102,7 @@ function RouteComponent() {
 				),
 			},
 		],
-		[workspaceid, defaultTemplate]
+		[selectedItems, workspaceid, defaultTemplate]
 	);
 
 	const handleAddRecord = async (data: any) => {
@@ -130,8 +117,7 @@ function RouteComponent() {
 	const handleSaveEdits = useCallback(async (updatedData: any[]) => {
 		try {
 			console.log('Saving updates:', updatedData);
-			// Add your API call here
-			setEditable(false); // Turn off edit mode after saving
+			setEditable(false);
 		} catch (error) {
 			console.error('Failed to save updates:', error);
 		}
@@ -143,13 +129,9 @@ function RouteComponent() {
 		getCoreRowModel: getCoreRowModel(),
 	});
 
-	// if (employeesLoading || templatesLoading || employeePerformanceLoading) {
-	//     return <Loading />;
-	// }
-
-	// if (!employees?.length || !templates?.length) {
-	//     return <div>No data available</div>;
-	// }
+	const handleSelectTemplate = (value: string) => {
+		setSelectedItems(Number(value));
+	};
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -172,7 +154,7 @@ function RouteComponent() {
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							placeholder="Search employees..."
-							className="border rounded-none w-[400px]"
+							className="border rounded-none w-[250px]"
 						/>
 					</div>
 				</div>
@@ -205,6 +187,30 @@ function RouteComponent() {
 							className="w-[150px] border rounded-none"
 							enableEmoji={false}
 						/>
+					</div>
+				</div>
+				<div className="flex flex-row space-y-2">
+					<div className="flex flex-col w-full space-y-2">
+						<label className="text-sm font-semibold">Workspaces</label>
+						<Select
+							defaultValue={defaultTemplate?.templateid.toString()}
+							onValueChange={handleSelectTemplate}>
+							<SelectTrigger className="w-[180px] h-8">
+								<SelectValue placeholder="Select a templates" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectLabel>Templates</SelectLabel>
+									{templates.map((template) => (
+										<SelectItem
+											value={template.templateid.toString()}
+											key={template.templateid}>
+											{template.templatename}
+										</SelectItem>
+									))}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
 					</div>
 				</div>
 			</div>

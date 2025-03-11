@@ -1,11 +1,6 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import apiClient from "@/api/apiClient";
-import {
-	PerformanceFilters,
-	PerformanceState,
-	Score,
-	Template,
-} from "@/types/performance";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import apiClient from '@/api/apiClient';
+import { PerformanceFilters, PerformanceState, Score, Template } from '@/types/performance';
 
 const initialState: PerformanceState = {
 	templates: [],
@@ -17,24 +12,17 @@ const initialState: PerformanceState = {
 };
 
 // --- Templates
-export const fetchTemplates = createAsyncThunk(
-	"performance/fetchTemplates",
-	async (workspaceId: number, { rejectWithValue }) => {
-		try {
-			const response = await apiClient.get(
-				`/workspaces/${workspaceId}/performance/templates`
-			);
-			return response.data.templates;
-		} catch (error: any) {
-			return rejectWithValue(
-				error.response?.data || "Failed to fetch templates"
-			);
-		}
+export const fetchTemplates = createAsyncThunk('performance/fetchTemplates', async (workspaceId: number, { rejectWithValue }) => {
+	try {
+		const response = await apiClient.get(`/workspaces/${workspaceId}/performance/templates`);
+		return response.data.templates;
+	} catch (error: any) {
+		return rejectWithValue(error.response?.data || 'Failed to fetch templates');
 	}
-);
+});
 
 export const createTemplate = createAsyncThunk(
-	"performance/createTemplate",
+	'performance/createTemplate',
 	async (
 		{
 			workspaceId,
@@ -55,21 +43,16 @@ export const createTemplate = createAsyncThunk(
 		{ rejectWithValue }
 	) => {
 		try {
-			const response = await apiClient.post(
-				`/workspaces/${workspaceId}/performance/templates`,
-				data
-			);
+			const response = await apiClient.post(`/workspaces/${workspaceId}/performance/templates`, data);
 			return response.data;
 		} catch (error: any) {
-			return rejectWithValue(
-				error.response?.data || "Failed to create template"
-			);
+			return rejectWithValue(error.response?.data || 'Failed to create template');
 		}
 	}
 );
 
 export const updateTemplate = createAsyncThunk(
-	"performance/updateTemplate",
+	'performance/updateTemplate',
 	async (
 		{
 			workspaceId,
@@ -83,21 +66,16 @@ export const updateTemplate = createAsyncThunk(
 		{ rejectWithValue }
 	) => {
 		try {
-			const response = await apiClient.put(
-				`/workspaces/${workspaceId}/performance/templates/${templateId}`,
-				data
-			);
+			const response = await apiClient.put(`/workspaces/${workspaceId}/performance/templates/${templateId}`, data);
 			return response.data;
 		} catch (error: any) {
-			return rejectWithValue(
-				error.response?.data || "Failed to update template"
-			);
+			return rejectWithValue(error.response?.data || 'Failed to update template');
 		}
 	}
 );
 
 export const deleteTemplate = createAsyncThunk(
-	"performance/deleteTemplate",
+	'performance/deleteTemplate',
 	async (
 		{
 			workspaceId,
@@ -109,48 +87,36 @@ export const deleteTemplate = createAsyncThunk(
 		{ rejectWithValue }
 	) => {
 		try {
-			await apiClient.delete(
-				`/workspaces/${workspaceId}/performance/templates/${templateId}`
-			);
+			await apiClient.delete(`/workspaces/${workspaceId}/performance/templates/${templateId}`);
 			return templateId;
 		} catch (error: any) {
-			return rejectWithValue(
-				error.response?.data || "Failed to delete template"
-			);
+			return rejectWithValue(error.response?.data || 'Failed to delete template');
 		}
 	}
 );
 
 // --- Sheets
-export const fetchSheets = createAsyncThunk(
-	"performance/fetchSheets",
-	async (
-		{
-			workspaceId,
-			filters,
-		}: {
-			workspaceId: number;
-			filters?: PerformanceFilters;
-		}
-	) => {
-		try {
+export const fetchSheets = createAsyncThunk('performance/fetchSheets', async ({ workspaceId, filters }: { workspaceId: number; filters?: PerformanceFilters }) => {
+	try {
+		let url = `/workspaces/${workspaceId}/performance/sheets`;
+
+		// Cek jika filters memiliki properti (tidak kosong)
+		if (filters && Object.keys(filters).length > 0) {
 			const queryParams = new URLSearchParams();
-			if (filters) {
-				Object.entries(filters).forEach(([key, value]) => {
-					if (value) queryParams.append(key, value.toString());
-				});
-			}
-			const response = await apiClient.get(
-				`/workspaces/${workspaceId}/performance/sheets?${queryParams}`
-			);
-			return response.data.sheets; // Make sure we're returning sheets array
-		} catch (error: any) {
-			throw error.response?.data || "Failed to fetch sheets";
+			Object.entries(filters).forEach(([key, value]) => {
+				if (value) queryParams.append(key, value.toString());
+			});
+			url += `?${queryParams}`;
 		}
+
+		const response = await apiClient.get(url);
+		return response.data.sheets; // Pastikan mengembalikan data sheets
+	} catch (error: any) {
+		throw error.response?.data || 'Failed to fetch sheets';
 	}
-);
+});
 export const createSheet = createAsyncThunk(
-	"performance/createSheet",
+	'performance/createSheet',
 	async (
 		{
 			workspaceId,
@@ -166,20 +132,17 @@ export const createSheet = createAsyncThunk(
 		{ rejectWithValue }
 	) => {
 		try {
-			const response = await apiClient.post(
-				`/workspaces/${workspaceId}/performance/sheets`,
-				data
-			);
+			const response = await apiClient.post(`/workspaces/${workspaceId}/performance/sheets`, data);
 			return response.data;
 		} catch (error: any) {
-			return rejectWithValue(error.response?.data || "Failed to create sheet");
+			return rejectWithValue(error.response?.data || 'Failed to create sheet');
 		}
 	}
 );
 
 // -- Fetch Employee Performance
 export const fetchEmployeePerformance = createAsyncThunk(
-	"performance/fetchEmployeePerformance",
+	'performance/fetchEmployeePerformance',
 	async (
 		{
 			workspaceId,
@@ -194,50 +157,34 @@ export const fetchEmployeePerformance = createAsyncThunk(
 		{ rejectWithValue }
 	) => {
 		try {
-			const response = await apiClient.get(
-				`/workspaces/${workspaceId}/performance/employee-performance`,
-				{
-					params: filters,
-				}
-			);
+			const response = await apiClient.get(`/workspaces/${workspaceId}/performance/employee-performance`, {
+				params: filters,
+			});
 
 			return response.data;
 		} catch (error: any) {
-			return rejectWithValue(
-				error.response?.data || "Failed to fetch employee performance"
-			);
+			return rejectWithValue(error.response?.data || 'Failed to fetch employee performance');
 		}
 	}
 );
 
-export const fetchSheetById = createAsyncThunk(
-    "performance/fetchSheetById",
-    async ({
-        workspaceId,
-        sheetId,
-    }: {
-        workspaceId: number;
-        sheetId: number;
-    }) => {
-        try {
-            const response = await apiClient.get(
-                `/workspaces/${workspaceId}/performance/sheets/${sheetId}`
-            );
-            return response.data;
-        } catch (error: any) {
-            throw error.response?.data || "Failed to fetch sheet";
-        }
-    }
-);
+export const fetchSheetById = createAsyncThunk('performance/fetchSheetById', async ({ workspaceId, sheetId }: { workspaceId: number; sheetId: number }) => {
+	try {
+		const response = await apiClient.get(`/workspaces/${workspaceId}/performance/sheets/${sheetId}`);
+		return response.data;
+	} catch (error: any) {
+		throw error.response?.data || 'Failed to fetch sheet';
+	}
+});
 
 const performanceSlice = createSlice({
-	name: "performance",
+	name: 'performance',
 	initialState,
 	reducers: {
-        clearCurrentSheet: (state) => {
-            state.currentSheet = null;
-        }
-    },
+		clearCurrentSheet: (state) => {
+			state.currentSheet = null;
+		},
+	},
 	extraReducers: (builder) => {
 		builder
 			// Fetch templates
@@ -273,9 +220,7 @@ const performanceSlice = createSlice({
 			})
 			.addCase(updateTemplate.fulfilled, (state, action) => {
 				state.loading = false;
-				const index = state.templates.findIndex(
-					(t) => t.templateid === action.payload.templateid
-				);
+				const index = state.templates.findIndex((t) => t.templateid === action.payload.templateid);
 				if (index !== -1) {
 					state.templates[index] = action.payload;
 				}
@@ -289,21 +234,17 @@ const performanceSlice = createSlice({
 				state.loading = true;
 				state.error = null;
 			})
-            .addCase(fetchEmployeePerformance.fulfilled, (state, action) => {
-                console.log("Performance data fetched:", action.payload);
-                state.loading = false;
-                if (action.payload.employee) {
-                    const { employeeId } = action.payload.employee;
-                    // Only update if the data has changed
-                    if (
-                        !state.employeePerformances[employeeId] ||
-                        JSON.stringify(state.employeePerformances[employeeId]) !==
-                            JSON.stringify(action.payload)
-                    ) {
-                        state.employeePerformances[employeeId] = action.payload;
-                    }
-                }
-            })
+			.addCase(fetchEmployeePerformance.fulfilled, (state, action) => {
+				console.log('Performance data fetched:', action.payload);
+				state.loading = false;
+				if (action.payload.employee) {
+					const { employeeId } = action.payload.employee;
+					// Only update if the data has changed
+					if (!state.employeePerformances[employeeId] || JSON.stringify(state.employeePerformances[employeeId]) !== JSON.stringify(action.payload)) {
+						state.employeePerformances[employeeId] = action.payload;
+					}
+				}
+			})
 			.addCase(fetchEmployeePerformance.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.payload as string;
@@ -316,30 +257,30 @@ const performanceSlice = createSlice({
 			.addCase(fetchSheets.fulfilled, (state, action) => {
 				state.loading = false;
 				state.sheets = action.payload;
-				console.log("Sheets updated:", action.payload); // Add logging
+				console.log('Sheets updated:', action.payload); // Add logging
 			})
 			.addCase(fetchSheets.rejected, (state, action) => {
 				state.loading = false;
-				state.error = action.error.message || "Failed to fetch sheets";
+				state.error = action.error.message || 'Failed to fetch sheets';
 			})
-            // Add cases for fetching single sheet
-            .addCase(fetchSheetById.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchSheetById.fulfilled, (state, action) => {
-                state.loading = false;
-                state.currentSheet = action.payload;
-                // Also update sheets array if needed
-                const index = state.sheets.findIndex(s => s.sheetId === action.payload.sheetId);
-                if (index !== -1) {
-                    state.sheets[index] = action.payload;
-                }
-            })
-            .addCase(fetchSheetById.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.error.message || "Failed to fetch sheet";
-            });
+			// Add cases for fetching single sheet
+			.addCase(fetchSheetById.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(fetchSheetById.fulfilled, (state, action) => {
+				state.loading = false;
+				state.currentSheet = action.payload;
+				// Also update sheets array if needed
+				const index = state.sheets.findIndex((s) => s.sheetId === action.payload.sheetId);
+				if (index !== -1) {
+					state.sheets[index] = action.payload;
+				}
+			})
+			.addCase(fetchSheetById.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.error.message || 'Failed to fetch sheet';
+			});
 	},
 });
 
