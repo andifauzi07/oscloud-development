@@ -12,30 +12,10 @@ import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDepartments } from '@/hooks/useDepartment';
 import { Department } from '@/types/departments';
-import { EmployeeCategory } from '@/types/employee';
+import { Employee } from '@/types/employee';
+import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 
-interface EmployeeData {
-	employeeid: number;
-	name: string;
-	email: string;
-	profileimage: string | null;
-	employeecategoryid: number;
-	departmentid: number;
-	workspaceid: number;
-	employeeCategory: {
-		categoryid: number;
-		categoryname: string;
-		parentcategoryid: number | null;
-	};
-	department: {
-		departmentid: number;
-		departmentname: string;
-		parentdepartmentid: number | null;
-		workspaceid: number;
-	};
-}
-
-const columns: ColumnDef<EmployeeData>[] = [
+const columns: ColumnDef<Employee>[] = [
 	{
 		accessorKey: 'profileimage',
 		header: '',
@@ -109,26 +89,24 @@ const columns: ColumnDef<EmployeeData>[] = [
 
 const field = [
 	{
-		key: 'status',
-		label: 'Status',
-		type: 'toogle',
-
-		options: ['All', 'Active', 'Inactive'],
-	},
-	{
-		key: 'employeeid',
-		label: 'Employee Id',
+		key: 'id',
+		label: 'ID',
 		type: 'number',
-	},
-	{
-		key: 'email',
-		label: 'Email',
-		type: 'email',
 	},
 	{
 		key: 'name',
 		label: 'Name',
 		type: 'text',
+	},
+	{
+		key: 'employeeCategory',
+		label: 'Employee Category',
+		type: 'text',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
 	},
 	{
 		key: 'depertment',
@@ -141,13 +119,21 @@ export const Route = createFileRoute('/employee/')({
 	component: RouteComponent,
 });
 
+interface Props {
+	employees: Employee[];
+	setEditable: (value: boolean) => void;
+	updateEmployeeData: (id: number, data: Partial<Employee>) => Promise<void>;
+}
+
 function RouteComponent() {
 	const { employees, loading, addEmployee, updateEmployeeData } = useWorkspaceEmployees();
-	const { categories, loading: loadingEmployeeCategories } = useEmployeeCategories();
+	const { categories } = useEmployeeCategories();
 	const { departments, loading: loadingDepartments } = useDepartments();
 	const [editable, setEditable] = useState(false);
 	const [employeeCategoryOptions, setEmployeeCategoryOptions] = useState<Array<{ value: string; label: string }>>([]);
 	const [departmentOptions, setDepartmentOptions] = useState<Array<{ value: string; label: string }>>([]);
+	const [updateDataFromChild, setUpdateDataFromChild] = useState(employees);
+	const handleSaveEdits = useSaveEdits<Employee>();
 
 	useEffect(() => {
 		if (categories) {
@@ -180,31 +166,52 @@ function RouteComponent() {
 		}
 	};
 
-	const handleSaveEdits = useCallback(
-		async (updatedData: any[]) => {
-			try {
-				console.log('Saving updates:', updatedData);
-				// Assuming updateEmployee takes an array of updated employee objects
-				await Promise.all(
-					updatedData.map(async (employee) => {
-						// Only include properties that you want to update
-						const updatePayload = {
-							employeeid: employee.employeeid,
-							name: employee.name,
-							email: employee.email,
-							employeecategoryid: employee.employeecategoryid,
-							departmentid: employee.departmentid,
-						};
-						await updateEmployeeData(employee.employeeid, updatePayload);
-					})
-				);
-				setEditable(false); // Turn off edit mode after saving
-			} catch (error) {
-				console.error('Failed to save updates:', error);
-			}
-		},
-		[updateEmployeeData]
-	);
+	// const handleSaveEdits = useCallback(
+	// 	async (updatedData: any[]) => {
+	// 		try {
+	// 			// compare with the new data if anything change
+	// 			const changedEmployees = updatedData.filter((updatedEmp) => {
+	// 				const originalEmp = employees.find((emp) => emp.employeeid === updatedEmp.employeeid);
+
+	// 				if (!originalEmp) return false;
+
+	// 				// Check the data if anything importants
+	// 				return updatedEmp.name !== originalEmp.name || updatedEmp.email !== originalEmp.email || updatedEmp.employeecategoryid !== originalEmp.employeecategoryid || updatedEmp.departmentid !== originalEmp.departmentid;
+	// 			});
+
+	// 			if (changedEmployees.length === 0) {
+	// 				setEditable(false);
+	// 				return;
+	// 			}
+
+	// 			await Promise.all(
+	// 				changedEmployees.map(async (employee) => {
+	// 					// Check the data from the backend
+	// 					if (!employee.employeeid) {
+	// 						return;
+	// 					}
+
+	// 					const updatePayload = {
+	// 						employeeid: employee.employeeid,
+	// 						name: employee.name,
+	// 						email: employee.email,
+	// 						employeecategoryid: employee.employeecategoryid,
+	// 						departmentid: employee.departmentid,
+	// 					};
+
+	// 					await updateEmployeeData(employee.employeeid, updatePayload);
+	// 				})
+	// 			);
+
+	// 			//if success, return true or something
+	// 			// console.log('Success edit data');
+	// 			setEditable(false);
+	// 		} catch (error) {
+	// 			console.error('Failed to save updates:', error);
+	// 		}
+	// 	},
+	// 	[updateEmployeeData, employees, setEditable, updateDataFromChild]
+	// );
 
 	const selectFields = {
 		employeecategoryid: {
@@ -256,17 +263,44 @@ function RouteComponent() {
 			</div>
 
 			<div className="flex justify-end flex-none w-full bg-white">
-				<AddRecordDialog
-					columns={columns}
-					onSave={handleAddRecord}
-					nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
-					selectFields={selectFields}
-				/>
-				<Button
-					onClick={() => setEditable((prev) => !prev)}
-					className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-					EDIT
-				</Button>
+				{editable ? (
+					<Button
+						onClick={() => setEditable((prev) => !prev)}
+						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+						CANCEL
+					</Button>
+				) : (
+					<AddRecordDialog
+						columns={columns}
+						onSave={handleAddRecord}
+						nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
+						selectFields={selectFields}
+					/>
+				)}
+
+				{editable ? (
+					<Button
+						onClick={async () => {
+							const isSucces = await handleSaveEdits(
+								employees, // Initial Data from the hooks and also rendered on the table component
+								updateDataFromChild, // State to catch an update from the component child (DataTable)
+								'employeeid', // Unique identifier, eg. employeeId, departmentId, catgeoryId etc..
+								['name', 'email', 'employeecategoryid', 'departmentid'], // Field that want to compare and track update
+								updateEmployeeData // update function from hooks
+							);
+							setEditable(false);
+							console.log(isSucces); // can use this variable to make update on ui
+						}}
+						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+						SAVE
+					</Button>
+				) : (
+					<Button
+						onClick={() => setEditable((prev) => !prev)}
+						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+						EDIT
+					</Button>
+				)}
 			</div>
 
 			<DataTable
@@ -275,7 +309,10 @@ function RouteComponent() {
 				loading={loading}
 				isEditable={editable}
 				nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
-				onSave={handleSaveEdits}
+				setTableData={(updateFunctionOrData) => {
+					const evaluatedData = typeof updateFunctionOrData === 'function' ? updateFunctionOrData([...employees]) : updateFunctionOrData;
+					setUpdateDataFromChild(evaluatedData);
+				}}
 			/>
 		</div>
 	);

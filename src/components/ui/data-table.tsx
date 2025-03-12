@@ -28,6 +28,9 @@ export interface DataTableProps<TData, TValue> {
 	enableRowDragAndDrop?: boolean;
 	enableColumnDragAndDrop?: boolean;
 	isEditable?: boolean;
+	// setTableData?: (data: TData[]) => void;
+	setTableData?: React.Dispatch<React.SetStateAction<TData[]>>;
+	// setTableData?: React.Dispatch<React.SetStateAction<TData[]>>;
 	nonEditableColumns?: string[];
 	onSave?: (data: TData[]) => void;
 	onRowDragEnd?: (result: { oldIndex: number; newIndex: number }) => void;
@@ -103,20 +106,21 @@ export function DataTable<TData, TValue>({
 	enableColumnDragAndDrop = false,
 	isEditable = false,
 	nonEditableColumns = [], // Provide empty array as default
-	onSave,
+	// onSave,
 	onRowDragEnd,
 	total = 0,
 	currentPage = 1,
 	onPageChange,
 	pageSize = 10,
 	selectFields,
+	setTableData,
 }: DataTableProps<TData, TValue>) {
-	const [tableData, setTableData] = useState<TData[]>(data);
+	// const [tableData, setTableData] = useState<TData[]>(data);
 	const [tableColumns, setTableColumns] = useState(() => columns);
 
 	// Update tableData when data prop changes
 	useEffect(() => {
-		setTableData(data);
+		setTableData?.(data);
 	}, [data]);
 
 	// Update columns when isEditable, columns or nonEditableColumns change
@@ -145,8 +149,8 @@ export function DataTable<TData, TValue>({
 							<select
 								value={props.getValue() as string}
 								onChange={(e) => {
-									setTableData((prevData) => {
-										return prevData.map((row, rowIndex) => {
+									setTableData?.((prevData: any) => {
+										return prevData.map((row: any, rowIndex: any) => {
 											if (rowIndex === props.row.index) {
 												return { ...row, [columnId]: e.target.value };
 											}
@@ -175,8 +179,8 @@ export function DataTable<TData, TValue>({
 							row={{ index: props.row.index, original: props.row.original }}
 							column={{ id: columnId }}
 							updateData={(index: number, id: string, value: any) => {
-								setTableData((prevData) => {
-									return prevData.map((row, rowIndex) => {
+								setTableData?.((prevData: any) => {
+									return prevData.map((row: any, rowIndex: any) => {
 										if (rowIndex === index) {
 											return { ...row, [id]: value };
 										}
@@ -192,12 +196,12 @@ export function DataTable<TData, TValue>({
 			return col;
 		});
 		setTableColumns(editableColumns);
-	}, [isEditable, columns, selectFields]); // Remove nonEditableColumns from dependencies
+	}, [isEditable, columns, selectFields]); // Addedd nonEditableColumns from dependencies
 
 	const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
 	const table = useReactTable({
-		data: tableData,
+		data: data,
 		columns: tableColumns,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -211,19 +215,19 @@ export function DataTable<TData, TValue>({
 			const { active, over } = event;
 			if (!active || !over || active.id === over.id) return;
 
-			const oldIndex = tableData.findIndex((item: any) => item.id === active.id || item.companyId === active.id);
-			const newIndex = tableData.findIndex((item: any) => item.id === over.id || item.companyId === over.id);
+			const oldIndex = data.findIndex((item: any) => item.id === active.id || item.companyId === active.id);
+			const newIndex = data.findIndex((item: any) => item.id === over.id || item.companyId === over.id);
 
 			if (oldIndex === -1 || newIndex === -1) return;
 
-			const newData = arrayMove([...tableData], oldIndex, newIndex);
-			setTableData(newData);
+			const newData = arrayMove([...data], oldIndex, newIndex);
+			setTableData?.(newData);
 
 			if (onRowDragEnd) {
 				onRowDragEnd({ oldIndex, newIndex });
 			}
 		},
-		[tableData, onRowDragEnd]
+		[data, onRowDragEnd]
 	);
 
 	// Handle column drag-and-drop
@@ -304,7 +308,7 @@ export function DataTable<TData, TValue>({
 					}
 				}}>
 				<SortableContext
-					items={enableRowDragAndDrop ? tableData.map((item: any) => item.id || item.companyId) : tableColumns.map((item: any) => item.id || item.accessorKey)}
+					items={enableRowDragAndDrop ? data.map((item: any) => item.id || item.companyId) : tableColumns.map((item: any) => item.id || item.accessorKey)}
 					strategy={verticalListSortingStrategy}>
 					<Table>
 						<TableHeader className="bg-[#f3f4f6]">
@@ -357,7 +361,7 @@ export function DataTable<TData, TValue>({
 				</SortableContext>
 			</DndContext>
 		),
-		[sensors, enableColumnDragAndDrop, enableRowDragAndDrop, handleColumnDragEnd, handleRowDragEnd, tableData, tableColumns, table, columns, loading]
+		[sensors, enableColumnDragAndDrop, enableRowDragAndDrop, handleColumnDragEnd, handleRowDragEnd, data, tableColumns, table, columns, loading]
 	);
 
 	const totalPages = Math.ceil(total / pageSize);
@@ -376,15 +380,6 @@ export function DataTable<TData, TValue>({
 
 	return (
 		<div className="flex flex-col w-full">
-			{isEditable && onSave && (
-				<div className="flex justify-end flex-none w-full bg-white border-b">
-					<Button
-						onClick={() => onSave(tableData)}
-						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
-						SAVE
-					</Button>
-				</div>
-			)}
 			<div className="w-full bg-white border-t border-b border-r">
 				{enableRowDragAndDrop || enableColumnDragAndDrop ? (
 					dndContent

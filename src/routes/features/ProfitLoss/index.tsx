@@ -49,6 +49,36 @@ const mockProfitLossData: ProfitLossTypes[] = [
 	},
 ];
 
+const field = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
+
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
+
 // Columns definition
 const columns: ColumnDef<ProfitLossTypes>[] = [
 	{
@@ -216,7 +246,7 @@ function RouteComponent() {
 
 						<div className="flex flex-col space-y-2">
 							<Label>‎</Label>
-							<AdvancedFilterPopover />
+							<AdvancedFilterPopover fields={field} />
 						</div>
 					</div>
 
