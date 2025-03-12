@@ -9,6 +9,10 @@ import { DataTable } from '../../../components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { GraphicChart } from '@/components/graphicChart';
 import { TitleWrapper } from '@/components/wrapperElement';
+import { useProject } from '@/hooks/useProject';
+import { useEffect } from 'react';
+import { CompanyPersonnelLeadsListDataTable } from '@/components/companyPersonnelLeadsListDataTable';
+import { useUserData } from '@/hooks/useUserData';
 
 // Define mock data for AssignedStaff
 export const mockAssignedStaff: AssignedStaff[] = [
@@ -130,11 +134,11 @@ export const mockPaymentStaff: PaymentStaff[] = [
 // Columns for Assigned Staff
 const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 	{
-		accessorKey: 'image',
-		header: () => <h1 className="pl-4"></h1>,
+		accessorKey: 'profileImage',
+		header: '',
 		cell: ({ row }) => (
 			<img
-				src={row.original.image}
+				src={row.original?.profileImage || '/default-avatar.png'}
 				alt="Profile"
 				className="w-10 h-10 rounded-full"
 			/>
@@ -143,35 +147,69 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 	{
 		accessorKey: 'name',
 		header: 'Name',
+		cell: ({ row }) => row.original?.name || '-'
 	},
+	// {
+	// 	accessorKey: 'rateType',
+	// 	header: 'Rate Type',
+	// 	cell: ({ row }) => row.original?.rateType || '-'
+	// },
+	// {
+	// 	accessorKey: 'rateValue',
+	// 	header: 'Rate Value',
+	// 	cell: ({ row }) => {
+	// 		const rate = row.original?.rateValue;
+	// 		if (rate === undefined || rate === null) return '-';
+	// 		return `$${Number(rate).toFixed(2)}`;
+	// 	},
+	// },
+	// {
+	// 	accessorKey: 'breakHours',
+	// 	header: 'Break Hours',
+	// 	cell: ({ row }) => {
+	// 		const hours = row.original?.breakHours;
+	// 		if (hours === undefined || hours === null) return '-';
+	// 		return `${Number(hours).toFixed(2)}h`;
+	// 	},
+	// },
 	{
-		accessorKey: 'status',
+		accessorKey: 'availability',
 		header: 'Availability',
+		cell: ({ row }) => row.original?.availability || '-'
 	},
 	{
-		accessorKey: 'money',
-		header: 'Money',
-		cell: ({ row }) => `$${row.original.money.toFixed(2)}`,
+		accessorKey: 'totalEarnings',
+		header: 'Total Earnings',
+		cell: ({ row }) => {
+			const earnings = row.original?.totalEarnings;
+			if (earnings === undefined || earnings === null) return '-';
+			return `$${Number(earnings).toFixed(2)}`;
+		},
 	},
 	{
-		accessorKey: 'money2',
-		header: 'Money 2',
-		cell: ({ row }) => `$${row.original.money2.toFixed(2)}`,
+		accessorKey: 'averagePerformance',
+		header: 'Performance',
+		cell: ({ row }) => {
+			const performance = row.original?.averagePerformance;
+			if (performance === undefined || performance === null) return 'N/A';
+			return `${Number(performance).toFixed(1)}%`;
+		},
 	},
-	{
-		accessorKey: 'grade',
-		header: 'Total Score',
-	},
+	// {
+	// 	accessorKey: 'currentProjects',
+	// 	header: 'Current Projects',
+	// 	cell: ({ row }) => row.original?.currentProjects || 0
+	// },
 	{
 		id: 'actions',
-		accessorKey: 'id',
+		accessorKey: 'employeeId',
 		header: '',
-		cell: () => (
-			<div className=" w-full flex justify-end">
+		cell: ({ row }) => (
+			<div className="flex justify-end w-full">
 				<Button
 					variant="outline"
-					className="text-xs border-r-0 border-t-0 border-b-0">
-					ASSIGN
+					className="text-xs border-t-0 border-b-0 border-r-0">
+					EDIT
 				</Button>
 			</div>
 		),
@@ -246,7 +284,7 @@ const paymentStaffColumns: ColumnDef<PaymentStaff>[] = [
 			<img
 				src={row.original.image}
 				alt="Profile"
-				className="w-10 h-10 object-cover"
+				className="object-cover w-10 h-10"
 			/>
 		),
 	},
@@ -290,7 +328,7 @@ const paymentStaffColumns: ColumnDef<PaymentStaff>[] = [
 		id: 'actions',
 		header: '',
 		cell: ({ row }: any) => (
-			<div className="w-full flex justify-end">
+			<div className="flex justify-end w-full">
 				<Button
 					className="w-20 border-t-0 border-b-0 border-r-0"
 					variant="outline">
@@ -306,12 +344,63 @@ export const Route = createFileRoute('/projects/$projectId/')({
 });
 
 function ProjectView() {
-	const { projectId } = Route.useParams(); // Access the projectId from the route
+	const { projectId } = Route.useParams();
+	const { getProjectById, currentProject, loading, error } = useProject();
+	const { currentUser } = useUserData();
+
+	useEffect(() => {
+		const fetchProject = async () => {
+			if (!projectId || !currentUser?.workspaceid) return;
+			
+			try {
+				console.log('Fetching project:', { projectId, workspaceId: currentUser.workspaceid });
+				await getProjectById(Number(projectId));
+			} catch (error) {
+				console.error('Failed to fetch project:', error);
+			}
+		};
+
+		fetchProject();
+	}, [projectId, getProjectById, currentUser?.workspaceid]);
+
+	if (!currentUser?.workspaceid) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<p>Loading workspace information...</p>
+			</div>
+		);
+	}
+
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<p>Loading project details...</p>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<p>Error loading project: {error}</p>
+			</div>
+		);
+	}
+
+	if (!currentProject) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<p>No project found with ID: {projectId}</p>
+			</div>
+		);
+	}
+
+	console.log('Current Project:', currentProject); // Debug log
 
 	return (
 		<div className="flex flex-col bg-white">
 			<TitleWrapper>
-				<h1>Project {projectId}</h1>
+				<h1>Project: {currentProject.name}</h1>
 			</TitleWrapper>
 
 			<Tabs defaultValue="description">
@@ -345,91 +434,112 @@ function ProjectView() {
 					value="description">
 					<div className="flex flex-col">
 						<div className="flex justify-between border-r">
-							<div className="h-10 flex items-center px-8">
+							<div className="flex items-center h-10 px-8">
 								<h1 className="text-sm">Description</h1>
 							</div>
-							<Button className="w-20 text-black bg-transparent link h-10">PRINT</Button>
-							{/* </Link> */}
+							<Button className="w-20 h-10 text-black bg-transparent link">PRINT</Button>
 						</div>
+						
+						{/* General Information Section */}
 						<div className="flex items-center justify-between bg-gray-100 border-t border-b border-r">
 							<div className="px-8">
-								<h1 className="text-base">一般情報</h1>
+								<h1 className="text-base">General Information</h1>
 							</div>
-							<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
+							<Button className="w-20 h-10 text-black bg-transparent border-l link border-r-none">
+								EDIT
+							</Button>
 						</div>
-						<div className="flex text-xs flex-col border-r">
-							<Input
-								className="px-8 border-none"
-								placeholder="Project Name"></Input>
 
-							<div className="w-full justify-start border-t px-6 gap-4 flex">
-								<div className="flex justify-start w-1/8 p-2">
+						<div className="flex flex-col text-xs border-r">
+							{/* Project Name */}
+							<div className="flex justify-start w-full gap-4 px-6 py-3 border-t">
+								<div className="flex justify-start p-2 w-1/8">
+									<h1>Project Name</h1>
+								</div>
+								<div className="flex justify-start flex-1 p-2">
+									<h1>{currentProject?.name}</h1>
+								</div>
+							</div>
+
+							{/* Client/Company */}
+							<div className="flex justify-start w-full gap-4 px-6 border-t">
+								<div className="flex justify-start p-2 w-1/8">
 									<h1>Client</h1>
 								</div>
-								<div className="flex justify-start w-1/8 p-2">
-									<h1>Company Name</h1>
+								<div className="flex justify-start flex-1 p-2">
+									<h1>{currentProject?.company?.name}</h1>
 								</div>
 							</div>
 
-							<div className="w-full justify-start border-t px-6 gap-4 flex">
-								<div className="flex justify-start w-1/8 p-2">
+							{/* Personnel List */}
+							<div className="flex justify-start w-full gap-4 px-6 border-t">
+								<div className="flex justify-start p-2 w-1/8">
 									<h1>Personnel</h1>
 								</div>
-								<div className="flex justify-start w-1/8 p-2">
-									<h1>John Brown</h1>
-								</div>
-							</div>
-							<div className="w-full justify-start border-t px-6 gap-4 flex">
-								<div className="flex justify-start w-1/8 p-2">
-									<h1>Category</h1>
-								</div>
-								<div className="flex justify-start w-1/8 p-2">
-									<h1>Category</h1>
+								<div className="flex flex-col justify-start flex-1 p-2">
+									{currentProject?.personnel?.map((person: any, index: any) => (
+										<div key={index} className="flex items-center gap-2 mb-1">
+											<h1>{person.name}</h1>
+											<span className="text-gray-500">({person.status})</span>
+										</div>
+									))}
 								</div>
 							</div>
 
-							<div className="w-full justify-start border-t px-6 gap-4 flex">
-								<div className="flex justify-start w-1/8 p-2">
+							{/* Manager */}
+							<div className="flex justify-start w-full gap-4 px-6 border-t">
+								<div className="flex justify-start p-2 w-1/8">
 									<h1>Manager</h1>
 								</div>
-								<div className="flex justify-start w-1/8 p-2">
-									<div className="flex flex-row gap-2">
-										<img src="/public/vite.svg" />
-										<h1>John Brown</h1>
+								<div className="flex justify-start flex-1 p-2">
+									<div className="flex flex-row items-center gap-2">
+										<h1>{currentProject?.manager?.name}</h1>
 									</div>
 								</div>
 							</div>
-							<div className="w-full justify-start border-t px-6 gap-4 flex">
-								<div className="flex justify-start w-1/8 p-2">
+
+							{/* Required Staff */}
+							<div className="flex justify-start w-full gap-4 px-6 border-t">
+								<div className="flex justify-start p-2 w-1/8">
 									<h1>Required staff number</h1>
 								</div>
-								<div className="flex justify-start w-1/8 p-2">
-									<h1>13</h1>
+								<div className="flex justify-start flex-1 p-2">
+									<h1>{currentProject?.requiredStaffNumber}</h1>
 								</div>
 							</div>
+
+							{/* Description Section */}
 							<div className="flex items-center justify-between bg-gray-100 border-t border-b">
 								<div className="px-8">
 									<h1 className="text-base">Description</h1>
 								</div>
-								<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
+								<Button className="w-20 h-10 text-black bg-transparent border-l link border-r-none">
+									EDIT
+								</Button>
 							</div>
-							<Input
-								className="px-8 rounded-none"
-								placeholder="Bla bla bla bla"></Input>
+							<div className="px-8 py-4">
+								<p>{currentProject?.description || 'No description available'}</p>
+							</div>
+
+							{/* Assigned Staff Section */}
 							<div className="flex items-center justify-between bg-gray-100 border-t">
 								<div className="px-8">
 									<h1>Assigned staffs</h1>
 								</div>
 								<div className="flex flex-row items-center gap-6">
-									<h1>2/13</h1>
-									<Button className="w-20 text-black bg-transparent border-l link border-r-none h-10">EDIT</Button>
+									<h1>{currentProject?.currentStaffCount || 0}/{currentProject?.requiredStaffNumber || 0}</h1>
+									<Button className="w-20 h-10 text-black bg-transparent border-l link border-r-none">
+										EDIT
+									</Button>
 								</div>
 							</div>
 						</div>
+
+						{/* Assigned Staff Table */}
 						<DataTable
 							columns={assignedStaffColumns}
-							data={mockAssignedStaff}
-							loading={false}
+							data={currentProject?.assignedStaff || []}
+							loading={loading}
 						/>
 					</div>
 				</TabsContent>
@@ -442,7 +552,7 @@ function ProjectView() {
 						<h1>Member adjustment</h1>
 					</TitleWrapper>
 					<div className="flex flex-row bg-white">
-						<div className="w-1/3 py-2 px-8">
+						<div className="w-1/3 px-8 py-2">
 							<div className="flex items-center justify-between">
 								<h3>Added</h3>
 								<div className="flex items-center gap-2">
@@ -469,7 +579,7 @@ function ProjectView() {
 							</div>
 						</div>
 						<div className="w-full">
-							<div className="flex items-center p-4 border-r border-l">
+							<div className="flex items-center p-4 border-l border-r">
 								<h1>Members</h1>
 							</div>
 
@@ -512,8 +622,8 @@ function ProjectView() {
 							<div className="border-l">
 								<DataTable
 									columns={assignedStaffColumns}
-									data={mockAssignedStaff}
-									loading={false}
+									data={currentProject?.assignedStaff || []}
+									loading={loading}
 								/>
 							</div>
 						</div>
@@ -529,7 +639,7 @@ function ProjectView() {
 					</TitleWrapper>
 					<div className="flex flex-row bg-white">
 						<div className="w-full">
-							<div className="flex flex-row items-center border-r gap-4 px-8 py-4">
+							<div className="flex flex-row items-center gap-4 px-8 py-4 border-r">
 								<div className="flex flex-col space-y-2">
 									<Label htmlFor="keyword">Keyword</Label>
 									<Input
@@ -583,7 +693,7 @@ function ProjectView() {
 					<div className="flex w-full h-full">
 						{/* Left Side */}
 						<div className="w-1/3 h-full border-r">
-							<div className="flex items-center justify-center w-full py-2 px-4 bg-gray-100">
+							<div className="flex items-center justify-center w-full px-4 py-2 bg-gray-100">
 								<h2>Profit</h2>
 							</div>
 							<div className="flex w-full h-[250px] justify-center items-center border-t border-b p-4">
@@ -652,7 +762,7 @@ function ProjectView() {
 							<div className="flex items-center justify-start w-full p-4 bg-gray-100 border-b border-r">
 								<h2>Profit</h2>
 							</div>
-							<div className="flex w-full gap-2 p-4 border-r border-b">
+							<div className="flex w-full gap-2 p-4 border-b border-r">
 								<h2>Sales Profit</h2>
 								<h2>10,000 USD</h2>
 							</div>

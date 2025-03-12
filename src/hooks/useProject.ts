@@ -19,6 +19,12 @@ import {
     createProjectLead,
     deleteProjectLead,
     clearCurrentProject,
+    CreateCategoryRequest,
+    UpdateCategoryRequest,
+    fetchProjectCategories,
+    createProjectCategory,
+    updateProjectCategory,
+    deleteProjectCategory,
 } from "@/store/slices/projectSlice";
 
 export const useProjects = (filters?: {
@@ -32,7 +38,7 @@ export const useProjects = (filters?: {
     const dispatch = useDispatch<AppDispatch>();
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
-    const { projects, loading, error, total, page, limit } = useSelector(
+    const { projects, loading, error, total, currentPage: page, limit } = useSelector(
         (state: RootState) => state.project
     );
 
@@ -80,8 +86,19 @@ export const useProject = () => {
     );
 
     const getProjectById = useCallback(
-        (projectId: number) => {
-            return dispatch(fetchProjectById({ workspaceId: Number(workspaceid), projectId }));
+        async (projectId: number) => {
+            if (!workspaceid) {
+                throw new Error('Workspace ID is required');
+            }
+            const workspaceIdNum = Number(workspaceid);
+            if (isNaN(workspaceIdNum)) {
+                throw new Error('Invalid Workspace ID');
+            }
+            console.log('Dispatching fetchProjectById:', { workspaceId: workspaceIdNum, projectId });
+            return await dispatch(fetchProjectById({ 
+                workspaceId: workspaceIdNum, 
+                projectId 
+            })).unwrap();
         },
         [dispatch, workspaceid]
     );
@@ -150,6 +167,36 @@ export const useProject = () => {
         [dispatch]
     );
 
+    const getProjectCategories = useCallback(async () => {
+        if (!workspaceid) throw new Error('Workspace ID is required');
+        return dispatch(fetchProjectCategories(Number(workspaceid))).unwrap();
+    }, [dispatch, workspaceid]);
+
+    const createCategory = useCallback(async (data: CreateCategoryRequest) => {
+        if (!workspaceid) throw new Error('Workspace ID is required');
+        return dispatch(createProjectCategory({ 
+            workspaceId: Number(workspaceid), 
+            data 
+        })).unwrap();
+    }, [dispatch, workspaceid]);
+
+    const updateCategory = useCallback(async (categoryId: number, data: UpdateCategoryRequest) => {
+        if (!workspaceid) throw new Error('Workspace ID is required');
+        return dispatch(updateProjectCategory({ 
+            workspaceId: Number(workspaceid), 
+            categoryId, 
+            data 
+        })).unwrap();
+    }, [dispatch, workspaceid]);
+
+    const deleteCategory = useCallback(async (categoryId: number) => {
+        if (!workspaceid) throw new Error('Workspace ID is required');
+        return dispatch(deleteProjectCategory({ 
+            workspaceId: Number(workspaceid), 
+            categoryId 
+        })).unwrap();
+    }, [dispatch, workspaceid]);
+
     return {
         // State
         projects,
@@ -170,5 +217,9 @@ export const useProject = () => {
         addProjectLead,
         removeProjectLead,
         clearProject,
+        getProjectCategories,
+        createCategory,
+        updateCategory,
+        deleteCategory,
     };
 };
