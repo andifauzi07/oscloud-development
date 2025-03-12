@@ -1,19 +1,64 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';
-import { Button } from '../../../components/ui/button';
-import { Label } from '../../../components/ui/label';
-import { Input } from '../../../components/ui/input';
-import { AssignedStaff, PaymentStaff } from '../../../components/projectAssignedStaffDataTable';
-import AdvancedFilterPopover from '../../../components/search/advanced-search';
-import { DataTable } from '../../../components/ui/data-table';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { AssignedStaff, PaymentStaff } from '@/components/projectAssignedStaffDataTable';
+import AdvancedFilterPopover from '@/components/search/advanced-search';
+import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { GraphicChart } from '@/components/graphicChart';
 import { TitleWrapper } from '@/components/wrapperElement';
 import { useProject } from '@/hooks/useProject';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { CompanyPersonnelLeadsListDataTable } from '@/components/companyPersonnelLeadsListDataTable';
 import { useUserData } from '@/hooks/useUserData';
+import { useAvailability } from '@/hooks/useAvailability';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCompanies } from "@/hooks/useCompany";
+import { useUsers } from "@/hooks/useUser";
+import { useEmployee, useWorkspaceEmployees } from '@/hooks/useEmployee';
+import { useMemo } from 'react';
+import useDebounce from '@/hooks/useDebounce';
+const field = [
+	{
+		key: 'status',
+		label: 'Status',
+		type: 'toogle',
 
+		options: ['All', 'Active', 'Inactive'],
+	},
+	{
+		key: 'employeeid',
+		label: 'Employee Id',
+		type: 'number',
+	},
+	{
+		key: 'email',
+		label: 'Email',
+		type: 'email',
+	},
+	{
+		key: 'name',
+		label: 'Name',
+		type: 'text',
+	},
+	{
+		key: 'depertment',
+		label: 'Department',
+		type: 'text',
+	},
+];
 // Define mock data for AssignedStaff
 export const mockAssignedStaff: AssignedStaff[] = [
 	{
@@ -25,42 +70,7 @@ export const mockAssignedStaff: AssignedStaff[] = [
 		money2: 3000.5,
 		grade: 'A',
 	},
-	{
-		id: 2,
-		image: '/public/vite.svg',
-		name: 'Jane Smith',
-		status: 'Inactive',
-		money: 4500.25,
-		money2: 2500.0,
-		grade: 'B',
-	},
-	{
-		id: 3,
-		image: '/public/vite.svg',
-		name: 'Alice Johnson',
-		status: 'Active',
-		money: 6000.0,
-		money2: 3500.75,
-		grade: 'A+',
-	},
-	{
-		id: 4,
-		image: '/public/vite.svg',
-		name: 'Michael Brown',
-		status: 'Active',
-		money: 5500.5,
-		money2: 2800.25,
-		grade: 'A-',
-	},
-	{
-		id: 5,
-		image: '/public/vite.svg',
-		name: 'Emily Davis',
-		status: 'Inactive',
-		money: 4000.0,
-		money2: 2200.0,
-		grade: 'C',
-	},
+
 ];
 
 export const mockPaymentStaff: PaymentStaff[] = [
@@ -77,58 +87,7 @@ export const mockPaymentStaff: PaymentStaff[] = [
 		costum_fee: 10,
 		total_fee: 225,
 	},
-	{
-		id: '2',
-		image: '/public/vite.svg',
-		name: 'Jane Smith',
-		break: 45,
-		duration: 7.2,
-		hour_rate: 22,
-		transport_fee: 10,
-		cost_a: 40,
-		cost_b: 20,
-		costum_fee: 5,
-		total_fee: 204,
-	},
-	{
-		id: '3',
-		image: '/public/vite.svg',
-		name: 'Michael Johnson',
-		break: 20,
-		duration: 9.1,
-		hour_rate: 18,
-		transport_fee: 20,
-		cost_a: 60,
-		cost_b: 35,
-		costum_fee: 15,
-		total_fee: 257,
-	},
-	{
-		id: '4',
-		image: '/public/vite.svg',
-		name: 'Emily Davis',
-		break: 30,
-		duration: 6.9,
-		hour_rate: 25,
-		transport_fee: 12,
-		cost_a: 55,
-		cost_b: 28,
-		costum_fee: 8,
-		total_fee: 200,
-	},
-	{
-		id: '5',
-		image: '/public/vite.svg',
-		name: 'Chris Brown',
-		break: 40,
-		duration: 8.5,
-		hour_rate: 19,
-		transport_fee: 18,
-		cost_a: 45,
-		cost_b: 25,
-		costum_fee: 12,
-		total_fee: 232,
-	},
+
 ];
 
 // Columns for Assigned Staff
@@ -205,139 +164,37 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 		accessorKey: 'employeeId',
 		header: '',
 		cell: ({ row }) => (
-			<div className="flex justify-end w-full">
-				<Button
-					variant="outline"
-					className="text-xs border-t-0 border-b-0 border-r-0">
-					EDIT
-				</Button>
-			</div>
+			// <div className="flex justify-end w-full">
+			// 	<Button
+			// 		variant="outline"
+			// 		className="text-xs border-t-0 border-b-0 border-r-0">
+			// 		EDIT
+			// 	</Button>
+			// </div>
+            <></>
 		),
 	},
 ];
 
-const advSearchField = [
-	{
-		key: 'status',
-		label: 'Status',
-		type: 'toogle',
-
-		options: ['All', 'Active', 'Inactive'],
-	},
-	{
-		key: 'employeeid',
-		label: 'Employee Id',
-		type: 'number',
-	},
-	{
-		key: 'email',
-		label: 'Email',
-		type: 'email',
-	},
-	{
-		key: 'name',
-		label: 'Name',
-		type: 'text',
-	},
-	{
-		key: 'depertment',
-		label: 'Department',
-		type: 'text',
-	},
-];
-const field = [
-	{
-		key: 'status',
-		label: 'Status',
-		type: 'toogle',
-
-		options: ['All', 'Active', 'Inactive'],
-	},
-	{
-		key: 'employeeid',
-		label: 'Employee Id',
-		type: 'number',
-	},
-	{
-		key: 'email',
-		label: 'Email',
-		type: 'email',
-	},
-	{
-		key: 'name',
-		label: 'Name',
-		type: 'text',
-	},
-	{
-		key: 'depertment',
-		label: 'Department',
-		type: 'text',
-	},
-];
-
-// Columns for Payment Staff
-const paymentStaffColumns: ColumnDef<PaymentStaff>[] = [
-	{
-		accessorKey: 'image',
-		header: '',
-		cell: ({ row }) => (
-			<img
-				src={row.original.image}
-				alt="Profile"
-				className="object-cover w-10 h-10"
-			/>
-		),
-	},
-	{
-		accessorKey: 'name',
-		header: 'Name',
-	},
-	{
-		accessorKey: 'break',
-		header: 'Break',
-	},
-	{
-		accessorKey: 'duration',
-		header: 'Duration',
-	},
-	{
-		accessorKey: 'hour_rate',
-		header: 'Hour Rate',
-	},
-	{
-		accessorKey: 'transport_fee',
-		header: 'Transport Fee',
-	},
-	{
-		accessorKey: 'cost_a',
-		header: 'Cost A',
-	},
-	{
-		accessorKey: 'cost_b',
-		header: 'Cost B',
-	},
-	{
-		accessorKey: 'costum_fee',
-		header: 'Costume Fee',
-	},
-	{
-		accessorKey: 'total_fee',
-		header: 'Total Fee',
-	},
-	{
-		id: 'actions',
-		header: '',
-		cell: ({ row }: any) => (
-			<div className="flex justify-end w-full">
-				<Button
-					className="w-20 border-t-0 border-b-0 border-r-0"
-					variant="outline">
-					EDIT
-				</Button>
-			</div>
-		),
-	},
-];
+// Add this type at the top of the file
+interface EnhancedEmployee {
+    employeeid: number;
+    name: string;
+    email: string;
+    profileimage: string | null;
+    department: {
+        departmentname: string;
+    };
+    employeeCategory: {
+        categoryname: string;
+    };
+    rates?: {
+        type: string;
+        value: number;
+    }[];
+    availability?: string;
+    averagePerformance?: number | null;
+}
 
 export const Route = createFileRoute('/projects/$projectId/')({
 	component: ProjectView,
@@ -345,23 +202,568 @@ export const Route = createFileRoute('/projects/$projectId/')({
 
 function ProjectView() {
 	const { projectId } = Route.useParams();
-	const { getProjectById, currentProject, loading, error } = useProject();
 	const { currentUser } = useUserData();
+	
+	console.log('Debug - Current User:', currentUser);
+	console.log('Debug - Workspace ID:', currentUser?.workspaceid);
+	
+	const { 
+		getProjectById, 
+		currentProject, 
+		loading, 
+        getProjectCategories,
+		editProject 
+	} = useProject();
+	const { 
+		addAvailability, 
+		updateAvailability: updateAvailabilityDetails 
+	} = useAvailability();
+	const { companies } = useCompanies();
+	const { users } = useUsers();
+	const { employees, loading: employeesLoading } = useWorkspaceEmployees();
+	const [searchKeyword, setSearchKeyword] = useState('');
+	const [statusFilter, setStatusFilter] = useState('active');
+	const debouncedSearch = useDebounce(searchKeyword, 300) || ''; // Ensure it's never undefined
 
-	useEffect(() => {
-		const fetchProject = async () => {
-			if (!projectId || !currentUser?.workspaceid) return;
+	// Create enhanced employees data that combines both sources
+	const enhancedEmployees = useMemo(() => {
+		if (!employees || !Array.isArray(employees)) return [];
+		
+		return employees.map((employee): EnhancedEmployee => {
+			// Find matching assigned staff data if employee is assigned to project
+			const assignedStaffData = currentProject?.assignedStaff?.find(
+				staff => staff.employeeId === employee.employeeid
+			);
+
+			return {
+				...employee,
+				availability: assignedStaffData?.availability || 'Not Assigned',
+				rates: assignedStaffData?.rates || [], // Use rates from assignedStaff
+				averagePerformance: assignedStaffData?.averagePerformance
+			};
+		});
+	}, [employees, currentProject?.assignedStaff]);
+
+	// Updated DataTable columns for the members tab
+	const getRateValue = (staff: any) => {
+		// First try to get rate from the rates array
+		if (staff.rates && Array.isArray(staff.rates)) {
+			const rateA = staff.rates.find((rate: any) => rate.type === 'A')?.value;
+			if (rateA !== undefined) return rateA;
+		}
+		
+		// Fallback to rateValue if rates array is not available
+		if (staff.rateValue !== undefined) return staff.rateValue;
+		
+		return null;
+	};
+
+	const memberColumns = [
+		{
+			accessorKey: 'profileimage',
+			header: '',
+			cell: ({ row }: any) => (
+				<img
+					src={row.original.profileimage || '/default-avatar.png'}
+					alt="Profile"
+					className="w-10 h-10 rounded-full"
+				/>
+			),
+		},
+		{
+			accessorKey: 'name',
+			header: 'Name',
+		},
+		{
+			accessorKey: 'email',
+			header: 'Email',
+		},
+		{
+			accessorKey: 'department.departmentname',
+			header: 'Department',
+			cell: ({ row }: any) => row.original.department?.departmentname || 'N/A',
+		},
+		{
+			accessorKey: 'availability',
+			header: 'Availability',
+			cell: ({ row }: any) => row.original.availability || 'Not Assigned',
+		},
+		{
+			accessorKey: 'rates',
+			header: 'Rate',
+			cell: ({ row }: any) => {
+				const staff = row.original;
+				const rateValue = getRateValue(staff);
+				
+				if (rateValue === null) return 'N/A';
+				return `¥${rateValue.toLocaleString()}/hr`;
+			},
+		},
+		{
+			accessorKey: 'averagePerformance',
+			header: 'Performance',
+			cell: ({ row }: any) => {
+				const performance = row.original.averagePerformance;
+				if (performance === undefined || performance === null) return 'N/A';
+				return `${Number(performance).toFixed(1)}%`;
+			},
+		},
+		{
+			id: 'actions',
+			cell: ({ row }: any) => {
+				const isAssigned = currentProject?.assignedStaff?.some(
+					staff => staff.employeeId === row.original.employeeid
+				);
+				
+				return (
+					<Button
+						variant="outline"
+						className="w-20 py-2 border rounded-none"
+						size="sm"
+						disabled={isAssigned}
+						onClick={() => handleAssignEmployee(row.original.employeeid)}
+					>
+						{isAssigned ? 'ASSIGNED' : 'ASSIGN'}
+					</Button>
+				);
+			},
+		},
+	];
+
+	// Filter employees based on search and status
+	const filteredEmployees = useMemo(() => {
+		if (!employees || !Array.isArray(employees)) return [];
+		
+		const searchTerm = (debouncedSearch || '').toLowerCase();
+		
+		return employees.filter((employee) => {
+			if (!employee) return false;
 			
-			try {
-				console.log('Fetching project:', { projectId, workspaceId: currentUser.workspaceid });
-				await getProjectById(Number(projectId));
-			} catch (error) {
-				console.error('Failed to fetch project:', error);
-			}
-		};
+			// Safely check if the required properties exist
+			const employeeName = String(employee?.name || '');
+			const employeeEmail = String(employee?.email || '');
 
-		fetchProject();
-	}, [projectId, getProjectById, currentUser?.workspaceid]);
+			const matchesSearch = 
+				employeeName.toLowerCase().includes(searchTerm) ||
+				employeeEmail.toLowerCase().includes(searchTerm);
+
+			// Since there's no explicit status field in your data, you might want to
+			// modify this condition based on your needs
+			const matchesStatus = statusFilter === 'all' ? true : true; // temporarily always true
+
+			return matchesSearch && matchesStatus;
+		});
+	}, [employees, debouncedSearch, statusFilter]);
+
+	// Check if employee is already assigned
+	const isEmployeeAssigned = (employeeId: number) => {
+		return currentProject?.assignedStaff?.some(
+			staff => staff.employeeId === employeeId
+		);
+	};
+
+	// Handle employee assignment
+	const handleAssignEmployee = async (employeeId: number) => {
+		try {
+			if (!projectId || !currentUser?.workspaceid) return;
+
+			const updateData = {
+				...currentProject,
+				assignedStaff: [...(currentProject?.assignedStaff || []), {
+					employeeId,
+					projectId: Number(projectId)
+				}]
+			};
+
+			await editProject({
+				workspaceId: currentUser.workspaceid,
+				projectId: Number(projectId),
+				data: updateData
+			});
+
+			await getProjectById(Number(projectId));
+			toast.success('Employee assigned successfully');
+		} catch (error) {
+			console.error('Failed to assign employee:', error);
+			toast.error('Failed to assign employee');
+		}
+	};
+
+	// Handle employee removal
+	const handleRemoveEmployee = async (employeeId: string) => {
+		try {
+			if (!projectId || !currentUser?.workspaceid) return;
+
+			const updateData = {
+				...currentProject,
+				assignedStaff: currentProject?.assignedStaff?.filter(
+					staff => staff.employeeId !== employeeId
+				) || []
+			};
+
+			await editProject({
+				workspaceId: currentUser.workspaceid,
+				projectId: Number(projectId),
+				data: updateData
+			});
+
+			await getProjectById(Number(projectId));
+			toast.success('Employee removed successfully');
+		} catch (error) {
+			console.error('Failed to remove employee:', error);
+			toast.error('Failed to remove employee');
+		}
+	};
+
+	// State management
+	const [isEditingGeneral, setIsEditingGeneral] = useState(false);
+	const [isEditingDescription, setIsEditingDescription] = useState(false);
+	const [categories, setCategories] = useState([]);
+	const [editedGeneralInfo, setEditedGeneralInfo] = useState<EditedGeneralInfo>({
+		name: currentProject?.name || '',
+		companyId: currentProject?.companyid || 0,
+		managerId: currentProject?.managerid || '',
+		requiredStaffNumber: currentProject?.requiredstaffnumber || 0,
+		categoryId: currentProject?.categoryid || null
+	});
+	const [editedDescription, setEditedDescription] = useState('');
+	const [editedData, setEditedData] = useState<Record<string, any>>({});
+	const [availabilityModal, setAvailabilityModal] = useState(false);
+	const [selectedStaff, setSelectedStaff] = useState<any>(null);
+	const [editedAvailability, setEditedAvailability] = useState<{
+		date: string;
+		timeSlot: {
+			start: string;
+			end: string;
+		};
+		isNew?: boolean;
+	}>({
+		date: '',
+		timeSlot: {
+			start: '',
+			end: ''
+		}
+	});
+	const [isEditingStaff, setIsEditingStaff] = useState(false);
+
+	// Add this type conversion function
+	const convertAssignedStaffType = (staff: AssignedStaff[]): any[] => {
+		return staff.map(s => ({
+			id: s.employeeId,
+			image: s.profileImage,
+			name: s.name,
+			status: 'Active',
+			money: getRateValue(s) || 0,
+			money2: s.totalEarnings || 0,
+			grade: s.averagePerformance ? String(s.averagePerformance) : 'N/A'
+		}));
+	};
+
+	// Initial data fetch
+    useEffect(() => {
+        if (!projectId || !currentUser?.workspaceid) return;
+        getProjectById(Number(projectId));
+    }, [projectId, currentUser?.workspaceid, getProjectById]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            if (!currentUser?.workspaceid) return;
+            
+            try {
+                const categoriesData = await getProjectCategories();
+                console.log('Fetched categories:', categoriesData); // Debug log
+                setCategories(categoriesData || []);
+            } catch (error) {
+                console.error('Failed to fetch project categories:', error);
+                toast.error('Failed to load project categories');
+                setCategories([]);
+            }
+        };
+
+        fetchCategories();
+    }, [currentUser?.workspaceid, getProjectCategories]);
+
+   // Effect to update form when currentProject changes
+   useEffect(() => {
+    if (currentProject) {
+        setEditedGeneralInfo({
+            name: currentProject.name || '',
+            companyId: currentProject.companyid ? Number(currentProject.companyid) : 0,
+            managerId: currentProject.managerid || '',
+            requiredStaffNumber: currentProject.requiredstaffnumber || 0,
+            categoryId: currentProject.categoryid ? Number(currentProject.categoryid) : null
+        });
+    }
+}, [currentProject]);
+
+	// Handlers for General Information
+	const handleGeneralInfoEdit = () => {
+		if (isEditingGeneral) {
+			handleGeneralInfoSave();
+		} else {
+			setIsEditingGeneral(true);
+		}
+	};
+
+	// First, define the proper type for editedGeneralInfo
+	interface EditedGeneralInfo {
+		name: string;
+		companyId: number;
+		managerId: string;
+		requiredStaffNumber: number;
+		categoryId: number | null;
+	}
+
+	// When saving general info, transform the data to match the API expectations
+	const handleGeneralInfoSave = async () => {
+		try {
+			if (!projectId) {
+				throw new Error('Project ID is required');
+			}
+
+			// Format the data to match the API expectations
+			const updateData = {
+				name: editedGeneralInfo.name.trim(),
+				companyId: Number(editedGeneralInfo.companyId),
+				managerId: editedGeneralInfo.managerId,
+				categoryId: editedGeneralInfo.categoryId ? Number(editedGeneralInfo.categoryId) : null,
+				requiredStaffNumber: Number(editedGeneralInfo.requiredStaffNumber),
+				// Preserve existing values from currentProject
+				startDate: currentProject?.startdate || null,
+				endDate: currentProject?.enddate || null,
+				status: currentProject?.status || 'Active',
+				costs: currentProject?.costs || {
+					food: 0,
+					break: 0,
+					rental: 0,
+					revenue: 0,
+					other_cost: 0,
+					labour_cost: 0,
+					manager_fee: 0,
+					costume_cost: 0,
+					sales_profit: 0,
+					transport_cost: 0
+				}
+			};
+
+			console.log('Sending update data:', updateData);
+
+			// Make sure we're passing both workspace ID and project ID
+			const result = await editProject({
+				workspaceId: currentUser?.workspaceid || 1, // Add workspaceId
+				projectId: Number(projectId),
+				data: updateData
+			});
+
+			console.log('Update result:', result);
+			
+			// Refresh project data
+			await getProjectById(Number(projectId));
+			
+			setIsEditingGeneral(false);
+			toast.success('Project updated successfully');
+			
+		} catch (error) {
+			console.error('Failed to update project:', error);
+			toast.error('Failed to update project. Please check all fields are filled correctly.');
+		}
+	};
+
+	// When setting edited info, maintain consistent casing
+	const handleCompanyChange = (value: string) => {
+		setEditedGeneralInfo(prev => ({
+			...prev,
+			companyId: Number(value)
+		}));
+	};
+
+	// Update the Select components to use consistent casing
+	<Select
+		value={String(editedGeneralInfo.companyId)}
+		onValueChange={handleCompanyChange}
+	>
+		{/* ... */}
+	</Select>
+
+	// Handlers for Description
+	const handleDescriptionEdit = () => {
+		if (isEditingDescription) {
+			handleDescriptionSave();
+		} else {
+			setIsEditingDescription(true);
+		}
+	};
+
+	const handleDescriptionSave = async () => {
+		try {
+			if (!currentProject || !projectId) {
+				throw new Error('Project data is not available');
+			}
+
+			// Create update payload with all existing data plus new description
+			const updatePayload = {
+				description: editedDescription,
+				name: currentProject.name,
+				companyid: currentProject.companyid,
+				managerid: currentProject.managerid,
+				requiredstaffnumber: currentProject.requiredStaffNumber,
+				startdate: currentProject.startdate,
+				enddate: currentProject.enddate,
+				status: currentProject.status
+			};
+
+			console.log('Sending update payload:', updatePayload);
+
+			const result = await editProject({
+				projectId: Number(projectId),
+				data: updatePayload
+			});
+
+			console.log('Update result:', result);
+
+			// Refresh the project data
+			await getProjectById(Number(projectId));
+			
+			setIsEditingDescription(false);
+			alert('Description updated successfully');
+		} catch (error) {
+			console.error('Failed to update description:', error);
+			alert('Failed to update description. Please check the console for details.');
+		}
+	};
+
+	// Handlers for Staff Availability
+	const handleStaffAvailabilityEdit = (staff: any) => {
+		setSelectedStaff(staff);
+		setEditedAvailability({
+			date: staff.availability?.date || format(new Date(), 'yyyy-MM-dd'),
+			timeSlot: staff.availability?.timeSlot || { start: '09:00', end: '17:00' },
+			isNew: !staff.availability
+		});
+		setAvailabilityModal(true);
+	};
+
+	const handleAvailabilitySave = async () => {
+		try {
+			if (editedAvailability.isNew) {
+				await addAvailability({
+					employeeId: selectedStaff.id,
+					date: editedAvailability.date,
+					timeSlot: editedAvailability.timeSlot
+				});
+			} else {
+				await updateAvailabilityDetails(selectedStaff.id, {
+					date: editedAvailability.date,
+					timeSlot: editedAvailability.timeSlot
+				});
+			}
+			setAvailabilityModal(false);
+			await getProjectById(Number(projectId));
+			alert('Availability updated successfully');
+		} catch (error) {
+			console.error('Failed to update availability:', error);
+			alert('Failed to update availability');
+		}
+	};
+
+	const createAssignedStaffColumns = useCallback((isEditing: boolean): ColumnDef<AssignedStaff>[] => [
+		{
+			accessorKey: 'profileImage',
+			header: '',
+			cell: ({ row }) => (
+				<img
+					src={row.original?.profileImage || '/default-avatar.png'}
+					alt="Profile"
+					className="w-10 h-10 rounded-full"
+				/>
+			),
+		},
+		{
+			accessorKey: 'name',
+			header: 'Name',
+		},
+		{
+			accessorKey: 'availability',
+			header: 'Availability',
+			cell: ({ row }) => {
+				if (!isEditing) {
+					return <div>{row.getValue('availability') || 'Not set'}</div>;
+				}
+
+				return (
+					<div className="flex items-center gap-2">
+						<Input
+							type="date"
+							className="w-32"
+							value={editedData[row.original.id]?.date || ''}
+							onChange={(e) => {
+								const timeSlot = editedData[row.original.id]?.timeSlot || { start: '09:00', end: '17:00' };
+								setEditedData({
+									...editedData,
+									[row.original.id]: {
+										date: e.target.value,
+										timeSlot,
+										isNew: !row.getValue('availability')
+									}
+								});
+							}}
+						/>
+						<Input
+							type="time"
+							className="w-24"
+							value={editedData[row.original.id]?.timeSlot?.start || '09:00'}
+							onChange={(e) => {
+								const current = editedData[row.original.id] || { date: format(new Date(), 'yyyy-MM-dd'), timeSlot: { end: '17:00' } };
+								setEditedData({
+									...editedData,
+									[row.original.id]: {
+										...current,
+										timeSlot: { ...current.timeSlot, start: e.target.value },
+										isNew: !row.getValue('availability')
+									}
+								});
+							}}
+						/>
+						<span>-</span>
+						<Input
+							type="time"
+							className="w-24"
+							value={editedData[row.original.id]?.timeSlot?.end || '17:00'}
+							onChange={(e) => {
+								const current = editedData[row.original.id] || { date: format(new Date(), 'yyyy-MM-dd'), timeSlot: { start: '09:00' } };
+								setEditedData({
+									...editedData,
+									[row.original.id]: {
+										...current,
+										timeSlot: { ...current.timeSlot, end: e.target.value },
+										isNew: !row.getValue('availability')
+									}
+								});
+							}}
+						/>
+					</div>
+				);
+			},
+		},
+        {
+            accessorKey: 'totalEarnings',
+            header: 'Total Earnings',
+            cell: ({ row }) => {
+                const earnings = row.original?.totalEarnings;
+                if (earnings === undefined || earnings === null) return '-';
+                return `$${Number(earnings).toFixed(2)}`;
+            },
+        },
+        {
+            accessorKey: 'averagePerformance',
+            header: 'Performance',
+            cell: ({ row }) => {
+                const performance = row.original?.averagePerformance;
+                if (performance === undefined || performance === null) return 'N/A';
+                return `${Number(performance).toFixed(1)}%`;
+            },
+        },
+	], [editedData]);
 
 	if (!currentUser?.workspaceid) {
 		return (
@@ -379,14 +781,6 @@ function ProjectView() {
 		);
 	}
 
-	if (error) {
-		return (
-			<div className="flex items-center justify-center h-full">
-				<p>Error loading project: {error}</p>
-			</div>
-		);
-	}
-
 	if (!currentProject) {
 		return (
 			<div className="flex items-center justify-center h-full">
@@ -394,8 +788,6 @@ function ProjectView() {
 			</div>
 		);
 	}
-
-	console.log('Current Project:', currentProject); // Debug log
 
 	return (
 		<div className="flex flex-col bg-white">
@@ -445,9 +837,22 @@ function ProjectView() {
 							<div className="px-8">
 								<h1 className="text-base">General Information</h1>
 							</div>
-							<Button className="w-20 h-10 text-black bg-transparent border-l link border-r-none">
-								EDIT
-							</Button>
+							<div className="flex">
+								<Button 
+									className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
+									onClick={() => setIsEditingGeneral(!isEditingGeneral)}
+								>
+									{isEditingGeneral ? 'CANCEL' : 'EDIT'}
+								</Button>
+								{isEditingGeneral && (
+									<Button 
+										className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
+										onClick={handleGeneralInfoSave}
+									>
+										SAVE
+									</Button>
+								)}
+							</div>
 						</div>
 
 						<div className="flex flex-col text-xs border-r">
@@ -457,54 +862,143 @@ function ProjectView() {
 									<h1>Project Name</h1>
 								</div>
 								<div className="flex justify-start flex-1 p-2">
-									<h1>{currentProject?.name}</h1>
+									{isEditingGeneral ? (
+										<Input
+											value={editedGeneralInfo.name}
+											onChange={(e) => setEditedGeneralInfo(prev => ({...prev, name: e.target.value}))}
+											className="h-8"
+										/>
+									) : (
+										<h1>{currentProject?.name}</h1>
+									)}
 								</div>
 							</div>
 
 							{/* Client/Company */}
-							<div className="flex justify-start w-full gap-4 px-6 border-t">
+							<div className="flex justify-start w-full gap-4 px-6 py-3 border-t">
 								<div className="flex justify-start p-2 w-1/8">
 									<h1>Client</h1>
 								</div>
 								<div className="flex justify-start flex-1 p-2">
-									<h1>{currentProject?.company?.name}</h1>
+									{isEditingGeneral ? (
+										<Select
+											value={editedGeneralInfo.companyId}
+											onValueChange={(value) => setEditedGeneralInfo(prev => ({...prev, companyId: value}))}
+										>
+											<SelectTrigger className="h-8">
+												<SelectValue placeholder="Select company" />
+											</SelectTrigger>
+											<SelectContent>
+												{companies?.map((company) => (
+													<SelectItem 
+														key={company.companyid} 
+														value={String(company.companyid)}
+													>
+														{company.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									) : (
+										<h1>{currentProject?.company?.name}</h1>
+									)}
 								</div>
 							</div>
+                            {currentProject?.personnel && currentProject.personnel.length > 0 && (
+                            <div className="flex justify-start w-full gap-4 px-6 py-3 border-t">
+                                <div className="flex justify-start p-2 w-1/8">
+                                    <h1>Personnel</h1>
+                                </div>
+                                <div className="flex justify-start flex-1 p-2">
+                                    <h1>{currentProject.personnel[0].name}</h1>
+                                </div>
+                            </div>)}
 
-							{/* Personnel List */}
-							<div className="flex justify-start w-full gap-4 px-6 border-t">
-								<div className="flex justify-start p-2 w-1/8">
-									<h1>Personnel</h1>
-								</div>
-								<div className="flex flex-col justify-start flex-1 p-2">
-									{currentProject?.personnel?.map((person: any, index: any) => (
-										<div key={index} className="flex items-center gap-2 mb-1">
-											<h1>{person.name}</h1>
-											<span className="text-gray-500">({person.status})</span>
-										</div>
-									))}
-								</div>
-							</div>
+                            {/* Category */}
+                            <div className="flex justify-start w-full gap-4 px-6 py-3 border-t">
+                                <div className="flex justify-start p-2 w-1/8">
+                                    <h1>Category</h1>
+                                </div>
+                                <div className="flex justify-start flex-1 p-2">
+                                    {isEditingGeneral ? (
+                                        <Select
+                                            value={editedGeneralInfo.categoryId?.toString() || "none"}
+                                            onValueChange={(value) => setEditedGeneralInfo(prev => ({
+                                                ...prev, 
+                                                categoryId: value === "none" ? null : Number(value)
+                                            }))}
+                                        >
+                                            <SelectTrigger className="h-8">
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">No Category</SelectItem>
+                                                {categories?.map((category: ProjectCategory) => (
+                                                    <SelectItem 
+                                                        key={category.categoryid} 
+                                                        value={category.categoryid.toString()}
+                                                    >
+                                                        {category.categoryname}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <h1>{currentProject?.category?.categoryname || 'No category assigned'}</h1>
+                                    )}
+                                </div>
+                            </div>
 
 							{/* Manager */}
-							<div className="flex justify-start w-full gap-4 px-6 border-t">
+							<div className="flex justify-start w-full gap-4 px-6 py-3 border-t">
 								<div className="flex justify-start p-2 w-1/8">
 									<h1>Manager</h1>
 								</div>
 								<div className="flex justify-start flex-1 p-2">
-									<div className="flex flex-row items-center gap-2">
+									{isEditingGeneral ? (
+										<Select
+											value={editedGeneralInfo.managerId}
+											onValueChange={(value) => setEditedGeneralInfo(prev => ({...prev, managerId: value}))}
+										>
+											<SelectTrigger className="h-8">
+												<SelectValue placeholder="Select manager" />
+											</SelectTrigger>
+											<SelectContent>
+												{users?.map((user) => (
+													<SelectItem 
+														key={user.userid} 
+														value={user.userid} // Ensure this matches the UUID format
+													>
+														{user.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									) : (
 										<h1>{currentProject?.manager?.name}</h1>
-									</div>
+									)}
 								</div>
 							</div>
 
-							{/* Required Staff */}
-							<div className="flex justify-start w-full gap-4 px-6 border-t">
+							{/* Required Staff Number */}
+							<div className="flex justify-start w-full gap-4 px-6 py-3 border-t">
 								<div className="flex justify-start p-2 w-1/8">
-									<h1>Required staff number</h1>
+									<h1>Required Staff</h1>
 								</div>
 								<div className="flex justify-start flex-1 p-2">
-									<h1>{currentProject?.requiredStaffNumber}</h1>
+									{isEditingGeneral ? (
+										<Input
+											type="number"
+											value={editedGeneralInfo.requiredStaffNumber}
+											onChange={(e) => setEditedGeneralInfo(prev => ({
+												...prev, 
+												requiredStaffNumber: parseInt(e.target.value) || 0
+											}))}
+											className="h-8"
+										/>
+									) : (
+										<h1>{currentProject?.requiredStaffNumber}</h1>
+									)}
 								</div>
 							</div>
 
@@ -513,12 +1007,33 @@ function ProjectView() {
 								<div className="px-8">
 									<h1 className="text-base">Description</h1>
 								</div>
-								<Button className="w-20 h-10 text-black bg-transparent border-l link border-r-none">
-									EDIT
-								</Button>
+								<div className="flex">
+									<Button 
+										className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
+										onClick={() => setIsEditingDescription(!isEditingDescription)}
+									>
+										EDIT
+									</Button>
+									{isEditingDescription && (
+										<Button 
+											className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
+											onClick={handleDescriptionSave}
+										>
+											SAVE
+										</Button>
+									)}
+								</div>
 							</div>
 							<div className="px-8 py-4">
-								<p>{currentProject?.description || 'No description available'}</p>
+								{isEditingDescription ? (
+									<textarea
+										value={editedDescription}
+										onChange={(e) => setEditedDescription(e.target.value)}
+										className="w-full h-32 p-2 border rounded"
+									/>
+								) : (
+									<p>{currentProject?.description || 'No description available'}</p>
+								)}
 							</div>
 
 							{/* Assigned Staff Section */}
@@ -526,19 +1041,32 @@ function ProjectView() {
 								<div className="px-8">
 									<h1>Assigned staffs</h1>
 								</div>
-								<div className="flex flex-row items-center gap-6">
-									<h1>{currentProject?.currentStaffCount || 0}/{currentProject?.requiredStaffNumber || 0}</h1>
-									<Button className="w-20 h-10 text-black bg-transparent border-l link border-r-none">
+								<div className="flex">
+									<Button 
+										className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
+										onClick={() => setIsEditingStaff(!isEditingStaff)}
+									>
 										EDIT
 									</Button>
+									{isEditingStaff && (
+										<Button 
+											className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
+											onClick={() => {
+												// Add your save logic here
+												setIsEditingStaff(false);
+											}}
+										>
+											SAVE
+										</Button>
+									)}
 								</div>
 							</div>
 						</div>
 
-						{/* Assigned Staff Table */}
+
 						<DataTable
-							columns={assignedStaffColumns}
-							data={currentProject?.assignedStaff || []}
+							columns={createAssignedStaffColumns(isEditingStaff)}
+							data={currentProject?.assignedStaff ? convertAssignedStaffType(currentProject.assignedStaff) : []}
 							loading={loading}
 						/>
 					</div>
@@ -552,67 +1080,96 @@ function ProjectView() {
 						<h1>Member adjustment</h1>
 					</TitleWrapper>
 					<div className="flex flex-row bg-white">
-						<div className="w-1/3 px-8 py-2">
-							<div className="flex items-center justify-between">
-								<h3>Added</h3>
+						<div className="w-1/3 px-8 py-2 border-r">
+							<div className="flex items-center justify-between mb-4">
+								<h3 className="font-semibold">Assigned Members</h3>
 								<div className="flex items-center gap-2">
-									<span>2 / 13</span>
-									<Button className="w-20 py-2 border rounded-none">EDIT</Button>
+									<span className="text-sm text-gray-600">
+										{currentProject?.assignedStaff?.length || 0} / {currentProject?.requiredstaffnumber || 0}
+									</span>
 								</div>
 							</div>
-							{/* Added Members List */}
-							<div className="flex flex-col gap-2 my-4">
-								{['John Brown', 'Sarah White'].map((name, index) => (
-									<div
-										key={index}
-										className="flex items-center justify-between">
-										<span>{name}</span>
+							
+							{/* Added Members List with more details */}
+							<div className="flex flex-col gap-4">
+								{currentProject?.assignedStaff?.map((staff) => (
+									<div 
+										key={staff.employeeId} 
+										className="flex items-center justify-between p-4 border rounded-lg shadow-sm"
+									>
+										<div className="flex items-center gap-3">
+											<img
+												src={staff.profileImage || '/default-avatar.png'}
+												alt={staff.name}
+												className="w-10 h-10 rounded-full"
+											/>
+											<div className="flex flex-col">
+												<span className="font-medium">{staff.name}</span>
+												<span className="text-sm text-gray-500">
+													{staff.rates?.find(rate => rate.type === 'A')?.value 
+														? `¥${staff.rates.find(rate => rate.type === 'A')?.value}/hr` 
+														: 'No rate set'}
+												</span>
+											</div>
+										</div>
 										<Button
 											variant="outline"
-											className="w-20 py-2 border rounded-none"
 											size="sm"
-											onClick={() => console.log('Removing', name)}>
-											ASSIGN
+											className="text-red-500 hover:text-red-700 hover:bg-red-50"
+											onClick={() => handleRemoveEmployee(staff.employeeId)}
+										>
+											Remove
 										</Button>
 									</div>
 								))}
+								
+								{(!currentProject?.assignedStaff || currentProject.assignedStaff.length === 0) && (
+									<div className="flex flex-col items-center justify-center py-8 text-gray-500">
+										<span className="text-sm">No members assigned yet</span>
+									</div>
+								)}
 							</div>
 						</div>
+
 						<div className="w-full">
-							<div className="flex items-center p-4 border-l border-r">
-								<h1>Members</h1>
+							<div className="flex items-center p-4 border-b">
+								<h1>Available Members</h1>
 							</div>
 
-							<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border border-b-0 md:flex-row">
+							<div className="flex flex-row flex-wrap items-center justify-between w-full p-4 bg-white border-b md:flex-row">
 								<div className="flex flex-col space-y-2 bg-white md:w-auto">
 									<Label htmlFor="keyword">Keyword</Label>
 									<Input
 										type="text"
 										id="keyword"
+										value={searchKeyword}
+										onChange={(e) => setSearchKeyword(e.target.value)}
 										placeholder="Search by name, email, etc."
 										className="border rounded-none w-[250px]"
 									/>
 								</div>
 
-								{/* Status Toggle */}
-								<div className="flex flex-row gap-2 ">
+								<div className="flex flex-row gap-2">
 									<div className="flex flex-col space-y-2">
 										<Label>Status</Label>
 										<div className="flex">
 											<Button
 												size="default"
-												className="w-20 bg-black rounded-none">
+												className={`w-20 rounded-none ${statusFilter === 'active' ? 'bg-black' : ''}`}
+												onClick={() => setStatusFilter('active')}
+											>
 												Active
 											</Button>
 											<Button
 												size="default"
 												variant="outline"
-												className="w-20 rounded-none">
+												className={`w-20 rounded-none ${statusFilter === 'all' ? 'bg-black text-white' : ''}`}
+												onClick={() => setStatusFilter('all')}
+											>
 												All
 											</Button>
 										</div>
 									</div>
-									{/* Advanced Search */}
 									<div className="flex flex-col space-y-2">
 										<Label>‎</Label>
 										<AdvancedFilterPopover fields={field} />
@@ -621,155 +1178,83 @@ function ProjectView() {
 							</div>
 							<div className="border-l">
 								<DataTable
-									columns={assignedStaffColumns}
-									data={currentProject?.assignedStaff || []}
-									loading={loading}
+									columns={memberColumns}
+									data={enhancedEmployees}
+									loading={loading || employeesLoading}
 								/>
 							</div>
 						</div>
 					</div>
 				</TabsContent>
 
-				{/* Payment Tab */}
-				<TabsContent
-					className="m-0"
-					value="payment">
-					<TitleWrapper>
-						<h1>Member adjustment</h1>
-					</TitleWrapper>
-					<div className="flex flex-row bg-white">
-						<div className="w-full">
-							<div className="flex flex-row items-center gap-4 px-8 py-4 border-r">
-								<div className="flex flex-col space-y-2">
-									<Label htmlFor="keyword">Keyword</Label>
-									<Input
-										type="text"
-										id="keyword"
-										placeholder="Search by name, email, etc."
-										className="border rounded-none w-[400px]"
-									/>
-								</div>
+			</Tabs>
 
-								{/* Status Toggle */}
-								<div className="flex flex-col space-y-2">
-									<Label>Status</Label>
-									<div className="flex">
-										<Button
-											size="default"
-											className="bg-black rounded-none">
-											Active
-										</Button>
-										<Button
-											size="default"
-											variant="outline"
-											className="rounded-none">
-											All
-										</Button>
-									</div>
-								</div>
-								{/* Advanced Search */}
-								<div className="flex flex-col mt-5">
-									<AdvancedFilterPopover fields={advSearchField} />
-								</div>
-							</div>
-							<DataTable
-								columns={paymentStaffColumns}
-								data={mockPaymentStaff}
-								loading={false}
+			{/* Staff Availability Modal */}
+			<Dialog open={availabilityModal} onOpenChange={setAvailabilityModal}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Edit Staff Availability</DialogTitle>
+						<DialogDescription>
+							Update availability for {selectedStaff?.name}
+						</DialogDescription>
+					</DialogHeader>
+					
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-col gap-2">
+							<Label>Date</Label>
+							<Input
+								type="date"
+								value={editedAvailability.date}
+								onChange={(e) => setEditedAvailability(prev => ({
+									...prev,
+									date: e.target.value
+								}))}
 							/>
 						</div>
-					</div>
-				</TabsContent>
-				<TabsContent
-					className="m-0"
-					value="P/L">
-					<TitleWrapper>
-						<h1>Member adjustment</h1>
-					</TitleWrapper>
-					<TitleWrapper>
-						<h1>Profit & Loss</h1>
-					</TitleWrapper>
-
-					<div className="flex w-full h-full">
-						{/* Left Side */}
-						<div className="w-1/3 h-full border-r">
-							<div className="flex items-center justify-center w-full px-4 py-2 bg-gray-100">
-								<h2>Profit</h2>
+						
+						<div className="flex gap-4">
+							<div className="flex flex-col flex-1 gap-2">
+								<Label>Start Time</Label>
+								<Input
+									type="time"
+									value={editedAvailability.timeSlot.start}
+									onChange={(e) => setEditedAvailability(prev => ({
+										...prev,
+										timeSlot: {
+											...prev.timeSlot,
+											start: e.target.value
+										}
+									}))}
+								/>
 							</div>
-							<div className="flex w-full h-[250px] justify-center items-center border-t border-b p-4">
-								<h2 className="text-2xl">280,000 USD</h2>
-							</div>
-							<div className="flex items-center justify-center w-full p-4 bg-gray-100">
-								<h2>Profitability</h2>
-							</div>
-							<div className="flex w-full justify-center h-[250px] items-center border-t p-4">
-								<h2 className="text-2xl ">15 %</h2>
-							</div>
-							<div className="min-h-[600px]">
-								<div className="flex items-center justify-center w-full p-4 bg-gray-100 border-t border-b">
-									<h2>Cost Breakdown</h2>
-								</div>
-								<GraphicChart />
-							</div>
-						</div>
-
-						{/* Righ Side */}
-						<div className="w-2/3">
-							<div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
-								<h2>Sales Revenue</h2>
-								<Button
-									variant={'link'}
-									className="hover:cursor-pointer">
-									EDIT
-								</Button>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Revenue Cost</h2>
-								<h2>1,000,000 USD</h2>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Other Cost</h2>
-								<h2>0 USD</h2>
-							</div>
-							<div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
-								<h2>Expenditures</h2>
-								<Button
-									variant={'link'}
-									className="hover:cursor-pointer">
-									EDIT
-								</Button>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Labour Cost</h2>
-								<h2>10,000 USD</h2>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Transport Cost</h2>
-								<h2>10,000 USD</h2>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Costume Cost</h2>
-								<h2>10,000 USD</h2>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Manager Fee</h2>
-								<h2>10,000 USD</h2>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Other Cost</h2>
-								<h2>10,000 USD</h2>
-							</div>
-							<div className="flex items-center justify-start w-full p-4 bg-gray-100 border-b border-r">
-								<h2>Profit</h2>
-							</div>
-							<div className="flex w-full gap-2 p-4 border-b border-r">
-								<h2>Sales Profit</h2>
-								<h2>10,000 USD</h2>
+							
+							<div className="flex flex-col flex-1 gap-2">
+								<Label>End Time</Label>
+								<Input
+									type="time"
+									value={editedAvailability.timeSlot.end}
+									onChange={(e) => setEditedAvailability(prev => ({
+										...prev,
+										timeSlot: {
+											...prev.timeSlot,
+											end: e.target.value
+										}
+									}))}
+								/>
 							</div>
 						</div>
 					</div>
-				</TabsContent>
-			</Tabs>
+
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setAvailabilityModal(false)}>
+							Cancel
+						</Button>
+						<Button onClick={handleAvailabilitySave}>
+							Save Changes
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

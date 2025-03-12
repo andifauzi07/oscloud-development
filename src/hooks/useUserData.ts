@@ -32,9 +32,8 @@ export const useUserData = () => {
 	const session = useSelector((state: RootState) => state.auth.session);
 
 	// Memoize complex computations
-	const activeUsers = useMemo(() => users.filter((user) => user.status === 'Active'), [users]);
-
 	const adminUsers = useSelector((state: RootState) => selectUsersByRole(state, 'Admin'));
+	const activeUsers = useSelector((state: RootState) => selectUsersByStatus(state, 'Active'));
 
 	// Effect for fetching current user
 	useEffect(() => {

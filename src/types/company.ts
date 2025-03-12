@@ -59,25 +59,44 @@ export interface ProjectCosts {
     transport_cost: number;
 }
 
+export interface ProjectCategory {
+    categoryId: number;
+    name: string;
+    parentCategoryId: number | null;
+}
+
 // Project interface
 export interface Project {
     projectid: number;
     name: string;
     startdate: string;
     enddate: string;
-    managerid: string;  // Changed to string to match the API
     workspaceid: number;
     companyid: number;
-    status: string;
+    status: string | null;
     costs: ProjectCosts;
+    managerid: string;
+    description: string | null;
+    requiredstaffnumber: number;
+    categoryid: number | null;
+    manager: {
+        userId: string;
+        name: string;
+    };
+    company: {
+        companyId: number;
+        name: string;
+        logo: string | null;
+    };
+    assignedStaff: StaffMember[];
     personnel: Personnel[];
     requiredStaffNumber: number;
     currentStaffCount: number;
-    financials: Financials;
-    company: Company;
-    manager: Manager;
-    assignedStaff: StaffMember[];
-    description: string | null;
+    financials: {
+        totalLabourCost: number;
+        totalTransportFee: number;
+    };
+    category: ProjectCategory | null;
 }
 
 export interface Manager {
@@ -123,7 +142,7 @@ export interface ProjectDisplay {
 }
 
 export interface ProjectResponse {
-    projects: ProjectDisplay[];
+    projects: Project[];
     total: number;
     page: number;
     limit: number;
@@ -295,11 +314,16 @@ export interface Personnel {
     email: string;
     status: string;
     description: string | null;
-    company: Company;
+    company: {
+        companyId: number;
+        name: string;
+        logo: string | null;
+        categoryGroup: string | null;
+    };
     lead: {
         leadId: number;
         name: string;
         status: string;
         contractValue: number;
-    };
+    } | null;
 }

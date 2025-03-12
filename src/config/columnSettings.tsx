@@ -217,13 +217,14 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		cell: ({ row }) => <span>{row.original.company?.name}</span>, // Access nested property in cell renderer
 	},
 	{
-		accessorKey: 'status',
-		header: 'Status',
-		label: 'Status',
+		accessorKey: 'category',
+		header: 'Category',
+		label: 'Category',
 		type: 'text',
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 6,
+        cell: ({ row }) => <span>{row.original.category?.name}</span>,
 	},
 	{
 		accessorKey: 'assignedStaff',

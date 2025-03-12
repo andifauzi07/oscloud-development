@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,8 @@ import { ProjectsTimeline } from "@/components/ProjectsTimeline";
 import { TimelineCalendar } from "@/components/timeline/TimeLineSchedule";
 import { Project as TimelineProject } from '@/components/timeline/propsTypes';
 import ScheduleTable from "@/components/EmployeTimeLine";
+import { useUsers } from "@/hooks/useUser";
+import { fetchProjectCategories } from "@/store/slices/projectSlice";
 
 export const Route = createFileRoute("/projects/")({
     component: RouteComponent,
@@ -75,6 +77,7 @@ function RouteComponent() {
     const [endDate, setEndDate] = useState<string>("");
     const debouncedKeyword = useDebounce(searchKeyword, 500);
     const [isEditable, setIsEditable] = useState(false);
+    const [categories, setCategories] = useState([]);
 
     const filters = useMemo(
         () => ({
@@ -120,6 +123,28 @@ function RouteComponent() {
 
     const { companies } = useCompanies();
     const { currentUser } = useUserData();
+    const workspaceid = currentUser?.workspaceid;
+    
+    // Get managers using the existing selector
+    const { users: managers } = useUsers(Number(workspaceid));
+
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            if (!workspaceid) return;
+            
+            try {
+                const categoriesResponse = await fetchProjectCategories(Number(workspaceid));
+                // Make sure we're setting the categories array from the response
+                setCategories(categoriesResponse.categories || []);
+            } catch (error) {
+                console.error('Error fetching initial data:', error);
+                // Set empty array as fallback
+                setCategories([]);
+            }
+        };
+        
+        fetchInitialData();
+    }, [workspaceid]);
 
     const companyOptions = useMemo(
         () =>
@@ -166,19 +191,25 @@ function RouteComponent() {
 
     const handleAddRecord = useCallback(
         async (data: Partial<Project>) => {
+            if (!workspaceid) {
+                alert('Workspace ID is not available');
+                return;
+            }
+
             try {
                 if (!data.name) {
-                    throw new Error("Project name is required");
+                    throw new Error('Project name is required');
                 }
 
-                const newProjectRequest = {
+                const newProjectRequest: CreateProjectRequest = {
                     name: data.name,
                     startDate: data.startdate,
                     endDate: data.enddate,
-                    status: "Active",
-                    managerid: currentUser?.userid || 1,
+                    status: 'Active',
+                    managerid: Number(data.managerid),
                     companyid: Number(data.companyid),
-                    workspaceid: 1,
+                    workspaceid: Number(workspaceid),
+                    categoryid: Number(data.categoryid),
                     costs: data.costs || {
                         food: 0,
                         break: 0,
@@ -194,14 +225,14 @@ function RouteComponent() {
                 };
 
                 await addProject(newProjectRequest);
-                alert("Project successfully added!");
+                alert('Project successfully added!');
             } catch (error) {
-                console.error("Failed to add project:", error);
-                alert("Failed to create project");
+                console.error('Failed to add project:', error);
+                alert('Failed to create project');
                 throw error;
             }
         },
-        [addProject, currentUser]
+        [addProject, workspaceid]
     );
 
     const handleStatusChange = useCallback((newStatus: string) => {
@@ -210,6 +241,11 @@ function RouteComponent() {
 
     const handleSave = useCallback(
         async (updatedData: ProjectDisplay[]) => {
+            if (!workspaceid) {
+                alert('Workspace ID is not available');
+                return;
+            }
+
             try {
                 await Promise.all(
                     updatedData.map(async (project) => {
@@ -220,6 +256,8 @@ function RouteComponent() {
                             startdate: project.startdate,
                             enddate: project.enddate,
                             status: project.status,
+                            managerid: Number(project.managerid),
+                            categoryid: Number(project.categoryid)
                         };
 
                         await editProject({
@@ -230,13 +268,13 @@ function RouteComponent() {
                 );
 
                 setIsEditable(false);
-                alert("Projects successfully updated!");
+                alert('Projects successfully updated!');
             } catch (error) {
-                console.error("Error updating projects:", error);
-                alert("Failed to update projects");
+                console.error('Error updating projects:', error);
+                alert('Failed to update projects');
             }
         },
-        [editProject]
+        [editProject, workspaceid]
     );
 
     const editButton = useCallback(() => {
@@ -263,6 +301,10 @@ function RouteComponent() {
             status: project.status || null
         }));
     }, [projects]);
+
+    if (!workspaceid) {
+        return <div>Loading workspace information...</div>;
+    }
 
     return (
         <div className="flex flex-col flex-1 h-full">
@@ -361,11 +403,24 @@ function RouteComponent() {
                                 "connectedPersonnel",
                                 "costs",
                                 "managerid",
+                                "categoryid"
                             ]}
                             selectFields={{
                                 companyid: {
                                     options: companyOptions,
                                 },
+                                managerid: {
+                                    options: managers.map(manager => ({
+                                        value: manager.userid,
+                                        label: manager.name
+                                    }))
+                                },
+                                categoryid: {
+                                    options: Array.isArray(categories) ? categories.map(category => ({
+                                        value: category.categoryid,
+                                        label: category.categoryname
+                                    })) : []
+                                }
                             }}
                             customFields={{
                                 duration: {
@@ -375,6 +430,7 @@ function RouteComponent() {
                                     label: "Duration",
                                 },
                             }}
+                            enableCosts={true}
                         />
                         {editButton()}
                     </div>
@@ -410,11 +466,24 @@ function RouteComponent() {
                                 "connectedPersonnel",
                                 "costs",
                                 "managerid",
+                                "categoryid"
                             ]}
                             selectFields={{
                                 companyid: {
                                     options: companyOptions,
                                 },
+                                managerid: {
+                                    options: managers.map(manager => ({
+                                        value: manager.userid,
+                                        label: manager.name
+                                    }))
+                                },
+                                categoryid: {
+                                    options: Array.isArray(categories) ? categories.map(category => ({
+                                        value: category.categoryid,
+                                        label: category.categoryname
+                                    })) : []
+                                }
                             }}
                             customFields={{
                                 duration: {
@@ -424,6 +493,7 @@ function RouteComponent() {
                                     label: "Duration",
                                 },
                             }}
+                            enableCosts={true}
                         />
                         {editButton()}
                     </div>

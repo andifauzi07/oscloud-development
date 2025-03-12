@@ -110,10 +110,22 @@ export const useProject = () => {
         [dispatch, workspaceid]
     );
 
-    const editProject = useCallback(async ({ projectId, data }: { projectId: number; data: Partial<CreateProjectRequest> }) => {
-        if (!workspaceid) throw new Error('Workspace ID is required');
-        return dispatch(updateProject({ workspaceId: Number(workspaceid), projectId, data })).unwrap();
-    }, [dispatch, workspaceid]);
+    const editProject = useCallback(
+        async ({ projectId, data }: { projectId: number; data: Partial<UpdateProjectRequest> }) => {
+            if (!workspaceid) {
+                throw new Error('Workspace ID is required');
+            }
+            
+            console.log('Editing project with data:', { workspaceId: Number(workspaceid), projectId, data });
+            
+            return await dispatch(updateProject({ 
+                workspaceId: Number(workspaceid), 
+                projectId, 
+                data 
+            })).unwrap();
+        },
+        [dispatch, workspaceid]
+    );
 
     const removeProject = useCallback(
         (projectId: number) => {

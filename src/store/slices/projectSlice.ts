@@ -15,12 +15,18 @@ export interface ProjectCosts {
     transport_cost: number;
 }
 
+export interface Rate {
+    type: string;
+    value: number;
+}
+
 export interface AssignedStaff {
     employeeId: number;
     name: string;
     profileImage: string;
     rateType: string;
     rateValue: number;
+    rates: Rate[];
     breakHours: number;
     availability: string;
     totalEarnings: number;
@@ -53,21 +59,11 @@ export interface Project {
     workspaceid: number;
     companyid: number;
     status: string | null;
-    costs: {
-        food: number;
-        break: number;
-        rental: number;
-        revenue: number;
-        other_cost: number;
-        labour_cost: number;
-        manager_fee: number;
-        costume_cost: number;
-        sales_profit: number;
-        transport_cost: number;
-    };
+    costs: ProjectCosts;
     managerid: string;
     description: string | null;
     requiredstaffnumber: number;
+    categoryid: number;
     manager: {
         userId: string;
         name: string;
@@ -85,11 +81,10 @@ export interface Project {
         totalLabourCost: number;
         totalTransportFee: number;
     };
-    categoryid: number;
     category: {
         categoryId: number;
         name: string;
-        parentCategoryId: number | null;
+        parentCategoryId: null;
     };
 }
 
@@ -179,6 +174,7 @@ interface ProjectState {
     projects: Project[];
     currentProject: Project | null;
     projectLeads: any[]; // Define proper type if available
+    categories: ProjectCategory[];
     loading: boolean;
     error: string | null;
     total: number;
@@ -190,6 +186,7 @@ const initialState: ProjectState = {
     projects: [],
     currentProject: null,
     projectLeads: [],
+    categories: [],
     loading: false,
     error: null,
     total: 0,
@@ -206,7 +203,7 @@ export const fetchProjects = createAsyncThunk(
                 if (value) queryParams.append(key.toLowerCase(), value.toString());
             });
         }
-        const response = await apiClient.get<ProjectsResponse>(`/workspaces/${workspaceId}/projects/?${queryParams}`);
+        const response = await apiClient.get<ProjectsResponse>(`/workspaces/${workspaceId}/projects${queryParams.toString() ? `?${queryParams}` : ''}`);
         return response.data;
     }
 );
@@ -246,6 +243,7 @@ export const fetchProjectById = createAsyncThunk(
                     profileImage: staff.profileImage,
                     rateType: staff.rateType,
                     rateValue: staff.rateValue,
+                    rates: staff.rates,
                     breakHours: staff.breakHours,
                     availability: staff.availability,
                     totalEarnings: staff.totalEarnings,
@@ -276,13 +274,27 @@ export const createProject = createAsyncThunk(
 
 export const updateProject = createAsyncThunk(
     "project/update",
-    async ({ workspaceId, projectId, data }: { 
+    async ({ 
+        workspaceId, 
+        projectId, 
+        data 
+    }: { 
         workspaceId: number; 
         projectId: number; 
         data: Partial<UpdateProjectRequest> 
-    }) => {
-        const response = await apiClient.put(`/workspaces/${workspaceId}/projects/${projectId}`, data);
-        return response.data;
+    }, { rejectWithValue }) => {
+        try {
+            console.log('Updating project with data:', data);
+            const response = await apiClient.put(
+                `/workspaces/${workspaceId}/projects/${projectId}`, 
+                data
+            );
+            
+            return response.data.project || response.data;
+        } catch (error: any) {
+            console.error('Update project error:', error.response?.data || error);
+            return rejectWithValue(error.response?.data || 'Failed to update project');
+        }
     }
 );
 
@@ -430,8 +442,31 @@ const projectSlice = createSlice({
             .addCase(fetchProjectById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string || 'Failed to fetch project';
+            })
+            .addCase(fetchProjectCategories.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchProjectCategories.fulfilled, (state, action) => {
+                state.loading = false;
+                state.categories = action.payload;
+            })
+            .addCase(fetchProjectCategories.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(createProjectCategory.fulfilled, (state, action) => {
+                state.categories.push(action.payload);
+            })
+            .addCase(updateProjectCategory.fulfilled, (state, action) => {
+                const index = state.categories.findIndex(cat => cat.categoryid === action.payload.categoryid);
+                if (index !== -1) {
+                    state.categories[index] = action.payload;
+                }
+            })
+            .addCase(deleteProjectCategory.fulfilled, (state, action) => {
+                state.categories = state.categories.filter(cat => cat.categoryid !== action.payload);
             });
-
     },
 });
 
