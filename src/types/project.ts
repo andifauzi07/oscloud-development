@@ -1,23 +1,59 @@
-interface Manager {
-    userId: number;
-    name: string;
-}
-
 interface Company {
     companyId: number;
     name: string;
-    logo: string;
+    logo: string | null;
+    categoryGroup?: string | null;
 }
 
-interface AssignedStaffMember {
+interface Lead {
+    leadId: number;
+    name: string;
+    status: string;
+    contractValue: number;
+}
+
+interface Personnel {
+    personnelId: number;
+    name: string;
+    email: string;
+    status: string;
+    description: string | null;
+    company: Company;
+    lead: Lead;
+}
+
+interface AssignedStaff {
     employeeId: number;
     name: string;
+    profileImage: string;
     rateType: string;
     rateValue: number;
     breakHours: number;
+    availability: string;
+    totalEarnings: number;
+    averagePerformance: number | null;
+    currentProjects: number;
 }
 
-interface Financials {
+interface Manager {
+    userId: string;
+    name: string;
+}
+
+interface ProjectCosts {
+    food: number;
+    break: number;
+    rental: number;
+    revenue: number;
+    other_cost: number;
+    labour_cost: number;
+    manager_fee: number;
+    costume_cost: number;
+    sales_profit: number;
+    transport_cost: number;
+}
+
+interface ProjectFinancials {
     totalLabourCost: number;
     totalTransportFee: number;
 }
@@ -27,27 +63,41 @@ export interface Project {
     name: string;
     startdate: string;
     enddate: string;
-    managerid: number;
     workspaceid: number;
     companyid: number;
-    status: string;
+    status: string | null;
     costs: {
-        food?: number;
-        break?: number;
-        rental?: number;
-        revenue?: number;
-        other_cost?: number;
-        labour_cost?: number;
-        manager_fee?: number;
-        costume_cost?: number;
-        sales_profit?: number;
-        transport_cost?: number;
+        food: number;
+        break: number;
+        rental: number;
+        revenue: number;
+        other_cost: number;
+        labour_cost: number;
+        manager_fee: number;
+        costume_cost: number;
+        sales_profit: number;
+        transport_cost: number;
     };
-    manager: Manager;
-    company: Company;
-    assignedStaff: AssignedStaffMember[];
-    connectedPersonnel: any[]; // Update this type if you have the structure
-    financials: Financials;
+    managerid: string;
+    description: string | null;
+    requiredstaffnumber: number;
+    manager: {
+        userId: string;
+        name: string;
+    };
+    company: {
+        companyId: number;
+        name: string;
+        logo: string;
+    };
+    assignedStaff: AssignedStaff[];
+    personnel: any[];
+    requiredStaffNumber: number;
+    currentStaffCount: number;
+    financials: {
+        totalLabourCost: number;
+        totalTransportFee: number;
+    };
 }
 
 export interface CreateProjectRequest {
@@ -73,4 +123,8 @@ export interface ProjectsResponse {
     total: number;
     page: number;
     limit: number;
+}
+
+export interface ProjectResponse {
+    project: Project;
 }

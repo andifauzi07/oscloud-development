@@ -218,8 +218,8 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 	},
 	{
 		accessorKey: 'status',
-		header: 'Category',
-		label: 'Category',
+		header: 'Status',
+		label: 'Status',
 		type: 'text',
 		date_created: new Date().toISOString(),
 		status: 'shown',

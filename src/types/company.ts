@@ -70,6 +70,14 @@ export interface Project {
     companyid: number;
     status: string;
     costs: ProjectCosts;
+    personnel: Personnel[];
+    requiredStaffNumber: number;
+    currentStaffCount: number;
+    financials: Financials;
+    company: Company;
+    manager: Manager;
+    assignedStaff: StaffMember[];
+    description: string | null;
 }
 
 export interface Manager {
@@ -80,9 +88,14 @@ export interface Manager {
 export interface StaffMember {
     employeeId: number;
     name: string;
+    profileImage: string;
     rateType: string;
     rateValue: number;
     breakHours: number;
+    availability: string;
+    totalEarnings: number;
+    averagePerformance: number | null;
+    currentProjects: number;
 }
 
 export interface Financials {
@@ -105,8 +118,8 @@ export interface ProjectDisplay {
     assignedStaff: StaffMember[];
     connectedPersonnel: any[]; // Define type if needed
     financials: Financials;
-    detail: any;
-    actions: any;
+    detail?: any;
+    actions?: any;
 }
 
 export interface ProjectResponse {
@@ -274,4 +287,19 @@ export interface CompaniesResponse {
     total: number;
     page: number;
     limit: number;
+}
+
+export interface Personnel {
+    personnelId: number;
+    name: string;
+    email: string;
+    status: string;
+    description: string | null;
+    company: Company;
+    lead: {
+        leadId: number;
+        name: string;
+        status: string;
+        contractValue: number;
+    };
 }

@@ -66,6 +66,7 @@ function RouteComponent() {
 	const [isEditable, setIsEditable] = useState(false);
 	const filters = useMemo(() => ({ category: '' }), []);
 	const { companies, loading, addCompany, updateCompany } = useCompanies(filters); // This is the companies data
+
 	const { settings, saveSettings, reorderColumns } = useColumnSettings<Company>({
 		storageKey: 'companyColumnSettings',
 		defaultSettings: defaultCompanyColumnSettings,
