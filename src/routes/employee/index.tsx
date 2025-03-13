@@ -7,19 +7,20 @@ import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { useEmployeeCategories, useWorkspaceEmployees } from '@/hooks/useEmployee';
 import { DataTable } from '../../components/ui/data-table';
 import { TitleWrapper } from '@/components/wrapperElement';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDepartments } from '@/hooks/useDepartment';
 import { Department } from '@/types/departments';
 import { Employee } from '@/types/employee';
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
+import useDebounce from '@/hooks/useDebounce';
 
-const columns: ColumnDef<Employee>[] = [
+const columns = [
 	{
 		accessorKey: 'profileimage',
 		header: '',
-		cell: ({ row }) => (
+		cell: ({ row }: any) => (
 			<img
 				className="object-cover w-10 h-10"
 				src={row.original.profileimage || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
@@ -34,7 +35,7 @@ const columns: ColumnDef<Employee>[] = [
 	{
 		accessorKey: 'name',
 		header: 'Name',
-		cell: ({ row }) => (
+		cell: ({ row }: any) => (
 			<Link
 				to={'/employee/$userId'}
 				params={{ userId: row.original.employeeid.toString() }}
@@ -46,12 +47,12 @@ const columns: ColumnDef<Employee>[] = [
 	{
 		accessorKey: 'employeecategoryid',
 		header: 'Employee Category',
-		cell: ({ row }) => row.original.employeeCategory?.categoryname || '-',
+		cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-',
 	},
 	{
 		accessorKey: 'email',
 		header: 'Email',
-		cell: ({ row }) =>
+		cell: ({ row }: any) =>
 			row.original.email ? (
 				<a
 					href={`mailto:${row.original.email}`}
@@ -65,12 +66,12 @@ const columns: ColumnDef<Employee>[] = [
 	{
 		accessorKey: 'departmentid',
 		header: 'Department',
-		cell: ({ row }) => row.original.department?.departmentname || '-',
+		cell: ({ row }: any) => row.original.department?.departmentname || '-',
 	},
 	{
 		id: 'actions',
 		header: '',
-		cell: ({ row }) => (
+		cell: ({ row }: any) => (
 			<div className="flex justify-end w-full">
 				<Link
 					to={'/employee/$userId'}
@@ -133,7 +134,19 @@ function RouteComponent() {
 	const [employeeCategoryOptions, setEmployeeCategoryOptions] = useState<Array<{ value: string; label: string }>>([]);
 	const [departmentOptions, setDepartmentOptions] = useState<Array<{ value: string; label: string }>>([]);
 	const [updateDataFromChild, setUpdateDataFromChild] = useState(employees);
+	const [searchQuery, setSearchQuery] = useState<string>('');
+	const debounceSearchTerms = useDebounce(searchQuery, 500);
+
 	const handleSaveEdits = useSaveEdits<Employee>();
+
+	const filteredData = useMemo(() => {
+		return employees.filter(
+			(employee) =>
+				employee.name.toLowerCase().includes(debounceSearchTerms.toLowerCase()) ||
+				employee.email.toLowerCase().includes(debounceSearchTerms.toLowerCase()) ||
+				employee.department?.departmentname.toLowerCase().includes(debounceSearchTerms.toLowerCase())
+		);
+	}, [employees, debounceSearchTerms]);
 
 	useEffect(() => {
 		if (categories) {
@@ -159,59 +172,17 @@ function RouteComponent() {
 	const handleAddRecord = async (data: any) => {
 		try {
 			// Add your API call here to save the new record
-			addEmployee(data);
-			console.log('Adding new record:', data);
+			const processedData = {
+				...data,
+				employeecategoryid: Number(data.employeecategoryid),
+				departmentid: Number(data.departmentid),
+			};
+			addEmployee(processedData);
+			// console.log('Adding new record:', processedData);
 		} catch (error) {
 			console.error('Failed to add record:', error);
 		}
 	};
-
-	// const handleSaveEdits = useCallback(
-	// 	async (updatedData: any[]) => {
-	// 		try {
-	// 			// compare with the new data if anything change
-	// 			const changedEmployees = updatedData.filter((updatedEmp) => {
-	// 				const originalEmp = employees.find((emp) => emp.employeeid === updatedEmp.employeeid);
-
-	// 				if (!originalEmp) return false;
-
-	// 				// Check the data if anything importants
-	// 				return updatedEmp.name !== originalEmp.name || updatedEmp.email !== originalEmp.email || updatedEmp.employeecategoryid !== originalEmp.employeecategoryid || updatedEmp.departmentid !== originalEmp.departmentid;
-	// 			});
-
-	// 			if (changedEmployees.length === 0) {
-	// 				setEditable(false);
-	// 				return;
-	// 			}
-
-	// 			await Promise.all(
-	// 				changedEmployees.map(async (employee) => {
-	// 					// Check the data from the backend
-	// 					if (!employee.employeeid) {
-	// 						return;
-	// 					}
-
-	// 					const updatePayload = {
-	// 						employeeid: employee.employeeid,
-	// 						name: employee.name,
-	// 						email: employee.email,
-	// 						employeecategoryid: employee.employeecategoryid,
-	// 						departmentid: employee.departmentid,
-	// 					};
-
-	// 					await updateEmployeeData(employee.employeeid, updatePayload);
-	// 				})
-	// 			);
-
-	// 			//if success, return true or something
-	// 			// console.log('Success edit data');
-	// 			setEditable(false);
-	// 		} catch (error) {
-	// 			console.error('Failed to save updates:', error);
-	// 		}
-	// 	},
-	// 	[updateEmployeeData, employees, setEditable, updateDataFromChild]
-	// );
 
 	const selectFields = {
 		employeecategoryid: {
@@ -239,6 +210,8 @@ function RouteComponent() {
 						<Input
 							type="text"
 							id="keyword"
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
 							placeholder="Search employees..."
 							className="border rounded-none w-[400px]"
 						/>
@@ -285,7 +258,7 @@ function RouteComponent() {
 								employees, // Initial Data from the hooks and also rendered on the table component
 								updateDataFromChild, // State to catch an update from the component child (DataTable)
 								'employeeid', // Unique identifier, eg. employeeId, departmentId, catgeoryId etc..
-								['name', 'email', 'employeecategoryid', 'departmentid'], // Field that want to compare and track update
+								['name', 'email', 'employeeCategoryId', 'departmentId'], // Field that want to compare and track update
 								updateEmployeeData // update function from hooks
 							);
 							setEditable(false);
@@ -305,7 +278,7 @@ function RouteComponent() {
 
 			<DataTable
 				columns={columns}
-				data={employees}
+				data={filteredData}
 				loading={loading}
 				isEditable={editable}
 				nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
