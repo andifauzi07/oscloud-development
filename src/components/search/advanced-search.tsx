@@ -6,6 +6,7 @@ import { Label } from '../ui/label';
 import { ChevronDown } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFilter } from '@/hooks/useFilter';
+import { useState } from 'react';
 
 interface FilterField {
 	key: string;
@@ -19,14 +20,18 @@ interface AdvancedFilterPopoverProps {
 }
 
 export default function AdvancedFilterPopover({ fields }: AdvancedFilterPopoverProps) {
+	const [open, setOpen] = useState(false);
 	const { filter, updateFilter, clearFilter } = useFilter();
 
-	//user melakukan filter dengan advfiltersearch komponen
-	//nilai yang di masukkan oleh user akan di kirim ke store(redux) store
-	//store akan menerima pemfilteran data dan akan melakukan rendering ulang
+	const handleReset = () => {
+		clearFilter();
+		setOpen((prev) => !prev);
+	};
 
 	return (
-		<Popover>
+		<Popover
+			onOpenChange={setOpen}
+			open={open}>
 			<PopoverTrigger asChild>
 				<Button
 					variant="outline"
@@ -95,13 +100,8 @@ export default function AdvancedFilterPopover({ fields }: AdvancedFilterPopoverP
 
 					<div className="flex justify-center gap-4">
 						<Button
-							className="col-span-2"
-							onClick={() => console.log('DATA Yang di cari ===>', filter)}>
-							Search
-						</Button>
-						<Button
 							variant="outline"
-							onClick={clearFilter}>
+							onClick={handleReset}>
 							Reset
 						</Button>
 					</div>

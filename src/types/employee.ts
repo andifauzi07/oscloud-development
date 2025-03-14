@@ -16,6 +16,7 @@ export interface Employee {
 		departmentname: string;
 		parentdepartmentid: number | null;
 	};
+	actions?: any;
 }
 
 export interface EmployeeFilters {

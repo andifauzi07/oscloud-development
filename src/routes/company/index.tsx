@@ -104,11 +104,11 @@ function RouteComponent() {
 			personnel: company.personnel.map((p: any) => ({
 				...p,
 				status: p.status as 'Active' | 'Inactive' | 'Blocked',
-				managerid: p.managerid // Keep as string here too
+				managerid: p.managerid, // Keep as string here too
 			})),
 			activeLeads: company.activeLeads || 0,
 			totalContractValue: company.totalContractValue || 0,
-			detail: company.detail || {}
+			detail: company.detail || {},
 		}));
 	}, [companies]);
 
@@ -136,7 +136,7 @@ function RouteComponent() {
 					product: data.product || '',
 					email: data.email || '',
 					category_group: data.category_group || '',
-					managerid: data.managerid,  // Now we know it's not null/undefined
+					managerid: data.managerid, // Now we know it's not null/undefined
 					personnel: [],
 				};
 

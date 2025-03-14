@@ -1,24 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface FilterState {
-	status: string[];
-	name: string;
-	email: string;
-	category: string;
-	userId: string;
-	from: string;
-	to: string;
+export interface FilterState {
+	[key: string]: string | number | string[] | null | undefined;
 }
 
-const initialState: FilterState = {
-	status: [],
-	name: '',
-	email: '',
-	category: '',
-	userId: '',
-	from: '',
-	to: '',
-};
+export const initialState: FilterState = {};
 
 const filterSlice = createSlice({
 	name: 'filter',
@@ -27,6 +13,7 @@ const filterSlice = createSlice({
 		setFilter: (state, action: PayloadAction<Partial<FilterState>>) => {
 			return { ...state, ...action.payload };
 		},
+
 		resetFilter: () => initialState,
 	},
 });

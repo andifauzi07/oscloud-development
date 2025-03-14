@@ -7,7 +7,7 @@ import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { useEmployeeCategories, useWorkspaceEmployees } from '@/hooks/useEmployee';
 import { DataTable } from '../../components/ui/data-table';
 import { TitleWrapper } from '@/components/wrapperElement';
-import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDepartments } from '@/hooks/useDepartment';
@@ -15,78 +15,9 @@ import { Department } from '@/types/departments';
 import { Employee } from '@/types/employee';
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 import useDebounce from '@/hooks/useDebounce';
-
-const columns = [
-	{
-		accessorKey: 'profileimage',
-		header: '',
-		cell: ({ row }: any) => (
-			<img
-				className="object-cover w-10 h-10"
-				src={row.original.profileimage || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-				alt={`${row.original.name}'s profile`}
-			/>
-		),
-	},
-	{
-		accessorKey: 'employeeid',
-		header: 'ID',
-	},
-	{
-		accessorKey: 'name',
-		header: 'Name',
-		cell: ({ row }: any) => (
-			<Link
-				to={'/employee/$userId'}
-				params={{ userId: row.original.employeeid.toString() }}
-				className="text-blue-600 hover:underline">
-				{row.original.name || '-'}
-			</Link>
-		),
-	},
-	{
-		accessorKey: 'employeecategoryid',
-		header: 'Employee Category',
-		cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-',
-	},
-	{
-		accessorKey: 'email',
-		header: 'Email',
-		cell: ({ row }: any) =>
-			row.original.email ? (
-				<a
-					href={`mailto:${row.original.email}`}
-					className="text-blue-600 hover:underline">
-					{row.original.email}
-				</a>
-			) : (
-				'-'
-			),
-	},
-	{
-		accessorKey: 'departmentid',
-		header: 'Department',
-		cell: ({ row }: any) => row.original.department?.departmentname || '-',
-	},
-	{
-		id: 'actions',
-		header: '',
-		cell: ({ row }: any) => (
-			<div className="flex justify-end w-full">
-				<Link
-					to={'/employee/$userId'}
-					className="sticky"
-					params={{ userId: row.original.employeeid.toString() }}>
-					<Button
-						variant="outline"
-						className="w-20 border-t-0 border-b-0">
-						DETAIL
-					</Button>
-				</Link>
-			</div>
-		),
-	},
-];
+import { defaultEmployeeColumnSettings } from '@/config/columnSettings';
+import { useColumnSettings } from '@/hooks/useColumnSettings';
+import { useFilter } from '@/hooks/useFilter';
 
 const field = [
 	{
@@ -135,18 +66,62 @@ function RouteComponent() {
 	const [departmentOptions, setDepartmentOptions] = useState<Array<{ value: string; label: string }>>([]);
 	const [updateDataFromChild, setUpdateDataFromChild] = useState(employees);
 	const [searchQuery, setSearchQuery] = useState<string>('');
+	const { settings, saveSettings, reorderColumns } = useColumnSettings<Employee>({
+		storageKey: 'EmployeeColumnSetting',
+		defaultSettings: defaultEmployeeColumnSettings,
+	});
+	const { filter: storeFilter } = useFilter();
 	const debounceSearchTerms = useDebounce(searchQuery, 500);
+
+	const columns = useMemo<ColumnDef<Employee, any>[]>(() => {
+		return settings
+			.filter((setting) => setting.status === 'shown')
+			.sort((a, b) => a.order - b.order)
+			.map((setting) => {
+				// Find the matching default setting to get the original cell renderer
+				const defaultSetting = defaultEmployeeColumnSettings.find((def) => def.accessorKey === setting.accessorKey);
+
+				return {
+					id: String(setting.accessorKey),
+					accessorKey: setting.accessorKey as string,
+					header: setting.header || setting.label,
+					// Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
+					cell: defaultSetting?.cell || setting.cell,
+				};
+			});
+	}, [settings]);
 
 	const handleSaveEdits = useSaveEdits<Employee>();
 
 	const filteredData = useMemo(() => {
-		return employees.filter(
-			(employee) =>
+		return employees.filter((employee) => {
+			const matchesSearchTerm =
 				employee.name.toLowerCase().includes(debounceSearchTerms.toLowerCase()) ||
+				employee.employeeCategory?.categoryname.toLowerCase().includes(debounceSearchTerms.toLowerCase()) ||
 				employee.email.toLowerCase().includes(debounceSearchTerms.toLowerCase()) ||
-				employee.department?.departmentname.toLowerCase().includes(debounceSearchTerms.toLowerCase())
-		);
-	}, [employees, debounceSearchTerms]);
+				employee.department?.departmentname.toLowerCase().includes(debounceSearchTerms.toLowerCase());
+
+			const matchesAdvancedSearch = Object.entries(storeFilter).every(([key, value]) => {
+				const lowerValue = String(value).toLowerCase();
+
+				const lookup: Record<string, boolean> = {
+					employeeCategory: employee.employeeCategory?.categoryname?.toLowerCase().includes(lowerValue),
+					department: employee.department?.departmentname?.toLowerCase().includes(lowerValue),
+					id: employee.employeeid === Number(value),
+				};
+
+				return (
+					lookup[key] ??
+					(key in employee &&
+						String(employee[key as keyof Employee])
+							?.toLowerCase()
+							.includes(lowerValue))
+				);
+			});
+
+			return matchesSearchTerm && matchesAdvancedSearch;
+		});
+	}, [employees, debounceSearchTerms, storeFilter]);
 
 	useEffect(() => {
 		if (categories) {
@@ -178,7 +153,7 @@ function RouteComponent() {
 				departmentid: Number(data.departmentid),
 			};
 			addEmployee(processedData);
-			// console.log('Adding new record:', processedData);
+			console.log('Adding new record:', processedData);
 		} catch (error) {
 			console.error('Failed to add record:', error);
 		}
@@ -264,7 +239,7 @@ function RouteComponent() {
 							setEditable(false);
 							console.log(isSucces); // can use this variable to make update on ui
 						}}
-						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+						className="text-black bg-transparent border-l md:w-20 link border-l-none border-r min-h-10">
 						SAVE
 					</Button>
 				) : (

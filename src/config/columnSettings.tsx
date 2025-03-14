@@ -145,6 +145,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 ];
 
 import { ColumnDef } from '@tanstack/react-table';
+import { Employee } from '@/types/employee';
 
 export const projectColumns: ColumnDef<Project>[] = [
 	{
@@ -224,7 +225,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 6,
-        cell: ({ row }) => <span>{row.original.category?.name}</span>,
+		cell: ({ row }) => <span>{row.original.category?.name}</span>,
 	},
 	{
 		accessorKey: 'assignedStaff',
@@ -294,5 +295,108 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 				</div>
 			);
 		},
+	},
+];
+
+//Column for //Employee Page
+export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
+	{
+		accessorKey: 'profileimage',
+		header: '',
+		label: '',
+		type: 'image',
+		status: 'shown',
+		order: 1,
+		cell: ({ row }: any) => (
+			<img
+				className="object-cover w-10 h-10"
+				src={row.original.profileimage || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+				alt={`${row.original.name}'s profile`}
+			/>
+		),
+	},
+	{
+		accessorKey: 'employeeid',
+		header: 'ID',
+		label: 'Employee ID',
+		type: 'number',
+		status: 'shown',
+		order: 2,
+		cell: ({ row }) => <h1>{row.original.employeeid}</h1>,
+	},
+	{
+		accessorKey: 'name',
+		header: 'Name',
+		label: 'Name',
+		type: 'text',
+		status: 'shown',
+		order: 3,
+		cell: ({ row }: any) => (
+			<Link
+				to={'/employee/$userId'}
+				params={{ userId: row.original.employeeid.toString() }}
+				className="text-blue-600 hover:underline">
+				{row.original.name || '-'}
+			</Link>
+		),
+	},
+	{
+		accessorKey: 'employeecategoryid',
+		header: 'Employee Category',
+		label: 'Employee Category',
+		type: 'number',
+		status: 'shown',
+		order: 4,
+		cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-',
+	},
+	{
+		accessorKey: 'email',
+		header: 'Email',
+		label: 'Email',
+		type: 'email',
+		status: 'shown',
+		order: 5,
+		cell: ({ row }: any) =>
+			row.original.email ? (
+				<a
+					href={`mailto:${row.original.email}`}
+					className="text-blue-600 hover:underline">
+					{row.original.email}
+				</a>
+			) : (
+				'-'
+			),
+	},
+	{
+		accessorKey: 'departmentid',
+		header: 'Department',
+		label: 'Department',
+		type: 'text',
+		status: 'shown',
+		order: 6,
+		cell: ({ row }: any) => row.original.department?.departmentname || '-',
+	},
+	{
+		id: 'actions',
+		header: '',
+		label: '',
+		accessorKey: 'actions',
+		type: 'text',
+		status: 'shown',
+		order: 7,
+		cell: ({ row }) => (
+			<div className="flex justify-end w-full">
+				<Link
+					to={'/employee/$userId'}
+					className="sticky"
+					params={{ userId: row.original.employeeid.toString() }}>
+					<Button
+						variant="outline"
+						className="w-20 border-t-0 border-b-0">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
+		),
 	},
 ];
