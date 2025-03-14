@@ -147,8 +147,12 @@ export const useProject = () => {
     );
 
     const removeProjectStaff = useCallback(
-        (projectId: number, employeeIds: number[]) => {
-            return dispatch(removeStaff({ workspaceId: Number(workspaceid), projectId, employeeIds }));
+        (projectId: number, employeeId: number) => {
+            return dispatch(removeStaff({ 
+                workspaceId: Number(workspaceid), 
+                projectId,
+                employeeId
+            }));
         },
         [dispatch, workspaceid]
     );
