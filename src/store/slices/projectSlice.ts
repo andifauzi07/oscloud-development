@@ -152,7 +152,7 @@ export interface CreateProjectLeadRequest {
 }
 
 export interface ProjectCategory {
-    categoryid: number;
+    categoryid: number;  // Note: API uses lowercase
     categoryname: string;
     workspaceid: number;
     parentcategoryid: number | null;
@@ -210,56 +210,44 @@ export const fetchProjects = createAsyncThunk(
 
 export const fetchProjectById = createAsyncThunk(
     "project/fetchOne",
-    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }, { rejectWithValue }) => {
+    async ({ workspaceId, projectId }: { workspaceId: number; projectId: number }, { rejectWithValue, getState }) => {
         try {
             const response = await apiClient.get(`/workspaces/${workspaceId}/projects/${projectId}`);
             const projectData = response.data.project;
 
-            // Return the data exactly as it comes from the API
-            return {
-                projectid: projectData.projectid,
-                name: projectData.name,
-                startdate: projectData.startdate,
-                enddate: projectData.enddate,
-                workspaceid: projectData.workspaceid,
-                companyid: projectData.companyid,
-                status: projectData.status,
-                costs: projectData.costs,
-                managerid: projectData.managerid,
-                description: projectData.description,
-                requiredstaffnumber: projectData.requiredstaffnumber,
-                manager: {
-                    userId: projectData.manager.userId,
-                    name: projectData.manager.name
-                },
-                company: {
-                    companyId: projectData.company.companyId,
-                    name: projectData.company.name,
-                    logo: projectData.company.logo
-                },
-                assignedStaff: projectData.assignedStaff.map((staff: AssignedStaff) => ({
-                    employeeId: staff.employeeId,
-                    name: staff.name,
-                    profileImage: staff.profileImage,
-                    rateType: staff.rateType,
-                    rateValue: staff.rateValue,
-                    rates: staff.rates,
-                    breakHours: staff.breakHours,
-                    availability: staff.availability,
-                    totalEarnings: staff.totalEarnings,
-                    averagePerformance: staff.averagePerformance,
-                    currentProjects: staff.currentProjects
-                })),
-                personnel: projectData.personnel,
-                requiredStaffNumber: projectData.requiredStaffNumber,
-                currentStaffCount: projectData.currentStaffCount,
-                financials: {
-                    totalLabourCost: projectData.financials.totalLabourCost,
-                    totalTransportFee: projectData.financials.totalTransportFee
+            // If we need category details, get it from the state
+            if (projectData.categoryid) {
+                try {
+                    // Get categories from state
+                    const state = getState() as any;
+                    const categories = state.project.categories;
+                    
+                    // Find the category in the main categories or their subcategories
+                    const findCategory = (cats: any[]): any => {
+                        for (const cat of cats) {
+                            if (cat.categoryid === projectData.categoryid) {
+                                return cat;
+                            }
+                            if (cat.subCategories?.length) {
+                                const found = findCategory(cat.subCategories);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    };
+
+                    const category = findCategory(categories);
+                    if (category) {
+                        projectData.category = category;
+                    }
+                } catch (error) {
+                    console.error('Failed to get category details:', error);
                 }
-            };
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data || 'Failed to fetch project');
+            }
+
+            return projectData;
+        } catch (error) {
+            return rejectWithValue(error);
         }
     }
 );
@@ -306,11 +294,39 @@ export const deleteProject = createAsyncThunk(
     }
 );
 
+interface AssignStaffPayload {
+    employeeId: number;
+    rateType: string;
+    breakHours: number;
+    rateEmployeeId: number; // Added this field
+}
+
 export const assignStaff = createAsyncThunk(
     "project/assignStaff",
-    async ({ workspaceId, projectId, data }: { workspaceId: number; projectId: number; data: AssignStaffRequest }) => {
-        const response = await apiClient.post(`/workspaces/${workspaceId}/projects/${projectId}/staff`, data);
-        return response.data;
+    async ({ 
+        workspaceId, 
+        projectId, 
+        employeeId 
+    }: { 
+        workspaceId: number; 
+        projectId: number; 
+        employeeId: number 
+    }, { rejectWithValue }) => {
+        try {
+            const response = await apiClient.post(
+                `/workspaces/${workspaceId}/projects/${projectId}/staff`,
+                [{
+                    employeeId,
+                    rateType: "A",
+                    breakHours: 0,
+                    rateEmployeeId: employeeId  // Using the same employeeId as rateEmployeeId
+                }]
+            );
+            return response.data;
+        } catch (error: any) {
+            console.error('Assign staff error:', error.response?.data || error.message);
+            return rejectWithValue(error.response?.data || 'Failed to assign staff');
+        }
     }
 );
 
@@ -466,6 +482,14 @@ const projectSlice = createSlice({
             })
             .addCase(deleteProjectCategory.fulfilled, (state, action) => {
                 state.categories = state.categories.filter(cat => cat.categoryid !== action.payload);
+            })
+            .addCase(assignStaff.fulfilled, (state, action) => {
+                if (state.currentProject) {
+                    state.currentProject = {
+                        ...state.currentProject,
+                        assignedStaff: [...(state.currentProject.assignedStaff || []), action.payload]
+                    };
+                }
             });
     },
 });

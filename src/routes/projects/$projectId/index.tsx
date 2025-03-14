@@ -30,6 +30,8 @@ import { useUsers } from "@/hooks/useUser";
 import { useEmployee, useWorkspaceEmployees } from '@/hooks/useEmployee';
 import { useMemo } from 'react';
 import useDebounce from '@/hooks/useDebounce';
+import { ProjectCategory } from '@/types/company';
+import { assignStaff, assignProjectStaff } from '@/store/slices/projectSlice';
 const field = [
 	{
 		key: 'status',
@@ -108,29 +110,6 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 		header: 'Name',
 		cell: ({ row }) => row.original?.name || '-'
 	},
-	// {
-	// 	accessorKey: 'rateType',
-	// 	header: 'Rate Type',
-	// 	cell: ({ row }) => row.original?.rateType || '-'
-	// },
-	// {
-	// 	accessorKey: 'rateValue',
-	// 	header: 'Rate Value',
-	// 	cell: ({ row }) => {
-	// 		const rate = row.original?.rateValue;
-	// 		if (rate === undefined || rate === null) return '-';
-	// 		return `$${Number(rate).toFixed(2)}`;
-	// 	},
-	// },
-	// {
-	// 	accessorKey: 'breakHours',
-	// 	header: 'Break Hours',
-	// 	cell: ({ row }) => {
-	// 		const hours = row.original?.breakHours;
-	// 		if (hours === undefined || hours === null) return '-';
-	// 		return `${Number(hours).toFixed(2)}h`;
-	// 	},
-	// },
 	{
 		accessorKey: 'availability',
 		header: 'Availability',
@@ -153,26 +132,6 @@ const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
 			if (performance === undefined || performance === null) return 'N/A';
 			return `${Number(performance).toFixed(1)}%`;
 		},
-	},
-	// {
-	// 	accessorKey: 'currentProjects',
-	// 	header: 'Current Projects',
-	// 	cell: ({ row }) => row.original?.currentProjects || 0
-	// },
-	{
-		id: 'actions',
-		accessorKey: 'employeeId',
-		header: '',
-		cell: ({ row }) => (
-			// <div className="flex justify-end w-full">
-			// 	<Button
-			// 		variant="outline"
-			// 		className="text-xs border-t-0 border-b-0 border-r-0">
-			// 		EDIT
-			// 	</Button>
-			// </div>
-            <></>
-		),
 	},
 ];
 
@@ -212,14 +171,15 @@ function ProjectView() {
 		currentProject, 
 		loading, 
         getProjectCategories,
-		editProject 
+		editProject,
+		assignProjectStaff
 	} = useProject();
 	const { 
 		addAvailability, 
 		updateAvailability: updateAvailabilityDetails 
 	} = useAvailability();
 	const { companies } = useCompanies();
-	const { users } = useUsers();
+	const { users } = useUsers( Number(currentUser?.workspaceid) );
 	const { employees, loading: employeesLoading } = useWorkspaceEmployees();
 	const [searchKeyword, setSearchKeyword] = useState('');
 	const [statusFilter, setStatusFilter] = useState('active');
@@ -365,22 +325,14 @@ function ProjectView() {
 	// Handle employee assignment
 	const handleAssignEmployee = async (employeeId: number) => {
 		try {
-			if (!projectId || !currentUser?.workspaceid) return;
+			if (!projectId || !currentUser?.workspaceid) {
+				toast.error('Missing project or workspace information');
+				return;
+			}
 
-			const updateData = {
-				...currentProject,
-				assignedStaff: [...(currentProject?.assignedStaff || []), {
-					employeeId,
-					projectId: Number(projectId)
-				}]
-			};
+			await assignProjectStaff(Number(projectId), employeeId);
 
-			await editProject({
-				workspaceId: currentUser.workspaceid,
-				projectId: Number(projectId),
-				data: updateData
-			});
-
+			// Refresh project data
 			await getProjectById(Number(projectId));
 			toast.success('Employee assigned successfully');
 		} catch (error) {
@@ -460,41 +412,33 @@ function ProjectView() {
 	};
 
 	// Initial data fetch
-    useEffect(() => {
-        if (!projectId || !currentUser?.workspaceid) return;
-        getProjectById(Number(projectId));
-    }, [projectId, currentUser?.workspaceid, getProjectById]);
+	useEffect(() => {
+		const loadData = async () => {
+			if (!currentUser?.workspaceid) return;
+			
+			// Load categories first
+			await getProjectCategories();
+			// Then load project details
+			if (projectId) {
+				await getProjectById(Number(projectId));
+			}
+		};
+		
+		loadData();
+	}, [currentUser?.workspaceid, projectId]);
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            if (!currentUser?.workspaceid) return;
-            
-            try {
-                const categoriesData = await getProjectCategories();
-                console.log('Fetched categories:', categoriesData); // Debug log
-                setCategories(categoriesData || []);
-            } catch (error) {
-                console.error('Failed to fetch project categories:', error);
-                toast.error('Failed to load project categories');
-                setCategories([]);
-            }
-        };
-
-        fetchCategories();
-    }, [currentUser?.workspaceid, getProjectCategories]);
-
-   // Effect to update form when currentProject changes
-   useEffect(() => {
-    if (currentProject) {
-        setEditedGeneralInfo({
-            name: currentProject.name || '',
-            companyId: currentProject.companyid ? Number(currentProject.companyid) : 0,
-            managerId: currentProject.managerid || '',
-            requiredStaffNumber: currentProject.requiredstaffnumber || 0,
-            categoryId: currentProject.categoryid ? Number(currentProject.categoryid) : null
-        });
-    }
-}, [currentProject]);
+	// Effect to update form when currentProject changes
+	useEffect(() => {
+		if (currentProject) {
+			setEditedGeneralInfo({
+				name: currentProject.name || '',
+				companyId: currentProject.companyid ? Number(currentProject.companyid) : 0,
+				managerId: currentProject.managerid || '',
+				requiredStaffNumber: currentProject.requiredstaffnumber || 0,
+				categoryId: currentProject.categoryid ? Number(currentProject.categoryid) : null
+			});
+		}
+	}, [currentProject]);
 
 	// Handlers for General Information
 	const handleGeneralInfoEdit = () => {
@@ -888,7 +832,7 @@ function ProjectView() {
 											<SelectTrigger className="h-8">
 												<SelectValue placeholder="Select company" />
 											</SelectTrigger>
-											<SelectContent>
+											<SelectContent defaultValue={String(editedGeneralInfo.companyId)}>
 												{companies?.map((company) => (
 													<SelectItem 
 														key={company.companyid} 

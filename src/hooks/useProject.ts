@@ -26,6 +26,7 @@ import {
     updateProjectCategory,
     deleteProjectCategory,
 } from "@/store/slices/projectSlice";
+import { UpdateProjectRequest } from "@/types/project";
 
 export const useProjects = (filters?: {
     keyword?: string;
@@ -135,8 +136,12 @@ export const useProject = () => {
     );
 
     const assignProjectStaff = useCallback(
-        (projectId: number, data: AssignStaffRequest) => {
-            return dispatch(assignStaff({ workspaceId: Number(workspaceid), projectId, data }));
+        (projectId: number, employeeId: number) => {
+            return dispatch(assignStaff({ 
+                workspaceId: Number(workspaceid), 
+                projectId,
+                employeeId
+            }));
         },
         [dispatch, workspaceid]
     );
