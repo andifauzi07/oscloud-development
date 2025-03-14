@@ -7,7 +7,7 @@ import { ChevronDown } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFilter } from '@/hooks/useFilter';
 
-interface FilterField {
+export interface FilterField {
 	key: string;
 	label: string;
 	type: string;
@@ -34,7 +34,7 @@ export default function AdvancedFilterPopover({ fields }: AdvancedFilterPopoverP
 					Advanced Search <ChevronDown />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="flex flex-row w-auto mx-4 p-4">
+			<PopoverContent className="flex flex-row w-auto p-4 mx-4">
 				<div className="flex flex-col gap-4">
 					<div className="grid grid-cols-2 gap-4">
 						{fields.map((field, index) =>

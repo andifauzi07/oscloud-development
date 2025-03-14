@@ -294,33 +294,29 @@ export const deleteProject = createAsyncThunk(
     }
 );
 
-interface AssignStaffPayload {
-    employeeId: number;
-    rateType: string;
-    breakHours: number;
-    rateEmployeeId: number; // Added this field
-}
-
 export const assignStaff = createAsyncThunk(
     "project/assignStaff",
     async ({ 
         workspaceId, 
         projectId, 
-        employeeId 
+        employeeId,
+        rateType = "A",
+        breakHours = 0
     }: { 
         workspaceId: number; 
         projectId: number; 
-        employeeId: number 
+        employeeId: number;
+        rateType?: string;
+        breakHours?: number;
     }, { rejectWithValue }) => {
         try {
             const response = await apiClient.post(
                 `/workspaces/${workspaceId}/projects/${projectId}/staff`,
-                [{
+                {
                     employeeId,
-                    rateType: "A",
-                    breakHours: 0,
-                    rateEmployeeId: employeeId  // Using the same employeeId as rateEmployeeId
-                }]
+                    rateType,
+                    breakHours
+                }
             );
             return response.data;
         } catch (error: any) {
@@ -332,9 +328,19 @@ export const assignStaff = createAsyncThunk(
 
 export const removeStaff = createAsyncThunk(
     "project/removeStaff",
-    async ({ workspaceId, projectId, employeeIds }: { workspaceId: number; projectId: number; employeeIds: number[] }) => {
-        await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}/staff?employeeIds=${employeeIds.join(',')}`);
-        return { projectId, employeeIds };
+    async ({ 
+        workspaceId, 
+        projectId, 
+        employeeId 
+    }: { 
+        workspaceId: number; 
+        projectId: number; 
+        employeeId: number;
+    }) => {
+        await apiClient.delete(
+            `/workspaces/${workspaceId}/projects/${projectId}/staff/${employeeId}`
+        );
+        return { projectId, employeeId };
     }
 );
 
@@ -488,6 +494,16 @@ const projectSlice = createSlice({
                     state.currentProject = {
                         ...state.currentProject,
                         assignedStaff: [...(state.currentProject.assignedStaff || []), action.payload]
+                    };
+                }
+            })
+            .addCase(removeStaff.fulfilled, (state, action) => {
+                if (state.currentProject) {
+                    state.currentProject = {
+                        ...state.currentProject,
+                        assignedStaff: state.currentProject.assignedStaff?.filter(
+                            staff => staff.employeeId !== action.payload.employeeId
+                        ) || []
                     };
                 }
             });
