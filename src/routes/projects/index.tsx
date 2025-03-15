@@ -441,10 +441,24 @@ function RouteComponent() {
                         />
                     </div>
                     <DurationInput
-                        startDate={startDate}
-                        endDate={endDate}
-                        onStartDateChange={setStartDate}
-                        onEndDateChange={setEndDate}
+                        startDate={startDate || ''} // Ensure it's a string
+                        endDate={endDate || ''} // Ensure it's a string
+                        onStartDateChange={(date) => {
+                            setStartDate(date);
+                            // If end date is not set or is before start date, update it
+                            if (!endDate || new Date(date) > new Date(endDate)) {
+                                setEndDate(date);
+                            }
+                        }}
+                        onEndDateChange={(date) => {
+                            setEndDate(date);
+                            // If start date is not set or is after end date, update it
+                            if (!startDate || new Date(date) < new Date(startDate)) {
+                                setStartDate(date);
+                            }
+                        }}
+                        label="Duration"
+                        className="w-[320px]"
                     />
                     <div className="flex flex-col space-y-2">
                         <Label>Status</Label>
@@ -486,7 +500,7 @@ function RouteComponent() {
 
             {/* Tabs Section */}
             <Tabs defaultValue="list">
-                <TabsList className="justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
+                <TabsList className="border-b justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
                     <TabsTrigger
                         className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none"
                         value="list"

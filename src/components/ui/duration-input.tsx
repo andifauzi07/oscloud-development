@@ -21,6 +21,15 @@ export function DurationInput({
   className = '',
   disabled = false,
 }: DurationInputProps) {
+  // Ensure we're working with valid dates
+  const handleStartDateChange = (value: string) => {
+    onStartDateChange(value);
+  };
+
+  const handleEndDateChange = (value: string) => {
+    onEndDateChange(value);
+  };
+
   return (
     <div className={`flex flex-col space-y-2 ${className}`}>
       <Label>{label}</Label>
@@ -28,17 +37,19 @@ export function DurationInput({
         <Input
           type="date"
           value={startDate}
-          onChange={(e) => onStartDateChange(e.target.value)}
+          onChange={(e) => handleStartDateChange(e.target.value)}
           className="w-[150px] border rounded-none"
           disabled={disabled}
+          enableEmoji={false}
         />
         <span className="text-gray-500">-</span>
         <Input
           type="date"
           value={endDate}
-          onChange={(e) => onEndDateChange(e.target.value)}
+          onChange={(e) => handleEndDateChange(e.target.value)}
           className="w-[150px] border rounded-none"
           disabled={disabled}
+          enableEmoji={false}
         />
       </div>
     </div>
