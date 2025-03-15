@@ -440,19 +440,22 @@ export function DataTable<TData, TValue>({
 											{headerGroup.headers.map((header) => {
 												const isNumeric = header.column.columnDef.type === 'number';
 												const isAction = header.column.id === 'detail' || header.column.id === 'actions';
+												const isImage = header.column.id === 'logo' || header.column.id === 'profileimage';
 												
 												return (
 													<TableHead
 														key={header.id}
 														style={{ 
-															minWidth: header.column.columnDef.minWidth,
+															minWidth: isImage ? '60px' : '150px',
+															width: isImage ? '60px' : 'auto',
+															padding: isImage ? '0' : undefined, // Explicitly remove padding for image columns
 														}}
 														className={cn(
 															"text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]",
 															isNumeric && "text-right",
-															isAction && "sticky right-0 bg-gray-100 w-[100px]",
-															header.column.id === 'logo' || header.column.id === 'profileimage' ? "w-[60px]" : "",
-															!isAction && "px-6 py-4"
+															isAction && "sticky right-0 bg-gray-100 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]",
+															!isImage && "", // Only add padding if not an image column
+															isImage && "!p-0 !m-0" // Force remove all padding and margin for image columns
 														)}>
 														{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 													</TableHead>
@@ -474,21 +477,24 @@ export function DataTable<TData, TValue>({
 														<TableCell
 															key={cell.id}
 															style={{ 
-																minWidth: cell.column.columnDef.minWidth,
+																width: isImage ? '60px' : 'auto',
+																minWidth: isImage ? '60px' : '150px',
+																padding: 0,
+																margin: 0,
 															}}
 															className={cn(
-																"text-xs whitespace-nowrap",
+																"text-xs whitespace-nowrap border-b",
 																isNumeric && "text-right",
-																isAction && "sticky right-0 bg-white z-10 w-[100px] p-0",
-																isImage && "w-[60px]",
-																!isAction && "px-6",
-																cell.column.id === 'name' && "font-medium"
+																isAction && "sticky right-0 bg-white z-10 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]",
+																!isImage && !isAction && "px-4 py-4",
+																isImage && "!p-0 !m-0 w-[60px]", // Force exact width and remove padding/margin
 															)}>
 															<div className={cn(
 																"flex h-full",
 																isNumeric && "justify-end",
-																isAction && "justify-center w-full",
+																isAction && "justify-center",
 																!isNumeric && !isAction && "justify-start",
+																isImage && "!p-0 !m-0 w-[60px]", // Force exact width and remove padding/margin
 																"items-center"
 															)}>
 																{flexRender(cell.column.columnDef.cell, cell.getContext())}
