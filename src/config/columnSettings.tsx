@@ -225,7 +225,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		cell: ({ row }) => <span>{row.original.company?.name}</span>, // Access nested property in cell renderer
 	},
 	{
-		accessorKey: 'category',
+		accessorKey: 'categoryid',
 		header: 'Category',
 		label: 'Category',
 		type: 'text',
@@ -265,7 +265,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 				<div className="sticky right-0 bg-white">
 					<Button
 						variant="outline"
-						className="border-t-0 border-b-0 border-r-0">
+						className="w-20 border-t-0 border-b-0">
 						<Link
 							to={`/projects/$projectId`}
 							params={{
@@ -359,10 +359,9 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		cell: ({ row }: any) => row.original.department?.departmentname || '-',
 	},
 	{
-		id: 'actions',
+		accessorKey: 'actions',
 		header: '',
 		label: '',
-		accessorKey: 'actions',
 		type: 'text',
 		status: 'shown',
 		order: 7,
@@ -374,10 +373,11 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 					params={{ userId: row.original.employeeid.toString() }}>
 					<Button
 						variant="outline"
-						className="w-20 border-t-0 border-b-0">
+						className="w-20 border-t-0 border-b-0 ">
 						DETAIL
 					</Button>
 				</Link>
+
 			</div>
 		),
 	},

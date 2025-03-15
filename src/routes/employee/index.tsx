@@ -146,13 +146,15 @@ function RouteComponent() {
 
 	const handleAddRecord = async (data: any) => {
 		try {
-			// Add your API call here to save the new record
+			// Use snake_case/lowercase field names as expected by the API
 			const processedData = {
-				...data,
-				employeecategoryid: Number(data.employeecategoryid),
-				departmentid: Number(data.departmentid),
+				name: data.name,
+				email: data.email,
+				employeecategoryid: Number(data.employeecategoryid),  // Changed from employeeCategoryId
+				departmentid: Number(data.departmentid)  // Changed from departmentId
 			};
-			addEmployee(processedData);
+			
+			await addEmployee(processedData);
 			console.log('Adding new record:', processedData);
 		} catch (error) {
 			console.error('Failed to add record:', error);
@@ -239,7 +241,7 @@ function RouteComponent() {
 							setEditable(false);
 							console.log(isSucces); // can use this variable to make update on ui
 						}}
-						className="text-black bg-transparent border-l md:w-20 link border-l-none border-r min-h-10">
+						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
 						SAVE
 					</Button>
 				) : (

@@ -479,15 +479,15 @@ export function DataTable<TData, TValue>({
 															className={cn(
 																"text-xs whitespace-nowrap",
 																isNumeric && "text-right",
-																isAction && "sticky right-0 bg-white shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)] z-10 w-[100px]",
+																isAction && "sticky right-0 bg-white z-10 w-[100px] p-0",
 																isImage && "w-[60px]",
-																!isAction && "px-6 ",
+																!isAction && "px-6",
 																cell.column.id === 'name' && "font-medium"
 															)}>
 															<div className={cn(
-																"flex",
+																"flex h-full",
 																isNumeric && "justify-end",
-																isAction && "justify-center",
+																isAction && "justify-center w-full",
 																!isNumeric && !isAction && "justify-start",
 																"items-center"
 															)}>
