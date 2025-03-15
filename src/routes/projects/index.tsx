@@ -23,12 +23,18 @@ import { BaseColumnSetting } from "@/types/table";
 import { DurationInput } from "@/components/ui/duration-input";
 import { ProjectsTimeline } from "@/components/ProjectsTimeline";
 import { TimelineCalendar } from "@/components/timeline/TimeLineSchedule";
-import { Project as TimelineProject } from '@/components/timeline/propsTypes';
+import { Project as TimelineProject } from "@/components/timeline/propsTypes";
 import ScheduleTable from "@/components/EmployeTimeLine";
 import { useUsers } from "@/hooks/useUser";
 import { fetchProjectCategories } from "@/store/slices/projectSlice";
-import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSaveEdits } from "@/hooks/handler/useSaveEdit";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { AppUser } from "@/types/user";
 
 export const Route = createFileRoute("/projects/")({
@@ -81,7 +87,9 @@ function RouteComponent() {
     const debouncedKeyword = useDebounce(searchKeyword, 500);
     const [isEditable, setIsEditable] = useState(false);
     const [categories, setCategories] = useState([]);
-    const [updateDataFromChild, setUpdateDataFromChild] = useState<ProjectDisplay[]>([]);
+    const [updateDataFromChild, setUpdateDataFromChild] = useState<
+        ProjectDisplay[]
+    >([]);
 
     const filters = useMemo(
         () => ({
@@ -128,28 +136,28 @@ function RouteComponent() {
     const { companies } = useCompanies();
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
-    
+
     // Get managers using the existing selector
     const { users, loading: usersLoading } = useUsers(Number(workspaceid));
 
     useEffect(() => {
         const fetchInitialData = async () => {
             if (!workspaceid) return;
-            
+
             try {
                 const categoriesResponse = await getProjectCategories();
                 setCategories(categoriesResponse || []);
-                
+
                 // Only log users when they're actually loaded
                 if (!usersLoading && users.length > 0) {
-                    console.log('Loaded users:', users);
+                    console.log("Loaded users:", users);
                 }
             } catch (error) {
-                console.error('Error fetching initial data:', error);
+                console.error("Error fetching initial data:", error);
                 setCategories([]);
             }
         };
-        
+
         fetchInitialData();
     }, [workspaceid, users, usersLoading]); // Add users and usersLoading to dependencies
 
@@ -164,175 +172,160 @@ function RouteComponent() {
 
     const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
         return settings
-            .filter((setting) => setting.status === "shown")
+            .filter(setting => setting.status === "shown")
             .sort((a, b) => a.order - b.order)
             .map((setting) => {
                 const defaultSetting = defaultProjectColumnSettings.find(
-                    (def) => def.accessorKey === setting.accessorKey
+                    def => def.accessorKey === setting.accessorKey
                 );
 
-                // Special handling for manager column with Select
                 if (setting.accessorKey === 'managerid') {
                     return {
-                        id: String(setting.accessorKey),
-                        accessorKey: setting.accessorKey as string,
+                        id: setting.accessorKey,
+                        accessorKey: setting.accessorKey,
                         header: defaultSetting?.header || setting.header,
                         cell: ({ row }) => {
-                            if (isEditable) {
-                                return (
-                                    <Select
-                                        value={row.original.managerid}
-                                        onValueChange={(value) => {
-                                            const updatedData = [...updateDataFromChild];
-                                            const index = updatedData.findIndex(p => p.projectid === row.original.projectid);
-                                            if (index !== -1) {
-                                                updatedData[index] = { ...updatedData[index], managerid: value };
-                                            } else {
-                                                updatedData.push({ ...row.original, managerid: value });
-                                            }
-                                            setUpdateDataFromChild(updatedData);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select manager" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {users.map((manager) => (
-                                                <SelectItem key={manager.userid} value={manager.userid}>
-                                                    {manager.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                );
-                            }
-                            return <span className="text-xs whitespace-nowrap">
-                                {row.original.manager?.name || 'Unassigned'}
-                            </span>;
+                            if (!isEditable) return defaultCellRenderer({ getValue: () => row.original.manager?.name });
+                            return (
+                                <Select
+                                    value={row.original.managerid}
+                                    onValueChange={value => {
+                                        setUpdateDataFromChild(prev => 
+                                            prev.map(item => 
+                                                item.projectid === row.original.projectid
+                                                    ? { ...item, managerid: value }
+                                                    : item
+                                            )
+                                        );
+                                    }}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select manager" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {users.map(manager => (
+                                            <SelectItem key={manager.userid} value={manager.userid}>
+                                                {manager.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            );
                         },
                     };
                 }
 
-                // Special handling for category with Select
                 if (setting.accessorKey === 'categoryid') {
                     return {
-                        id: String(setting.accessorKey),
-                        accessorKey: setting.accessorKey as string,
+                        id: setting.accessorKey,
+                        accessorKey: setting.accessorKey,
                         header: defaultSetting?.header || setting.header,
                         cell: ({ row }) => {
-                            if (isEditable) {
-                                return (
-                                    <Select
-                                        value={String(row.original.categoryid)}
-                                        onValueChange={(value) => {
-                                            const updatedData = [...updateDataFromChild];
-                                            const index = updatedData.findIndex(p => p.projectid === row.original.projectid);
-                                            if (index !== -1) {
-                                                updatedData[index] = { ...updatedData[index], categoryid: Number(value) };
-                                            } else {
-                                                updatedData.push({ ...row.original, categoryid: Number(value) });
-                                            }
-                                            setUpdateDataFromChild(updatedData);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem key={category.categoryid} value={String(category.categoryid)}>
-                                                    {category.categoryname}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                );
-                            }
-                            return <span className="text-xs whitespace-nowrap">
-                                {row.original.category?.name || '-'}
-                            </span>;
+                            if (!isEditable) return defaultCellRenderer({ getValue: () => row.original.category?.name });
+                            return (
+                                <Select
+                                    value={String(row.original.categoryid)}
+                                    onValueChange={value => {
+                                        setUpdateDataFromChild(prev => 
+                                            prev.map(item => 
+                                                item.projectid === row.original.projectid
+                                                    ? { ...item, categoryid: Number(value) }
+                                                    : item
+                                            )
+                                        );
+                                    }}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map(category => (
+                                            <SelectItem key={category.categoryid} value={String(category.categoryid)}>
+                                                {category.categoryname}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            );
                         },
                     };
                 }
 
-                // Add costs handling
                 if (setting.accessorKey === 'costs') {
                     return {
-                        id: String(setting.accessorKey),
-                        accessorKey: setting.accessorKey as string,
+                        id: setting.accessorKey,
+                        accessorKey: setting.accessorKey,
                         header: defaultSetting?.header || setting.header,
                         cell: ({ row }) => {
-                            if (isEditable) {
-                                return (
-                                    <div className="space-y-2">
-                                        {Object.entries(row.original.costs || {}).map(([key, value]) => (
-                                            <div key={key} className="flex items-center gap-2">
-                                                <label className="text-xs">{key}:</label>
-                                                <Input
-                                                    type="number"
-                                                    value={value}
-                                                    onChange={(e) => {
-                                                        const updatedData = [...updateDataFromChild];
-                                                        const index = updatedData.findIndex(p => p.projectid === row.original.projectid);
-                                                        const newCosts = {
-                                                            ...(index !== -1 ? updatedData[index].costs : row.original.costs),
-                                                            [key]: Number(e.target.value)
-                                                        };
-                                                        
-                                                        if (index !== -1) {
-                                                            updatedData[index] = { ...updatedData[index], costs: newCosts };
-                                                        } else {
-                                                            updatedData.push({ ...row.original, costs: newCosts });
-                                                        }
-                                                        setUpdateDataFromChild(updatedData);
-                                                    }}
-                                                    className="w-24 h-6"
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                );
+                            if (!isEditable) {
+                                const costs = row.original.costs || {};
+                                return defaultCellRenderer({
+                                    getValue: () => Object.entries(costs)
+                                        .map(([k, v]) => `${k}: ${v}`)
+                                        .join(', ')
+                                });
                             }
-                            return <span className="text-xs whitespace-nowrap">
-                                {Object.entries(row.original.costs || {})
-                                    .map(([key, value]) => `${key}: ${value}`)
-                                    .join(', ')}
-                            </span>;
+                            return (
+                                <div className="space-y-2">
+                                    {Object.entries(row.original.costs || {}).map(([key, value]) => (
+                                        <div key={key} className="flex items-center gap-2">
+                                            <label className="text-xs">{key}:</label>
+                                            <Input
+                                                type="number"
+                                                value={value}
+                                                onChange={(e) => {
+                                                    setUpdateDataFromChild(prev => 
+                                                        prev.map(item => 
+                                                            item.projectid === row.original.projectid
+                                                                ? { 
+                                                                    ...item, 
+                                                                    costs: {
+                                                                        ...item.costs,
+                                                                        [key]: Number(e.target.value)
+                                                                    }
+                                                                }
+                                                                : item
+                                                        )
+                                                    );
+                                                }}
+                                                className="w-24 h-6"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            );
                         },
                     };
                 }
 
-                // Default column handling
                 return {
-                    id: String(setting.accessorKey),
-                    accessorKey: setting.accessorKey as string,
+                    id: setting.accessorKey,
+                    accessorKey: setting.accessorKey,
                     header: defaultSetting?.header || setting.header,
                     cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
                 };
             });
-    }, [settings, categories, users, isEditable, updateDataFromChild]);
+    }, [settings, categories, users, isEditable]);
 
     const handleAddRecord = useCallback(
-        async (data: Partial<Project>) => {
-            if (!workspaceid) {
-                alert('Workspace ID is not available');
-                return;
-            }
-
+        async (data: any) => {
             try {
-                if (!data.name) {
-                    throw new Error('Project name is required');
+                if (!data.name?.trim()) {
+                    throw new Error("Project name is required");
                 }
 
                 const newProjectRequest: CreateProjectRequest = {
                     name: data.name,
                     startDate: data.startdate,
                     endDate: data.enddate,
-                    status: 'Active',
+                    status: "Active",
                     managerid: Number(data.managerid),
                     companyid: Number(data.companyid),
                     workspaceid: Number(workspaceid),
-                    categoryid: Number(data.categoryid),
+                    // Only include categoryid if it's a valid number and not 0
+                    categoryid: data.categoryid && Number(data.categoryid) > 0 
+                        ? Number(data.categoryid) 
+                        : null,
                     costs: data.costs || {
                         food: 0,
                         break: 0,
@@ -348,10 +341,10 @@ function RouteComponent() {
                 };
 
                 await addProject(newProjectRequest);
-                alert('Project successfully added!');
+                alert("Added project!");
             } catch (error) {
-                console.error('Failed to add project:', error);
-                alert('Failed to create project');
+                console.error("Failed to add project:", error);
+                alert("Failed to create project");
                 throw error;
             }
         },
@@ -369,8 +362,16 @@ function RouteComponent() {
             const isSuccess = await saveEdits(
                 projects,
                 updateDataFromChild,
-                'projectid',
-                ['name', 'startdate', 'enddate', 'status', 'managerid', 'categoryid', 'costs'],
+                "projectid",
+                [
+                    "name",
+                    "startdate",
+                    "enddate",
+                    "status",
+                    "managerid",
+                    "categoryid",
+                    "costs",
+                ],
                 async (projectId: number, data: Partial<ProjectDisplay>) => {
                     const updatePayload: UpdateProjectRequest = {
                         name: data.name,
@@ -379,7 +380,7 @@ function RouteComponent() {
                         status: data.status,
                         managerid: data.managerid,
                         categoryid: Number(data.categoryid),
-                        costs: data.costs
+                        costs: data.costs,
                     };
 
                     await editProject({
@@ -388,28 +389,28 @@ function RouteComponent() {
                     });
                 }
             );
-            
+
             setIsEditable(false);
             if (isSuccess) {
-                alert('Projects updated successfully');
+                alert("Projects updated successfully");
             }
         } catch (error) {
-            console.error('Error updating projects:', error);
-            alert('Failed to update projects');
+            console.error("Error updating projects:", error);
+            alert("Failed to update projects");
         }
     };
 
     const getProjectsData = useCallback((): TimelineProject[] => {
-        return projects.map(project => ({
+        return projects.map((project) => ({
             projectId: project.projectid,
-            name: project.name || '',
+            name: project.name || "",
             startDate: project.startdate || null,
             endDate: project.enddate || null,
             manager: {
                 userId: project.managerid || 0,
-                name: project.managername || 'Unassigned'
+                name: project.managername || "Unassigned",
             },
-            status: project.status || null
+            status: project.status || null,
         }));
     }, [projects]);
 
@@ -441,24 +442,10 @@ function RouteComponent() {
                         />
                     </div>
                     <DurationInput
-                        startDate={startDate || ''} // Ensure it's a string
-                        endDate={endDate || ''} // Ensure it's a string
-                        onStartDateChange={(date) => {
-                            setStartDate(date);
-                            // If end date is not set or is before start date, update it
-                            if (!endDate || new Date(date) > new Date(endDate)) {
-                                setEndDate(date);
-                            }
-                        }}
-                        onEndDateChange={(date) => {
-                            setEndDate(date);
-                            // If start date is not set or is after end date, update it
-                            if (!startDate || new Date(date) < new Date(startDate)) {
-                                setStartDate(date);
-                            }
-                        }}
-                        label="Duration"
-                        className="w-[320px]"
+                        startDate={startDate}
+                        endDate={endDate}
+                        onStartDateChange={setStartDate}
+                        onEndDateChange={setEndDate}
                     />
                     <div className="flex flex-col space-y-2">
                         <Label>Status</Label>
@@ -528,24 +515,27 @@ function RouteComponent() {
                                 "connectedPersonnel",
                                 "costs",
                                 "managerid",
-                                "categoryid"
+                                "categoryid",
                             ]}
                             selectFields={{
                                 companyid: {
                                     options: companyOptions,
                                 },
                                 managerid: {
-                                    options: users.map(manager => ({
+                                    options: users.map((manager) => ({
                                         value: manager.userid,
-                                        label: manager.name
-                                    }))
+                                        label: manager.name,
+                                    })),
                                 },
                                 categoryid: {
-                                    options: Array.isArray(categories) ? categories.map(category => ({
-                                        value: category.categoryid,
-                                        label: category.categoryname
-                                    })) : []
-                                }
+                                    options:
+                                        Array.isArray(categories) ?
+                                            categories.map((category) => ({
+                                                value: category.categoryid,
+                                                label: category.categoryname,
+                                            }))
+                                        :   [],
+                                },
                             }}
                             customFields={{
                                 duration: {
@@ -557,31 +547,36 @@ function RouteComponent() {
                             }}
                             enableCosts={true}
                         />
-                        {isEditable ? (
+                        {isEditable ?
                             <>
                                 <Button
                                     onClick={() => setIsEditable(false)}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
+                                >
                                     CANCEL
                                 </Button>
                                 <Button
                                     onClick={handleSaveEdits}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
+                                >
                                     SAVE
                                 </Button>
                             </>
-                        ) : (
-                            <Button
-                                onClick={() => setIsEditable(true)}
-                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+                        :   <Button
+                                onClick={() => {
+                                    setIsEditable(true);
+                                    setUpdateDataFromChild([...projects]); // Initialize with current projects
+                                }}
+                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
+                            >
                                 EDIT
                             </Button>
-                        )}
+                        }
                     </div>
                     <div className="flex-1">
                         <DataTable
                             columns={columns}
-                            data={projects}
+                            data={isEditable ? updateDataFromChild : projects} // Switch data source based on edit mode
                             loading={loading}
                             isEditable={isEditable}
                             setTableData={setUpdateDataFromChild}
@@ -596,26 +591,30 @@ function RouteComponent() {
                             selectFields={{
                                 managerid: {
                                     options: users
-                                        .filter(manager => manager?.userid) // Filter out invalid managers (optional)
-                                        .map(manager => ({
-                                            value: manager.userid?.toString() || '',
-                                            label: manager.name || 'Unnamed Manager'
-                                        }))
+                                        .filter((manager) => manager?.userid)
+                                        .map((manager) => ({
+                                            value:
+                                                manager.userid?.toString() ||
+                                                "",
+                                            label:
+                                                manager.name ||
+                                                "Unnamed Manager",
+                                        })),
                                 },
                                 categoryid: {
-                                    options: categories.map(category => ({
+                                    options: categories.map((category) => ({
                                         value: category.categoryid.toString(),
-                                        label: category.categoryname
-                                    }))
-                                }
+                                        label: category.categoryname,
+                                    })),
+                                },
                             }}
                             customFields={{
                                 startdate: {
-                                    type: 'date'
+                                    type: "date",
                                 },
                                 enddate: {
-                                    type: 'date'
-                                }
+                                    type: "date",
+                                },
                             }}
                         />
                     </div>
@@ -634,24 +633,27 @@ function RouteComponent() {
                                 "connectedPersonnel",
                                 "costs",
                                 "managerid",
-                                "categoryid"
+                                "categoryid",
                             ]}
                             selectFields={{
                                 companyid: {
                                     options: companyOptions,
                                 },
                                 managerid: {
-                                    options: users.map(manager => ({
+                                    options: users.map((manager) => ({
                                         value: manager.userid,
-                                        label: manager.name
-                                    }))
+                                        label: manager.name,
+                                    })),
                                 },
                                 categoryid: {
-                                    options: Array.isArray(categories) ? categories.map(category => ({
-                                        value: category.categoryid,
-                                        label: category.categoryname
-                                    })) : []
-                                }
+                                    options:
+                                        Array.isArray(categories) ?
+                                            categories.map((category) => ({
+                                                value: category.categoryid,
+                                                label: category.categoryname,
+                                            }))
+                                        :   [],
+                                },
                             }}
                             customFields={{
                                 duration: {
@@ -663,30 +665,32 @@ function RouteComponent() {
                             }}
                             enableCosts={true}
                         />
-                        {isEditable ? (
+                        {isEditable ?
                             <>
                                 <Button
                                     onClick={() => setIsEditable(false)}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
+                                >
                                     CANCEL
                                 </Button>
                                 <Button
                                     onClick={handleSaveEdits}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
+                                >
                                     SAVE
                                 </Button>
                             </>
-                        ) : (
-                            <Button
+                        :   <Button
                                 onClick={() => setIsEditable(true)}
-                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
+                            >
                                 EDIT
                             </Button>
-                        )}
+                        }
                     </div>
 
                     <div className="flex-1 overflow-x-auto">
-                        <ScheduleTable 
+                        <ScheduleTable
                             projects={getProjectsData()}
                             currentDate={new Date()}
                         />

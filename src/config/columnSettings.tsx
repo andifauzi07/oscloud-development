@@ -159,7 +159,7 @@ const costColumns = Object.entries({
 	other_cost: 'Other Cost',
 	sales_profit: 'Sales Profit',
 }).map(([key, label], index) => ({
-	accessorKey: ('costs' + index) as keyof ProjectDisplay, // Explicitly type the accessorKey
+	accessorKey: `costs.${key}` as keyof ProjectDisplay, // Changed to access nested costs object
 	header: label,
 	label: label,
 	type: 'number' as const,
@@ -370,7 +370,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 					params={{ userId: row.original.employeeid.toString() }}>
 					<Button
 						variant="outline"
-						className="w-20 border-t-0 border-r-0 border-b">
+						className="w-20 border-t-0 border-b border-r-0">
 						DETAIL
 					</Button>
 				</Link>
