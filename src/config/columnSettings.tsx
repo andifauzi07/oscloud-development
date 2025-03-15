@@ -148,30 +148,29 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 // Project
 
 const costColumns = Object.entries({
-		revenue: 'Revenue',
-		labour_cost: 'Labour Cost',
-		transport_cost: 'Transport Cost',
-		break: 'Break Cost',
-		food: 'Food Cost',
-		rental: 'Rental Cost',
-		manager_fee: 'Manager Fee',
-		costume_cost: 'Costume Cost',
-		other_cost: 'Other Cost',
-		sales_profit: 'Sales Profit'
-	}).map(([key, label], index) => ({
-		accessorKey: 'costs' + index as keyof ProjectDisplay, // Explicitly type the accessorKey
-		header: label,
-		label: label,
-		type: 'number' as const,
-		date_created: new Date().toISOString(),
-		status: 'shown' as const,
-		order: 8 + index,
-		cell: ({ row }: CellContext<ProjectDisplay, unknown>) => {
-			const cost = row.original.costs?.[key as keyof typeof row.original.costs] || 0;
-			return <span>¥{cost.toLocaleString()}</span>;
-		},
-	}));
-
+	revenue: 'Revenue',
+	labour_cost: 'Labour Cost',
+	transport_cost: 'Transport Cost',
+	break: 'Break Cost',
+	food: 'Food Cost',
+	rental: 'Rental Cost',
+	manager_fee: 'Manager Fee',
+	costume_cost: 'Costume Cost',
+	other_cost: 'Other Cost',
+	sales_profit: 'Sales Profit',
+}).map(([key, label], index) => ({
+	accessorKey: ('costs' + index) as keyof ProjectDisplay, // Explicitly type the accessorKey
+	header: label,
+	label: label,
+	type: 'number' as const,
+	date_created: new Date().toISOString(),
+	status: 'shown' as const,
+	order: 8 + index,
+	cell: ({ row }: CellContext<ProjectDisplay, unknown>) => {
+		const cost = row.original.costs?.[key as keyof typeof row.original.costs] || 0;
+		return <span>¥{cost.toLocaleString()}</span>;
+	},
+}));
 
 export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] = [
 	{
@@ -244,9 +243,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		order: 7,
 		cell: ({ row }) => {
 			const personnelCount = Array.isArray(row.original.assignedStaff) ? row.original.assignedStaff.length : 0;
-			return (
-					<span>{personnelCount}</span>
-			);
+			return <span>{personnelCount}</span>;
 		},
 	},
 	// Map through all cost types
@@ -374,7 +371,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 					params={{ userId: row.original.employeeid.toString() }}>
 					<Button
 						variant="outline"
-						className="w-20 border-t-0 border-b-0">
+						className="w-20 border-t-0 border-r-0 border-b">
 						DETAIL
 					</Button>
 				</Link>
