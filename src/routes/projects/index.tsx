@@ -28,6 +28,8 @@ import ScheduleTable from "@/components/EmployeTimeLine";
 import { useUsers } from "@/hooks/useUser";
 import { fetchProjectCategories } from "@/store/slices/projectSlice";
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppUser } from "@/types/user";
 
 export const Route = createFileRoute("/projects/")({
     component: RouteComponent,
@@ -92,7 +94,7 @@ function RouteComponent() {
     );
 
     const { projects, loading } = useProjects(filters);
-    const { addProject, editProject } = useProject();
+    const { addProject, editProject, getProjectCategories } = useProject();
 
     // First, let's create a function to merge settings with defaults
     const mergeWithDefaultSettings = (
@@ -128,25 +130,28 @@ function RouteComponent() {
     const workspaceid = currentUser?.workspaceid;
     
     // Get managers using the existing selector
-    const { users: managers } = useUsers(Number(workspaceid));
+    const { users, loading: usersLoading } = useUsers(Number(workspaceid));
 
     useEffect(() => {
         const fetchInitialData = async () => {
             if (!workspaceid) return;
             
             try {
-                const categoriesResponse = await fetchProjectCategories(Number(workspaceid));
-                // Make sure we're setting the categories array from the response
-                setCategories(categoriesResponse.categories || []);
+                const categoriesResponse = await getProjectCategories();
+                setCategories(categoriesResponse || []);
+                
+                // Only log users when they're actually loaded
+                if (!usersLoading && users.length > 0) {
+                    console.log('Loaded users:', users);
+                }
             } catch (error) {
                 console.error('Error fetching initial data:', error);
-                // Set empty array as fallback
                 setCategories([]);
             }
         };
         
         fetchInitialData();
-    }, [workspaceid]);
+    }, [workspaceid, users, usersLoading]); // Add users and usersLoading to dependencies
 
     const companyOptions = useMemo(
         () =>
@@ -166,51 +171,138 @@ function RouteComponent() {
                     (def) => def.accessorKey === setting.accessorKey
                 );
 
-                // Special handling for manager column
+                // Special handling for manager column with Select
                 if (setting.accessorKey === 'managerid') {
                     return {
                         id: String(setting.accessorKey),
                         accessorKey: setting.accessorKey as string,
                         header: defaultSetting?.header || setting.header,
-                        cell: ({ row }) => (
-                            <span className="text-xs whitespace-nowrap">
-                                {row.original.manager.name || 'Unassigned'}
-                            </span>
-                        ),
-                    };
-                }
-
-                // Special handling for dates
-                if (setting.accessorKey === 'startdate' || setting.accessorKey === 'enddate') {
-                    return {
-                        id: String(setting.accessorKey),
-                        accessorKey: setting.accessorKey as string,
-                        header: defaultSetting?.header || setting.header,
                         cell: ({ row }) => {
-                            const date = row.getValue(setting.accessorKey);
-                            return (
-                                <span className="text-xs whitespace-nowrap">
-                                    {date ? new Date(date).toLocaleDateString() : '-'}
-                                </span>
-                            );
+                            if (isEditable) {
+                                return (
+                                    <Select
+                                        value={row.original.managerid}
+                                        onValueChange={(value) => {
+                                            const updatedData = [...updateDataFromChild];
+                                            const index = updatedData.findIndex(p => p.projectid === row.original.projectid);
+                                            if (index !== -1) {
+                                                updatedData[index] = { ...updatedData[index], managerid: value };
+                                            } else {
+                                                updatedData.push({ ...row.original, managerid: value });
+                                            }
+                                            setUpdateDataFromChild(updatedData);
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select manager" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {users.map((manager) => (
+                                                <SelectItem key={manager.userid} value={manager.userid}>
+                                                    {manager.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                );
+                            }
+                            return <span className="text-xs whitespace-nowrap">
+                                {row.original.manager?.name || 'Unassigned'}
+                            </span>;
                         },
                     };
                 }
 
-                // Special handling for category
+                // Special handling for category with Select
                 if (setting.accessorKey === 'categoryid') {
                     return {
                         id: String(setting.accessorKey),
                         accessorKey: setting.accessorKey as string,
                         header: defaultSetting?.header || setting.header,
-                        cell: ({ row }) => (
-                            <span className="text-xs whitespace-nowrap">
-                                {categories.find(cat => cat.categoryid === row.getValue(setting.accessorKey))?.categoryname || '-'}
-                            </span>
-                        ),
+                        cell: ({ row }) => {
+                            if (isEditable) {
+                                return (
+                                    <Select
+                                        value={String(row.original.categoryid)}
+                                        onValueChange={(value) => {
+                                            const updatedData = [...updateDataFromChild];
+                                            const index = updatedData.findIndex(p => p.projectid === row.original.projectid);
+                                            if (index !== -1) {
+                                                updatedData[index] = { ...updatedData[index], categoryid: Number(value) };
+                                            } else {
+                                                updatedData.push({ ...row.original, categoryid: Number(value) });
+                                            }
+                                            setUpdateDataFromChild(updatedData);
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select category" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((category) => (
+                                                <SelectItem key={category.categoryid} value={String(category.categoryid)}>
+                                                    {category.categoryname}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                );
+                            }
+                            return <span className="text-xs whitespace-nowrap">
+                                {row.original.category?.name || '-'}
+                            </span>;
+                        },
                     };
                 }
 
+                // Add costs handling
+                if (setting.accessorKey === 'costs') {
+                    return {
+                        id: String(setting.accessorKey),
+                        accessorKey: setting.accessorKey as string,
+                        header: defaultSetting?.header || setting.header,
+                        cell: ({ row }) => {
+                            if (isEditable) {
+                                return (
+                                    <div className="space-y-2">
+                                        {Object.entries(row.original.costs || {}).map(([key, value]) => (
+                                            <div key={key} className="flex items-center gap-2">
+                                                <label className="text-xs">{key}:</label>
+                                                <Input
+                                                    type="number"
+                                                    value={value}
+                                                    onChange={(e) => {
+                                                        const updatedData = [...updateDataFromChild];
+                                                        const index = updatedData.findIndex(p => p.projectid === row.original.projectid);
+                                                        const newCosts = {
+                                                            ...(index !== -1 ? updatedData[index].costs : row.original.costs),
+                                                            [key]: Number(e.target.value)
+                                                        };
+                                                        
+                                                        if (index !== -1) {
+                                                            updatedData[index] = { ...updatedData[index], costs: newCosts };
+                                                        } else {
+                                                            updatedData.push({ ...row.original, costs: newCosts });
+                                                        }
+                                                        setUpdateDataFromChild(updatedData);
+                                                    }}
+                                                    className="w-24 h-6"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            }
+                            return <span className="text-xs whitespace-nowrap">
+                                {Object.entries(row.original.costs || {})
+                                    .map(([key, value]) => `${key}: ${value}`)
+                                    .join(', ')}
+                            </span>;
+                        },
+                    };
+                }
+
+                // Default column handling
                 return {
                     id: String(setting.accessorKey),
                     accessorKey: setting.accessorKey as string,
@@ -218,7 +310,7 @@ function RouteComponent() {
                     cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
                 };
             });
-    }, [settings, categories]);
+    }, [settings, categories, users, isEditable, updateDataFromChild]);
 
     const handleAddRecord = useCallback(
         async (data: Partial<Project>) => {
@@ -275,18 +367,19 @@ function RouteComponent() {
     const handleSaveEdits = async () => {
         try {
             const isSuccess = await saveEdits(
-                projects, // Original data
-                updateDataFromChild, // Updated data
-                'projectid', // Key field
-                ['name', 'startdate', 'enddate', 'status', 'managerid', 'categoryid'], // Fields to compare
+                projects,
+                updateDataFromChild,
+                'projectid',
+                ['name', 'startdate', 'enddate', 'status', 'managerid', 'categoryid', 'costs'],
                 async (projectId: number, data: Partial<ProjectDisplay>) => {
                     const updatePayload: UpdateProjectRequest = {
                         name: data.name,
                         startdate: data.startdate,
                         enddate: data.enddate,
                         status: data.status,
-                        managerid: Number(data.managerid),
-                        categoryid: Number(data.categoryid)
+                        managerid: data.managerid,
+                        categoryid: Number(data.categoryid),
+                        costs: data.costs
                     };
 
                     await editProject({
@@ -298,11 +391,11 @@ function RouteComponent() {
             
             setIsEditable(false);
             if (isSuccess) {
-                toast.success('Projects updated successfully');
+                alert('Projects updated successfully');
             }
         } catch (error) {
             console.error('Error updating projects:', error);
-            toast.error('Failed to update projects');
+            alert('Failed to update projects');
         }
     };
 
@@ -428,7 +521,7 @@ function RouteComponent() {
                                     options: companyOptions,
                                 },
                                 managerid: {
-                                    options: managers.map(manager => ({
+                                    options: users.map(manager => ({
                                         value: manager.userid,
                                         label: manager.name
                                     }))
@@ -488,8 +581,8 @@ function RouteComponent() {
                             ]}
                             selectFields={{
                                 managerid: {
-                                    options: managers
-                                        .filter(manager => manager?.userid) // Filter out invalid managers
+                                    options: users
+                                        .filter(manager => manager?.userid) // Filter out invalid managers (optional)
                                         .map(manager => ({
                                             value: manager.userid?.toString() || '',
                                             label: manager.name || 'Unnamed Manager'
@@ -534,7 +627,7 @@ function RouteComponent() {
                                     options: companyOptions,
                                 },
                                 managerid: {
-                                    options: managers.map(manager => ({
+                                    options: users.map(manager => ({
                                         value: manager.userid,
                                         label: manager.name
                                     }))
