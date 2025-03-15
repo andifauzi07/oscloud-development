@@ -4,6 +4,7 @@ import { Company, Project, ProjectDisplay } from '@/types/company';
 import { Link } from '@tanstack/react-router';
 import { memo } from 'react';
 import { Button } from '@/components/ui/button';
+import { ColumnDef } from '@tanstack/react-table';
 
 // Memoized Image Cell component
 const CompanyLogoCell = memo(({ row }: { row: any }) => (
@@ -144,38 +145,44 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 	},
 ];
 
-import { ColumnDef } from '@tanstack/react-table';
-import { Employee } from '@/types/employee';
+// Project
 
-export const projectColumns: ColumnDef<Project>[] = [
-	{
-		accessorKey: 'name',
-		header: 'Project Name',
-	},
-	{
-		accessorKey: 'status',
-		header: 'Status',
-	},
-	{
-		accessorKey: 'startdate',
-		header: 'Start Date',
-	},
-	{
-		accessorKey: 'enddate',
-		header: 'End Date',
-	},
-];
+const costColumns = Object.entries({
+		revenue: 'Revenue',
+		labour_cost: 'Labour Cost',
+		transport_cost: 'Transport Cost',
+		break: 'Break Cost',
+		food: 'Food Cost',
+		rental: 'Rental Cost',
+		manager_fee: 'Manager Fee',
+		costume_cost: 'Costume Cost',
+		other_cost: 'Other Cost',
+		sales_profit: 'Sales Profit'
+	}).map(([key, label], index) => ({
+		accessorKey: 'costs' + index as keyof ProjectDisplay, // Explicitly type the accessorKey
+		header: label,
+		label: label,
+		type: 'number' as const,
+		date_created: new Date().toISOString(),
+		status: 'shown' as const,
+		order: 8 + index,
+		cell: ({ row }: CellContext<ProjectDisplay, unknown>) => {
+			const cost = row.original.costs?.[key as keyof typeof row.original.costs] || 0;
+			return <span>¥{cost.toLocaleString()}</span>;
+		},
+	}));
+
 
 export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] = [
 	{
 		accessorKey: 'name',
-		header: () => <h1 className="pl-8">Project Name</h1>,
+		header: () => <h1 className="">Project Name</h1>,
 		label: 'Project Name',
 		type: 'text',
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 1,
-		cell: ({ row }) => <h1 className="py-2 pl-8">{row.original.name}</h1>,
+		cell: ({ row }) => <h1 className="">{row.original.name}</h1>,
 	},
 	{
 		accessorKey: 'managerid', // Changed from "manager.name" to match Project type
@@ -238,38 +245,13 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		cell: ({ row }) => {
 			const personnelCount = Array.isArray(row.original.assignedStaff) ? row.original.assignedStaff.length : 0;
 			return (
-				<div className="flex items-center gap-2 text-xs whitespace-nowrap">
 					<span>{personnelCount}</span>
-				</div>
 			);
 		},
 	},
-	{
-		accessorKey: 'costs',
-		header: 'Break Cost',
-		label: 'Break Cost',
-		type: 'number',
-		date_created: new Date().toISOString(),
-		status: 'shown',
-		order: 8,
-		cell: ({ row }) => {
-			const cost = row.original.costs?.break || 0;
-			return `¥${cost.toLocaleString()}`;
-		},
-	},
-	{
-		accessorKey: 'costs',
-		header: 'Food Cost',
-		label: 'Food Cost',
-		type: 'number',
-		date_created: new Date().toISOString(),
-		status: 'shown',
-		order: 9,
-		cell: ({ row }) => {
-			const cost = row.original.costs?.food || 0;
-			return `¥${cost.toLocaleString()}`;
-		},
-	},
+	// Map through all cost types
+	...costColumns,
+	// Detail button always at the end
 	{
 		accessorKey: 'detail',
 		header: '',
@@ -277,10 +259,10 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		type: 'text',
 		date_created: new Date().toISOString(),
 		status: 'shown',
-		order: 10,
-		cell: ({ row }) => {
-			return (
-				<div className="flex justify-end w-full">
+		order: 99,
+		cell: ({ row }) => (
+			<div className="flex justify-end w-full">
+				<div className="sticky right-0 bg-white">
 					<Button
 						variant="outline"
 						className="border-t-0 border-b-0 border-r-0">
@@ -293,8 +275,8 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 						</Link>
 					</Button>
 				</div>
-			);
-		},
+			</div>
+		),
 	},
 ];
 

@@ -27,6 +27,7 @@ import { Project as TimelineProject } from '@/components/timeline/propsTypes';
 import ScheduleTable from "@/components/EmployeTimeLine";
 import { useUsers } from "@/hooks/useUser";
 import { fetchProjectCategories } from "@/store/slices/projectSlice";
+import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 
 export const Route = createFileRoute("/projects/")({
     component: RouteComponent,
@@ -78,6 +79,7 @@ function RouteComponent() {
     const debouncedKeyword = useDebounce(searchKeyword, 500);
     const [isEditable, setIsEditable] = useState(false);
     const [categories, setCategories] = useState([]);
+    const [updateDataFromChild, setUpdateDataFromChild] = useState<ProjectDisplay[]>([]);
 
     const filters = useMemo(
         () => ({
@@ -156,38 +158,67 @@ function RouteComponent() {
     );
 
     const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
-        // Debug logs
-        console.log("Current settings:", settings);
-        console.log("Default settings:", defaultProjectColumnSettings);
-
         return settings
-            .filter((setting) => {
-                console.log(
-                    `Filtering setting ${setting.accessorKey}: ${setting.status}`
-                );
-                return setting.status === "shown";
-            })
+            .filter((setting) => setting.status === "shown")
             .sort((a, b) => a.order - b.order)
             .map((setting) => {
                 const defaultSetting = defaultProjectColumnSettings.find(
                     (def) => def.accessorKey === setting.accessorKey
                 );
-                console.log(
-                    `Mapping setting ${setting.accessorKey}:`,
-                    defaultSetting
-                );
+
+                // Special handling for manager column
+                if (setting.accessorKey === 'managerid') {
+                    return {
+                        id: String(setting.accessorKey),
+                        accessorKey: setting.accessorKey as string,
+                        header: defaultSetting?.header || setting.header,
+                        cell: ({ row }) => (
+                            <span className="text-xs whitespace-nowrap">
+                                {row.original.manager.name || 'Unassigned'}
+                            </span>
+                        ),
+                    };
+                }
+
+                // Special handling for dates
+                if (setting.accessorKey === 'startdate' || setting.accessorKey === 'enddate') {
+                    return {
+                        id: String(setting.accessorKey),
+                        accessorKey: setting.accessorKey as string,
+                        header: defaultSetting?.header || setting.header,
+                        cell: ({ row }) => {
+                            const date = row.getValue(setting.accessorKey);
+                            return (
+                                <span className="text-xs whitespace-nowrap">
+                                    {date ? new Date(date).toLocaleDateString() : '-'}
+                                </span>
+                            );
+                        },
+                    };
+                }
+
+                // Special handling for category
+                if (setting.accessorKey === 'categoryid') {
+                    return {
+                        id: String(setting.accessorKey),
+                        accessorKey: setting.accessorKey as string,
+                        header: defaultSetting?.header || setting.header,
+                        cell: ({ row }) => (
+                            <span className="text-xs whitespace-nowrap">
+                                {categories.find(cat => cat.categoryid === row.getValue(setting.accessorKey))?.categoryname || '-'}
+                            </span>
+                        ),
+                    };
+                }
 
                 return {
                     id: String(setting.accessorKey),
                     accessorKey: setting.accessorKey as string,
                     header: defaultSetting?.header || setting.header,
-                    cell:
-                        defaultSetting?.cell ||
-                        setting.cell ||
-                        defaultCellRenderer,
+                    cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
                 };
             });
-    }, [settings]);
+    }, [settings, categories]);
 
     const handleAddRecord = useCallback(
         async (data: Partial<Project>) => {
@@ -239,54 +270,41 @@ function RouteComponent() {
         setStatusFilter(newStatus);
     }, []);
 
-    const handleSave = useCallback(
-        async (updatedData: ProjectDisplay[]) => {
-            if (!workspaceid) {
-                alert('Workspace ID is not available');
-                return;
+    const saveEdits = useSaveEdits<ProjectDisplay>();
+
+    const handleSaveEdits = async () => {
+        try {
+            const isSuccess = await saveEdits(
+                projects, // Original data
+                updateDataFromChild, // Updated data
+                'projectid', // Key field
+                ['name', 'startdate', 'enddate', 'status', 'managerid', 'categoryid'], // Fields to compare
+                async (projectId: number, data: Partial<ProjectDisplay>) => {
+                    const updatePayload: UpdateProjectRequest = {
+                        name: data.name,
+                        startdate: data.startdate,
+                        enddate: data.enddate,
+                        status: data.status,
+                        managerid: Number(data.managerid),
+                        categoryid: Number(data.categoryid)
+                    };
+
+                    await editProject({
+                        projectId,
+                        data: updatePayload,
+                    });
+                }
+            );
+            
+            setIsEditable(false);
+            if (isSuccess) {
+                toast.success('Projects updated successfully');
             }
-
-            try {
-                await Promise.all(
-                    updatedData.map(async (project) => {
-                        if (!project.projectid) return;
-
-                        const updatePayload: UpdateProjectRequest = {
-                            name: project.name,
-                            startdate: project.startdate,
-                            enddate: project.enddate,
-                            status: project.status,
-                            managerid: Number(project.managerid),
-                            categoryid: Number(project.categoryid)
-                        };
-
-                        await editProject({
-                            projectId: project.projectid,
-                            data: updatePayload,
-                        });
-                    })
-                );
-
-                setIsEditable(false);
-                alert('Projects successfully updated!');
-            } catch (error) {
-                console.error('Error updating projects:', error);
-                alert('Failed to update projects');
-            }
-        },
-        [editProject, workspaceid]
-    );
-
-    const editButton = useCallback(() => {
-        return (
-            <Button
-                onClick={() => setIsEditable((prev) => !prev)}
-                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
-            >
-                {isEditable ? "CANCEL" : "EDIT+"}
-            </Button>
-        );
-    }, [isEditable]);
+        } catch (error) {
+            console.error('Error updating projects:', error);
+            toast.error('Failed to update projects');
+        }
+    };
 
     const getProjectsData = useCallback((): TimelineProject[] => {
         return projects.map(project => ({
@@ -432,7 +450,26 @@ function RouteComponent() {
                             }}
                             enableCosts={true}
                         />
-                        {editButton()}
+                        {isEditable ? (
+                            <>
+                                <Button
+                                    onClick={() => setIsEditable(false)}
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    onClick={handleSaveEdits}
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    SAVE
+                                </Button>
+                            </>
+                        ) : (
+                            <Button
+                                onClick={() => setIsEditable(true)}
+                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+                                EDIT
+                            </Button>
+                        )}
                     </div>
                     <div className="flex-1">
                         <DataTable
@@ -440,7 +477,7 @@ function RouteComponent() {
                             data={projects}
                             loading={loading}
                             isEditable={isEditable}
-                            onSave={handleSave}
+                            setTableData={setUpdateDataFromChild}
                             nonEditableColumns={[
                                 "projectid",
                                 "created_at",
@@ -449,6 +486,30 @@ function RouteComponent() {
                                 "connectedPersonnel",
                                 "costs",
                             ]}
+                            selectFields={{
+                                managerid: {
+                                    options: managers
+                                        .filter(manager => manager?.userid) // Filter out invalid managers
+                                        .map(manager => ({
+                                            value: manager.userid?.toString() || '',
+                                            label: manager.name || 'Unnamed Manager'
+                                        }))
+                                },
+                                categoryid: {
+                                    options: categories.map(category => ({
+                                        value: category.categoryid.toString(),
+                                        label: category.categoryname
+                                    }))
+                                }
+                            }}
+                            customFields={{
+                                startdate: {
+                                    type: 'date'
+                                },
+                                enddate: {
+                                    type: 'date'
+                                }
+                            }}
                         />
                     </div>
                 </TabsContent>
@@ -495,7 +556,26 @@ function RouteComponent() {
                             }}
                             enableCosts={true}
                         />
-                        {editButton()}
+                        {isEditable ? (
+                            <>
+                                <Button
+                                    onClick={() => setIsEditable(false)}
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    onClick={handleSaveEdits}
+                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+                                    SAVE
+                                </Button>
+                            </>
+                        ) : (
+                            <Button
+                                onClick={() => setIsEditable(true)}
+                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+                                EDIT
+                            </Button>
+                        )}
                     </div>
 
                     <div className="flex-1 overflow-x-auto">

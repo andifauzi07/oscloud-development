@@ -16,7 +16,6 @@ import { useCompanies, useCompanyPersonnel, useLeads } from '@/hooks/useCompany'
 import { useProject } from '@/hooks/useProject';
 import { toast } from 'sonner';
 import { useUserData } from '@/hooks/useUserData';
-import { projectColumns } from '@/config/columnSettings';
 import ScheduleTable from '@/components/EmployeTimeLine';
 import { InfoSection, TitleWrapper } from '@/components/wrapperElement';
 import { ColumnDef } from '@tanstack/react-table';

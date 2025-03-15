@@ -12,13 +12,22 @@ export function useColumnSettings<T>({
   defaultSettings,
   onInitialize 
 }: UseColumnSettingsProps<T>) {
+  // Add minWidth to stored settings if not present
+  const addMinWidthToSettings = (settings: BaseColumnSetting<T>[]) => {
+    return settings.map(setting => ({
+      ...setting,
+      minWidth: setting.minWidth || 120 // Default minimum width
+    }));
+  };
+
   const [settings, setSettings] = useState<BaseColumnSetting<T>[]>(() => {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       const parsedSettings = JSON.parse(stored);
-      return onInitialize ? onInitialize(parsedSettings) : parsedSettings;
+      const settingsWithMinWidth = addMinWidthToSettings(parsedSettings);
+      return onInitialize ? onInitialize(settingsWithMinWidth) : settingsWithMinWidth;
     }
-    return defaultSettings;
+    return addMinWidthToSettings(defaultSettings);
   });
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import { Input } from './input';
 import { Button } from './button';
 import Loading from '../Loading';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const preloadImage = (src: string) => {
 	if (!src) return;
@@ -22,15 +23,13 @@ type ColumnDefWithAccessor<TData, TValue> = ColumnDef<TData, TValue> & {
 };
 
 export interface DataTableProps<TData, TValue> {
-	columns: ColumnDefWithAccessor<TData, TValue>[]; // Update this type
+	columns: ColumnDefWithAccessor<TData, TValue>[];
 	data: TData[];
 	loading?: boolean;
 	enableRowDragAndDrop?: boolean;
 	enableColumnDragAndDrop?: boolean;
 	isEditable?: boolean;
-	// setTableData?: (data: TData[]) => void;
 	setTableData?: React.Dispatch<React.SetStateAction<TData[]>>;
-	// setTableData?: React.Dispatch<React.SetStateAction<TData[]>>;
 	nonEditableColumns?: string[];
 	onSave?: (data: TData[]) => void;
 	onRowDragEnd?: (result: { oldIndex: number; newIndex: number }) => void;
@@ -41,6 +40,11 @@ export interface DataTableProps<TData, TValue> {
 	selectFields?: {
 		[key: string]: {
 			options: { value: string; label: string }[];
+		};
+	};
+	customFields?: {
+		[key: string]: {
+			type: 'date' | 'time' | 'datetime';
 		};
 	};
 }
@@ -58,32 +62,75 @@ interface EditableCellProps<TData> {
 	isEditable: boolean;
 }
 
-const EditableCell = <TData,>({ value: initialValue, row: { index, original }, column: { id }, updateData, isEditable }: EditableCellProps<TData>) => {
-	const [value, setValue] = useState<string>(initialValue?.toString() || '');
+const EditableCell = ({
+	value: initialValue,
+	row: { index },
+	column: { id },
+	updateData,
+	isEditable,
+	selectOptions,
+	customField
+}: {
+	value: any;
+	row: { index: number };
+	column: { id: string };
+	updateData: (index: number, id: string, value: any) => void;
+	isEditable: boolean;
+	selectOptions?: { value: string; label: string }[];
+	customField?: { type: string };
+}) => {
+	const [value, setValue] = useState(initialValue);
 
 	useEffect(() => {
-		setValue(initialValue?.toString() || '');
+		setValue(initialValue);
 	}, [initialValue]);
 
-	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const newValue = e.target.value;
-			setValue(newValue);
-			updateData(index, id, newValue);
-		},
-		[index, id, updateData]
-	);
-
 	if (!isEditable) {
-		return <span className="text-xs whitespace-nowrap">{value}</span>;
+		return <span className="text-xs">{value}</span>;
+	}
+
+	if (selectOptions) {
+		return (
+			<select
+				value={value || ''}
+				onChange={e => {
+					setValue(e.target.value);
+					updateData(index, id, e.target.value);
+				}}
+				className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
+			>
+				<option value="">Select...</option>
+				{selectOptions.map(option => (
+					<option key={option.value} value={option.value}>
+						{option.label}
+					</option>
+				))}
+			</select>
+		);
+	}
+
+	if (customField?.type === 'date') {
+		return (
+			<input
+				type="date"
+				value={value || ''}
+				onChange={e => {
+					setValue(e.target.value);
+					updateData(index, id, e.target.value);
+				}}
+				className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
+			/>
+		);
 	}
 
 	return (
-		<Input
-			enableEmoji={false}
-			value={value}
-			onChange={handleChange}
-			className="h-8 p-0 text-xs bg-transparent border-0 whitespace-nowrap focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+		<input
+			value={value || ''}
+			onChange={e => {
+				setValue(e.target.value);
+				updateData(index, id, e.target.value);
+			}}
+			className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
 		/>
 	);
 };
@@ -176,7 +223,7 @@ export function DataTable<TData, TValue>({
 					cell: (props: CellContext<TData, TValue>) => (
 						<EditableCell
 							value={props.getValue()}
-							row={{ index: props.row.index, original: props.row.original }}
+                            row={{ index: props.row.index, original: props.row.original }}
 							column={{ id: columnId }}
 							updateData={(index: number, id: string, value: any) => {
 								setTableData?.((prevData: any) => {
@@ -385,68 +432,118 @@ export function DataTable<TData, TValue>({
 					dndContent
 				) : (
 					<>
-						<Table className="p-0 m-0">
-							<TableHeader className="bg-gray-100">
-								{table.getHeaderGroups().map((headerGroup) => (
-									<TableRow
-										className="p-0 m-0"
-										key={headerGroup.id}>
-										{headerGroup.headers.map((header) => (
-											<TableHead
-												key={header.id}
-												className="text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]">
-												{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-											</TableHead>
-										))}
-									</TableRow>
-								))}
-							</TableHeader>
-							<TableBody>
-								{table.getRowModel().rows.length && !loading ? (
-									table.getRowModel().rows.map((row) => (
-										<TableRow
-											key={row.id}
-											className="border-t">
-											{row.getVisibleCells().map((cell) => (
-												<TableCell
-													key={cell.id}
-													className={cell.column.id === 'actions' || cell.column.id === 'detail' ? 'text-xs whitespace-nowrap sticky right-0 z-10' : 'text-xs whitespace-nowrap'}>
-													{flexRender(cell.column.columnDef.cell, cell.getContext())}
-												</TableCell>
-											))}
+						<div className="relative w-full overflow-x-auto">
+							<Table>
+								<TableHeader className="sticky top-0 z-20 bg-gray-100">
+									{table.getHeaderGroups().map((headerGroup) => (
+										<TableRow key={headerGroup.id}>
+											{headerGroup.headers.map((header) => {
+												const isNumeric = header.column.columnDef.type === 'number';
+												const isAction = header.column.id === 'detail' || header.column.id === 'actions';
+												
+												return (
+													<TableHead
+														key={header.id}
+														style={{ 
+															minWidth: header.column.columnDef.minWidth,
+														}}
+														className={cn(
+															"text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]",
+															isNumeric && "text-right",
+															isAction && "sticky right-0 bg-gray-100 w-[100px]",
+															header.column.id === 'logo' || header.column.id === 'profileimage' ? "w-[60px]" : "",
+															!isAction && "px-6 py-4"
+														)}>
+														{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+													</TableHead>
+												);
+											})}
 										</TableRow>
-									))
-								) : (
-									<TableRow>
-										<TableCell
-											colSpan={columns.length}
-											className="h-24 text-center">
-											{loading ? <Loading /> : 'No results'}
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
+									))}
+								</TableHeader>
+								<TableBody>
+									{table.getRowModel().rows?.length ? (
+										table.getRowModel().rows.map((row) => (
+											<TableRow key={row.id} className="border-t">
+												{row.getVisibleCells().map((cell) => {
+													const isNumeric = cell.column.columnDef.type === 'number';
+													const isAction = cell.column.id === 'detail' || cell.column.id === 'actions';
+													const isImage = cell.column.columnDef.type === 'image';
+													
+													return (
+														<TableCell
+															key={cell.id}
+															style={{ 
+																minWidth: cell.column.columnDef.minWidth,
+															}}
+															className={cn(
+																"text-xs whitespace-nowrap",
+																isNumeric && "text-right",
+																isAction && "sticky right-0 bg-white shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)] z-10 w-[100px]",
+																isImage && "w-[60px]",
+																!isAction && "px-6 ",
+																cell.column.id === 'name' && "font-medium"
+															)}>
+															<div className={cn(
+																"flex",
+																isNumeric && "justify-end",
+																isAction && "justify-center",
+																!isNumeric && !isAction && "justify-start",
+																"items-center"
+															)}>
+																{flexRender(cell.column.columnDef.cell, cell.getContext())}
+															</div>
+														</TableCell>
+													);
+												})}
+											</TableRow>
+										))
+									) : (
+										<TableRow>
+											<TableCell colSpan={columns.length} className="h-24 text-center">
+												{loading ? <Loading /> : 'No results'}
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
+						</div>
 						{onPageChange && (
 							<div className="flex items-center justify-between px-4 py-4 border-t">
-								<div className="text-sm text-gray-500">
-									Page {currentPage} of {totalPages}
+								<div className="flex-1 text-sm text-gray-500">
+									{/* If you want to show total records info */}
+									Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total} entries
 								</div>
-								<div className="flex gap-2">
+								<div className="flex items-center gap-2">
 									<Button
 										variant="outline"
-										size="icon"
-										onClick={handlePrevPage}
-										disabled={currentPage === 1 || loading}
-										className="w-8 h-8 p-0">
+										size="sm"
+										onClick={() => onPageChange(currentPage - 1)}
+										disabled={currentPage <= 1}
+										className="w-8 h-8 p-0"
+									>
 										<ChevronLeft className="w-4 h-4" />
 									</Button>
+									<div className="flex items-center gap-1">
+										<Input
+											type="number"
+											min={1}
+											max={Math.ceil(total / pageSize)}
+											value={currentPage}
+											onChange={(e) => onPageChange(Number(e.target.value))}
+											className="w-16 h-8 text-center"
+										/>
+										<span className="text-sm text-gray-500">
+											of {Math.ceil(total / pageSize)}
+										</span>
+									</div>
 									<Button
 										variant="outline"
-										size="icon"
-										onClick={handleNextPage}
-										disabled={currentPage >= totalPages || loading}
-										className="w-8 h-8 p-0">
+										size="sm"
+										onClick={() => onPageChange(currentPage + 1)}
+										disabled={currentPage >= Math.ceil(total / pageSize)}
+										className="w-8 h-8 p-0"
+									>
 										<ChevronRight className="w-4 h-4" />
 									</Button>
 								</div>
