@@ -42,11 +42,15 @@ function RouteComponent() {
 	});
 
 	const filteredEmployees = useMemo(() => {
-		return employees?.filter((employee: any) => {
+		if (!Array.isArray(employees)) return [];
+
+		return employees.filter((employee: any) => {
 			const matchesSearch = employee.name.toLowerCase().includes(debouncedSearch.toLowerCase());
 
 			// Get record performance for this employee
-			const records = performanceData?.filter((record: any) => record.employeeid === employee.employeeid) || [];
+			const records = Array.isArray(performanceData)
+			? performanceData?.filter((record: any) => record.employeeid === employee.employeeid)
+			: [];
 
 			// If no date range is selected, display employees that match the search criteria.
 			if (!dateRange.startDate && !dateRange.endDate) {
@@ -75,7 +79,7 @@ function RouteComponent() {
 			return matchesSearch && filteredRecords.length > 0;
 		});
 	}, [employees, debouncedSearch, performanceData, dateRange]);
-	
+
 	const columns = useMemo(
 		() => [
 			{
