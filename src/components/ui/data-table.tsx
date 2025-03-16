@@ -70,7 +70,7 @@ const EditableCell = ({
 	updateData,
 	isEditable,
 	selectOptions,
-	customField
+	customField,
 }: {
 	value: any;
 	row: { index: number };
@@ -94,15 +94,16 @@ const EditableCell = ({
 		return (
 			<select
 				value={value || ''}
-				onChange={e => {
+				onChange={(e) => {
 					setValue(e.target.value);
 					updateData(index, id, e.target.value);
 				}}
-				className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
-			>
+				className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0">
 				<option value="">Select...</option>
-				{selectOptions.map(option => (
-					<option key={option.value} value={option.value}>
+				{selectOptions.map((option) => (
+					<option
+						key={option.value}
+						value={option.value}>
 						{option.label}
 					</option>
 				))}
@@ -115,7 +116,7 @@ const EditableCell = ({
 			<input
 				type="date"
 				value={value || ''}
-				onChange={e => {
+				onChange={(e) => {
 					setValue(e.target.value);
 					updateData(index, id, e.target.value);
 				}}
@@ -127,7 +128,7 @@ const EditableCell = ({
 	return (
 		<input
 			value={value || ''}
-			onChange={e => {
+			onChange={(e) => {
 				setValue(e.target.value);
 				updateData(index, id, e.target.value);
 			}}
@@ -224,7 +225,7 @@ export function DataTable<TData, TValue>({
 					cell: (props: CellContext<TData, TValue>) => (
 						<EditableCell
 							value={props.getValue()}
-                            row={{ index: props.row.index, original: props.row.original }}
+							row={{ index: props.row.index, original: props.row.original }}
 							column={{ id: columnId }}
 							updateData={(index: number, id: string, value: any) => {
 								setTableData?.((prevData: any) => {
@@ -269,13 +270,36 @@ export function DataTable<TData, TValue>({
 	});
 
 	// Handle row drag-and-drop
+	// const handleRowDragEnd = useCallback(
+	// 	(event: any) => {
+	// 		const { active, over } = event;
+	// 		if (!active || !over || active.id === over.id) return;
+
+	// 		const oldIndex = data.findIndex((item: any) => item.id === active.id);
+	// 		const newIndex = data.findIndex((item: any) => item.id === over.id);
+
+	// 		if (oldIndex === -1 || newIndex === -1) return;
+
+	// 		const newData = arrayMove([...data], oldIndex, newIndex);
+	// 		setTableData?.(newData);
+
+	// 		if (onRowDragEnd) {
+	// 			onRowDragEnd({ oldIndex, newIndex });
+	// 		}
+	// 	},
+	// 	[data, onRowDragEnd]
+	// );
+
 	const handleRowDragEnd = useCallback(
 		(event: any) => {
 			const { active, over } = event;
+			console.log('HanldeRow Active = ', active);
+			console.log('HanldeRow Over = ', over);
+
 			if (!active || !over || active.id === over.id) return;
 
-			const oldIndex = data.findIndex((item: any) => item.id === active.id || item.companyId === active.id);
-			const newIndex = data.findIndex((item: any) => item.id === over.id || item.companyId === over.id);
+			const oldIndex = data.findIndex((item: any) => item.id === active.id);
+			const newIndex = data.findIndex((item: any) => item.id === over.id);
 
 			if (oldIndex === -1 || newIndex === -1) return;
 
@@ -307,7 +331,7 @@ export function DataTable<TData, TValue>({
 
 	// Sortable Row Component
 	const SortableRow = ({ row }: { row: any }) => {
-		const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.original.companyId });
+		const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.original.id });
 		const style = {
 			transform: CSS.Transform.toString(transform),
 			transition,
@@ -367,7 +391,7 @@ export function DataTable<TData, TValue>({
 					}
 				}}>
 				<SortableContext
-					items={enableRowDragAndDrop ? data.map((item: any) => item.id || item.companyId) : tableColumns.map((item: any) => item.id || item.accessorKey)}
+					items={enableRowDragAndDrop ? data.map((item: any) => item.id || item.accessorKey) : tableColumns.map((item: any) => item.id || item.accessorKey)}
 					strategy={verticalListSortingStrategy}>
 					<Table>
 						<TableHeader className="bg-[#f3f4f6]">
@@ -453,21 +477,21 @@ export function DataTable<TData, TValue>({
 												const isNumeric = header.column.columnDef.type === 'number';
 												const isAction = header.column.id === 'detail' || header.column.id === 'actions';
 												const isImage = header.column.id === 'logo' || header.column.id === 'profileimage';
-												
+
 												return (
 													<TableHead
 														key={header.id}
-														style={{ 
+														style={{
 															minWidth: isImage ? '60px' : '150px',
 															width: isImage ? '60px' : 'auto',
 															padding: isImage ? '0' : undefined, // Explicitly remove padding for image columns
 														}}
 														className={cn(
-															"text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]",
-															isNumeric && "text-right",
-															isAction && "sticky right-0 bg-gray-100 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]",
-															!isImage && "", // Only add padding if not an image column
-															isImage && "!p-0 !m-0" // Force remove all padding and margin for image columns
+															'text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]',
+															isNumeric && 'text-right',
+															isAction && 'sticky right-0 bg-gray-100 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]',
+															!isImage && '', // Only add padding if not an image column
+															isImage && '!p-0 !m-0' // Force remove all padding and margin for image columns
 														)}>
 														{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 													</TableHead>
@@ -479,36 +503,39 @@ export function DataTable<TData, TValue>({
 								<TableBody>
 									{table.getRowModel().rows?.length ? (
 										table.getRowModel().rows.map((row) => (
-											<TableRow key={row.id} className="border-t">
+											<TableRow
+												key={row.id}
+												className="border-t">
 												{row.getVisibleCells().map((cell) => {
 													const isNumeric = cell.column.columnDef.type === 'number';
 													const isAction = cell.column.id === 'detail' || cell.column.id === 'actions';
 													const isImage = cell.column.columnDef.type === 'image';
-													
+
 													return (
 														<TableCell
 															key={cell.id}
-															style={{ 
+															style={{
 																width: isImage ? '60px' : 'auto',
 																minWidth: isImage ? '60px' : '150px',
 																padding: 0,
 																margin: 0,
 															}}
 															className={cn(
-																"text-xs whitespace-nowrap border-b",
-																isNumeric && "text-right",
-																isAction && "sticky right-0 bg-white z-10 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]",
-																!isImage && !isAction && "px-4 py-4",
-																isImage && "!p-0 !m-0 w-[60px]", // Force exact width and remove padding/margin
+																'text-xs whitespace-nowrap border-b',
+																isNumeric && 'text-right',
+																isAction && 'sticky right-0 bg-white z-10 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]',
+																!isImage && !isAction && 'px-4 py-4',
+																isImage && '!p-0 !m-0 w-[60px]' // Force exact width and remove padding/margin
 															)}>
-															<div className={cn(
-																"flex h-full",
-																isNumeric && "justify-end",
-																isAction && "justify-center",
-																!isNumeric && !isAction && "justify-start",
-																isImage && "!p-0 !m-0 w-[60px]", // Force exact width and remove padding/margin
-																"items-center"
-															)}>
+															<div
+																className={cn(
+																	'flex h-full',
+																	isNumeric && 'justify-end',
+																	isAction && 'justify-center',
+																	!isNumeric && !isAction && 'justify-start',
+																	isImage && '!p-0 !m-0 w-[60px]', // Force exact width and remove padding/margin
+																	'items-center'
+																)}>
 																{flexRender(cell.column.columnDef.cell, cell.getContext())}
 															</div>
 														</TableCell>
@@ -518,7 +545,9 @@ export function DataTable<TData, TValue>({
 										))
 									) : (
 										<TableRow>
-											<TableCell colSpan={columns.length} className="h-24 text-center">
+											<TableCell
+												colSpan={columns.length}
+												className="h-24 text-center">
 												{loading ? <Loading /> : 'No results'}
 											</TableCell>
 										</TableRow>
@@ -528,13 +557,7 @@ export function DataTable<TData, TValue>({
 						</div>
 						{onPageChange && (
 							<div className="flex items-center justify-between px-4 py-4 border-t">
-								<div className="flex-1 text-sm text-gray-500">
-									{total > 0 ? (
-										`Showing ${((currentPage - 1) * pageSize) + 1} to ${Math.min(currentPage * pageSize, total)} of ${total} entries`
-									) : (
-										'No entries'
-									)}
-								</div>
+								<div className="flex-1 text-sm text-gray-500">{total > 0 ? `Showing ${(currentPage - 1) * pageSize + 1} to ${Math.min(currentPage * pageSize, total)} of ${total} entries` : 'No entries'}</div>
 								{total > 0 && (
 									<div className="flex items-center gap-2">
 										<Button
@@ -542,8 +565,7 @@ export function DataTable<TData, TValue>({
 											size="icon"
 											onClick={() => onPageChange?.(currentPage - 1)}
 											disabled={currentPage <= 1}
-											className="w-8 h-8 rounded-none"
-										>
+											className="w-8 h-8 rounded-none">
 											<ChevronLeft className="w-4 h-4" />
 										</Button>
 										<div className="flex flex-row items-center gap-2">
@@ -569,8 +591,7 @@ export function DataTable<TData, TValue>({
 											size="icon"
 											onClick={() => onPageChange?.(currentPage + 1)}
 											disabled={currentPage >= Math.ceil(total / pageSize)}
-											className="w-8 h-8 rounded-none"
-										>
+											className="w-8 h-8 rounded-none">
 											<ChevronRight className="w-4 h-4" />
 										</Button>
 									</div>

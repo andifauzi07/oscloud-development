@@ -27,7 +27,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: '',
 		type: 'image',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 1,
 		cell: ({ row }: CellContext<Company, any>) => <CompanyLogoCell row={row} />,
 	},
@@ -37,7 +37,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'ID',
 		type: 'number',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 2,
 	},
 	{
@@ -46,7 +46,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Company',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 3,
 	},
 	{
@@ -55,7 +55,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Personnel No.',
 		type: 'number',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 4,
 		cell: ({ row }: CellContext<Company, any>) => <div className="flex items-center justify-start h-full">{row.original.personnel?.length}</div>,
 	},
@@ -65,7 +65,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Category Group',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 5,
 	},
 	{
@@ -74,7 +74,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Cities',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 6,
 	},
 	{
@@ -83,7 +83,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Created at',
 		type: 'date',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 7,
 	},
 	{
@@ -92,7 +92,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Manager',
 		type: 'number',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 8,
 	},
 	{
@@ -101,7 +101,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Product',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 9,
 	},
 	{
@@ -110,7 +110,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Active Leads',
 		type: 'number',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 10,
 	},
 	{
@@ -119,7 +119,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: 'Email',
 		type: 'email',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 11,
 	},
 	{
@@ -127,7 +127,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		header: 'View',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 12,
 		cell: ({ row }: CellContext<Company, any>) => (
 			<Link
@@ -166,7 +166,7 @@ const costColumns = Object.entries({
 	date_created: new Date().toISOString(),
 	status: 'shown' as const,
 	order: 8 + index,
-	cell: ({ row }) => {
+	cell: ({ row }: any) => {
 		// Get the costs object safely
 		const costs = row.original?.costs;
 		// If costs exists, get the specific cost value, otherwise default to 0
@@ -289,7 +289,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		header: '',
 		label: '',
 		type: 'image',
-		status: 'shown',
+		status: 'Active',
 		order: 1,
 		cell: ({ row }: any) => (
 			<img
@@ -304,7 +304,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		header: 'ID',
 		label: 'Employee ID',
 		type: 'number',
-		status: 'shown',
+		status: 'Active',
 		order: 2,
 		cell: ({ row }) => <h1>{row.original.employeeid}</h1>,
 	},
@@ -313,7 +313,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		header: 'Name',
 		label: 'Name',
 		type: 'text',
-		status: 'shown',
+		status: 'Active',
 		order: 3,
 		cell: ({ row }: any) => (
 			<Link
@@ -329,7 +329,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		header: 'Employee Category',
 		label: 'Employee Category',
 		type: 'number',
-		status: 'shown',
+		status: 'Active',
 		order: 4,
 		cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-',
 	},
@@ -338,7 +338,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		header: 'Email',
 		label: 'Email',
 		type: 'email',
-		status: 'shown',
+		status: 'Active',
 		order: 5,
 		cell: ({ row }: any) =>
 			row.original.email ? (
@@ -356,7 +356,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		header: 'Department',
 		label: 'Department',
 		type: 'text',
-		status: 'shown',
+		status: 'Active',
 		order: 6,
 		cell: ({ row }: any) => row.original.department?.departmentname || '-',
 	},
@@ -365,7 +365,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		header: '',
 		label: '',
 		type: 'text',
-		status: 'shown',
+		status: 'Active',
 		order: 7,
 		cell: ({ row }) => (
 			<div className="flex justify-end w-full">

@@ -4,41 +4,19 @@ import { DataTable } from '@/components/ui/data-table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Link } from '@tanstack/react-router';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
+import { AddSettingColumn } from '@/components/AddSettingColumn';
 import { useCallback, useMemo, useState } from 'react';
 import { formatUrlString } from '@/lib/utils';
 import { useDepartments, useFlatDepartmentList } from '@/hooks/useDepartment';
+import { ColumnDef } from '@tanstack/react-table';
+import { BaseColumnSetting } from '@/types/table';
+import { Switch } from '@/components/ui/switch';
+import { useColumnSettings } from '@/hooks/useColumnSettings';
+import { defaultEmployeeColumnSettings } from '@/config/columnSettings';
 
 export const Route = createFileRoute('/employee/setting/')({
 	component: RouteComponent,
 });
-
-const dataFieldColumns = [
-	{ id: 'field', header: () => <h1 className="pl-8 py-2">Data Field</h1>, accessorKey: 'field', cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.field}</h1> },
-	{ id: 'type', header: 'Type', accessorKey: 'type' },
-	{ id: 'category', header: 'Category', accessorKey: 'category' },
-	{ id: 'dateCreated', header: 'Date Created', accessorKey: 'dateCreated' },
-	{ id: 'dateAdded', header: 'Date Added', accessorKey: 'dateAdded' },
-	{ id: 'status', header: 'Status', accessorKey: 'status' },
-	{
-		id: 'actions',
-		header: '',
-		accessorKey: 'actions',
-		cell: ({ row }: any) => (
-			<div className="w-full flex justify-end items-center">
-				<Button
-					variant={'outline'}
-					onClick={() => console.log('Removing:', row.original.actions)}>
-					REMOVE
-				</Button>
-			</div>
-		),
-	},
-];
-
-const dataFieldData = [
-	{ id: 1, field: 'Name', type: 'Custom Data', category: '', dateCreated: '2024.11.01', dateAdded: '2024.11.01', actions: 'REMOVE', status: 'Active' },
-	{ id: 2, field: 'Phone number', type: 'Custom data', category: 'Basic information', dateCreated: '2024.11.01', dateAdded: '2024.11.01', actions: 'REMOVE', status: 'Hidden' },
-];
 
 const categoryColumns = [
 	{ accessorKey: 'categoryName', header: () => <h1 className="pl-8 py-2">Category Name</h1>, cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.categoryName}</h1> },
@@ -136,13 +114,79 @@ const departmentColumns = [
 	},
 ];
 
-async function RouteComponent() {
+function RouteComponent() {
 	const [editable, setEditable] = useState(false);
 	const { flatDepartments, loading } = useFlatDepartmentList();
+	const { settings, saveSettings, addNewSetting, reorderColumns } = useColumnSettings<any>({
+		storageKey: 'EmployeeColumnSetting',
+		defaultSettings: defaultEmployeeColumnSettings,
+	});
+	const [updateDataFromChild, setUpdateDataFromChild] = useState(settings);
+	const memoizedDataFieldSettingsColumns = useMemo(() => settings, [settings]);
+
+	const handleStatusChange = useCallback(
+		(accessorKey: string, checked: boolean) => {
+			saveSettings((prevSettings: BaseColumnSetting<any>[]) => prevSettings.map((setting) => (setting.accessorKey === accessorKey ? { ...setting, status: checked ? 'Active' : 'Hidden' } : setting)));
+		},
+		[saveSettings]
+	);
+
+	console.log(settings);
+
+	const dataFieldColumns = useMemo<ColumnDef<BaseColumnSetting<any>>[]>(
+		() => [
+			{
+				id: 'label',
+				accessorKey: 'label',
+				header: 'Data Field',
+				cell: ({ row }) => <div className="py-2">{row.original.label || '-'}</div>,
+			},
+			{
+				id: 'type',
+				accessorKey: 'type',
+				header: 'Type',
+				cell: ({ row }) => <h1>{row.original.type}</h1>,
+			},
+			{
+				id: 'status',
+				accessorKey: 'status',
+				header: 'Status',
+				cell: ({ row }) => <h1>{row.original.status}</h1>,
+			},
+			{
+				id: 'toggle',
+				accessorKey: '',
+				header: '',
+				cell: ({ row }) => (
+					<div className="flex items-center justify-center">
+						<Switch
+							checked={row.original.status === 'Active'}
+							onCheckedChange={(checked) => handleStatusChange(row.original.accessorKey.toString(), checked)}
+						/>
+					</div>
+				),
+			},
+		],
+		[handleStatusChange]
+	);
+
+	const handleSaveEditsDataField = useCallback(
+		(updateDataArray: BaseColumnSetting<any>[]) => {
+			saveSettings((prevSettings) =>
+				prevSettings.map((setting) => {
+					const updatedItem = updateDataArray.find((update) => update.accessorKey === setting.accessorKey);
+					return updatedItem ? { ...setting, ...updatedItem } : setting;
+				})
+			);
+			setEditable((prev) => !prev);
+		},
+		[saveSettings]
+	);
+
 	const handleAddRecord = async (data: any) => {
 		try {
 			// Add your API call here to save the new record
-			console.log('Adding new record:', data);
+			console.log('Adding new setting:', data);
 		} catch (error) {
 			console.error('Failed to add record:', error);
 		}
@@ -182,31 +226,87 @@ async function RouteComponent() {
 						Department
 					</TabsTrigger>
 				</TabsList>
+
+				{/* Data-field */}
+
 				<TabsContent
 					className="m-0"
 					value="data-field">
-					<div className="flex justify-end flex-none w-full bg-white">
-						<AddRecordDialog
-							columns={dataFieldColumns}
-							onSave={handleAddRecord}
-							nonEditableColumns={['action*', 'dateAdded*', 'dateCreated*']}
-						/>
-						<Button
-							onClick={() => setEditable((prev) => !prev)}
-							className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-							EDIT+
-						</Button>
+					<div className="flex border-b-0 justify-end flex-none w-full bg-white">
+						{editable ? (
+							<Button
+								onClick={() => setEditable((prev) => !prev)}
+								className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+								CANCEL
+							</Button>
+						) : (
+							<AddSettingColumn
+								columns={dataFieldColumns}
+								addSettingsHandler={addNewSetting}
+								nonEditableColumns={['action*', 'dateAdded*', 'dateCreated*', '*id', 'header*']}
+								selectFields={{
+									status: {
+										options: [
+											{ value: 'Active', label: 'Active' },
+											{ value: 'Hidden', label: 'Hidden' },
+										],
+									},
+									type: {
+										options: [
+											{ value: 'text', label: 'Text' },
+											{ value: 'number', label: 'Number' },
+											{ value: 'boolean', label: 'Boolean' },
+											{ value: 'email', label: 'Email' },
+											{ value: 'file', label: 'File' },
+											{ value: 'image', label: 'Image' },
+											{ value: 'actions', label: 'Actions' },
+										],
+									},
+								}}
+							/>
+						)}
+
+						{editable ? (
+							<Button
+								// onClick={handleSaveEditsDataField(updateDataFromChild)}
+								onClick={(e) => {
+									e.preventDefault(); // Opsional, jika perlu mencegah submit
+									handleSaveEditsDataField(updateDataFromChild);
+								}}
+								className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
+								SAVE
+							</Button>
+						) : (
+							<Button
+								onClick={() => setEditable((prev) => !prev)}
+								className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+								EDIT
+							</Button>
+						)}
 					</div>
 					<DataTable
-						enableColumnDragAndDrop={true}
+						// enableColumnDragAndDrop={editable}
+						// enableRowDragAndDrop
+						enableRowDragAndDrop={true}
 						columns={dataFieldColumns}
-						data={dataFieldData}
+						data={memoizedDataFieldSettingsColumns}
 						loading={false}
 						isEditable={editable}
-						onSave={handleSaveEdits}
-						nonEditableColumns={['action*']}
+						setTableData={(updateFunctionOrData) => {
+							const evaluatedData = typeof updateFunctionOrData === 'function' ? updateFunctionOrData([...memoizedDataFieldSettingsColumns]) : updateFunctionOrData;
+							setUpdateDataFromChild(evaluatedData);
+						}}
+						onRowDragEnd={({ oldIndex, newIndex }) => {
+							console.log('data di geser dari : ', oldIndex);
+							console.log('ke : ', newIndex);
+
+							// reorderColumns(oldIndex, newIndex);
+						}}
+						nonEditableColumns={['action*', 'status*']}
 					/>
 				</TabsContent>
+
+				{/* Data-category */}
 				<TabsContent
 					className="m-0"
 					value="data-category">
@@ -231,6 +331,8 @@ async function RouteComponent() {
 						nonEditableColumns={['action*']}
 					/>
 				</TabsContent>
+
+				{/* Employee-category */}
 				<TabsContent
 					className="m-0"
 					value="employe-category">
@@ -258,6 +360,7 @@ async function RouteComponent() {
 					/>
 				</TabsContent>
 
+				{/* Department */}
 				<TabsContent
 					className="m-0"
 					value="department">

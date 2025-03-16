@@ -3,13 +3,14 @@ import { ColumnDef, CellContext } from '@tanstack/react-table';
 export type TableColumnType = 'text' | 'number' | 'boolean' | 'email' | 'date' | 'file' | 'image' | 'actions';
 
 export interface BaseColumnSetting<T> {
+	minWidth: number;
 	id?: string | number;
 	accessorKey: keyof T & string; // Ensure it's a string key
 	label?: string;
 	header: string;
 	type: TableColumnType;
 	date_created?: string;
-	status: 'shown' | 'hidden';
+	status: 'Active' | 'Hidden';
 	order: number;
 	cell?: (context: CellContext<T, unknown>) => React.ReactNode;
 }

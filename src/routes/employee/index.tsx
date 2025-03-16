@@ -75,7 +75,7 @@ function RouteComponent() {
 
 	const columns = useMemo<ColumnDef<Employee, any>[]>(() => {
 		return settings
-			.filter((setting) => setting.status === 'shown')
+			.filter((setting) => setting.status === 'Active')
 			.sort((a, b) => a.order - b.order)
 			.map((setting) => {
 				// Find the matching default setting to get the original cell renderer
@@ -84,7 +84,7 @@ function RouteComponent() {
 				return {
 					id: String(setting.accessorKey),
 					accessorKey: setting.accessorKey as string,
-					header: setting.header || setting.label,
+					header: setting.label,
 					// Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
 					cell: defaultSetting?.cell || setting.cell,
 				};
@@ -150,10 +150,10 @@ function RouteComponent() {
 			const processedData = {
 				name: data.name,
 				email: data.email,
-				employeecategoryid: Number(data.employeecategoryid),  // Changed from employeeCategoryId
-				departmentid: Number(data.departmentid)  // Changed from departmentId
+				employeecategoryid: Number(data.employeecategoryid), // Changed from employeeCategoryId
+				departmentid: Number(data.departmentid), // Changed from departmentId
 			};
-			
+
 			await addEmployee(processedData);
 			console.log('Adding new record:', processedData);
 		} catch (error) {

@@ -5,11 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { SelectField } from './select-field';
-import { CostsDialog } from './CostsDialog';
 
 interface AddRecordDialogProps {
 	columns: any[];
-	onSave: (data: any) => void;
+	addSettingsHandler: (data: any) => void;
 	nonEditableColumns?: string[];
 	selectFields?: {
 		[key: string]: {
@@ -27,31 +26,16 @@ interface AddRecordDialogProps {
 	enableCosts?: boolean;
 }
 
-export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], selectFields, customFields, enableCosts = false }: AddRecordDialogProps) {
+export function AddSettingColumn({ columns, nonEditableColumns = [], selectFields, customFields, addSettingsHandler }: AddRecordDialogProps) {
 	const [formData, setFormData] = React.useState<Record<string, any>>({});
-	const [costs, setCosts] = React.useState<Record<string, number>>({
-		food: 0,
-		break: 0,
-		rental: 0,
-		revenue: 0,
-		other_cost: 0,
-		labour_cost: 0,
-		manager_fee: 0,
-		costume_cost: 0,
-		sales_profit: 0,
-		transport_cost: 0,
-	});
 	const [isOpen, setIsOpen] = React.useState(false);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		onSave({
-			...formData,
-			costs: costs,
-		});
+		addSettingsHandler(formData);
+
 		setIsOpen(false);
 		setFormData({});
-		setCosts({});
 	};
 
 	// Helper function to check if a column should be excluded based on wildcard pattern
@@ -79,14 +63,6 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 		return true;
 	});
 
-	const handleDateRangeChange = (startKey: string, endKey: string, startDate: string, endDate: string) => {
-		setFormData((prev) => ({
-			...prev,
-			[startKey]: startDate,
-			[endKey]: endDate,
-		}));
-	};
-
 	return (
 		<Popover
 			open={isOpen}
@@ -104,7 +80,7 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 				sideOffset={2}>
 				<form onSubmit={handleSubmit}>
 					<div className="grid gap-4">
-						<h3 className="font-medium leading-none">Add New Record</h3>
+						<h3 className="font-medium leading-none">Add New Column</h3>
 						<div className="grid gap-3">
 							{editableColumns.map((column) => {
 								const isSelectField = selectFields && selectFields[column.accessorKey];
@@ -132,9 +108,8 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 											<>
 												<Label
 													htmlFor={column.accessorKey}
-													className="text-sm font-medium">
-													{column.header}
-													{/* {typeof column.header === 'function' ? column.header() : column.header} */}
+													className="text-sm font-medium pl-0">
+													{typeof column.header === 'function' ? column.header() : column.header}
 												</Label>
 												<Input
 													id={column.accessorKey}
@@ -146,50 +121,13 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 															[column.accessorKey]: e.target.value,
 														}))
 													}
-													placeholder={`...`}
+													placeholder={`${column.header!}...`}
 												/>
 											</>
 										)}
 									</div>
 								);
 							})}
-
-							{/* Custom Date Range Fields */}
-							{Object.entries(customFields || {}).map(([key, field]) => (
-								<div
-									key={key}
-									className="grid gap-2">
-									<Label className="text-sm font-medium">{field.label}</Label>
-									<div className="flex items-center gap-2">
-										<Input
-											enableEmoji={false}
-											type="date"
-											value={formData[field.startKey] || ''}
-											onChange={(e) => handleDateRangeChange(field.startKey, field.endKey, e.target.value, formData[field.endKey])}
-											className="w-[150px] border rounded-none"
-										/>
-										<span className="text-gray-500">-</span>
-										<Input
-											enableEmoji={false}
-											type="date"
-											value={formData[field.endKey] || ''}
-											onChange={(e) => handleDateRangeChange(field.startKey, field.endKey, formData[field.startKey], e.target.value)}
-											className="w-[150px] border rounded-none"
-										/>
-									</div>
-								</div>
-							))}
-
-							{/* Add Costs Management */}
-							{enableCosts && (
-								<div className="grid gap-2">
-									<Label className="text-sm font-medium">Project Costs</Label>
-									<CostsDialog
-										costs={costs}
-										onChange={setCosts}
-									/>
-								</div>
-							)}
 						</div>
 						<div className="flex justify-end mt-4">
 							<Button
