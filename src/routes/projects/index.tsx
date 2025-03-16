@@ -90,6 +90,8 @@ function RouteComponent() {
     const [updateDataFromChild, setUpdateDataFromChild] = useState<
         ProjectDisplay[]
     >([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const filters = useMemo(
         () => ({
@@ -97,20 +99,19 @@ function RouteComponent() {
             search: debouncedKeyword || undefined,
             startDate: startDate || undefined,
             endDate: endDate || undefined,
+            limit: pageSize,     // FIXED
+            page: currentPage,   // FIXED
         }),
-        [statusFilter, debouncedKeyword, startDate, endDate]
+        [statusFilter, debouncedKeyword, startDate, endDate, currentPage, pageSize]
     );
 
-    const { projects, loading } = useProjects(filters);
+    const { projects, loading, error, total, page, limit } = useProjects(filters);
     const { addProject, editProject, getProjectCategories } = useProject();
 
-    // First, let's create a function to merge settings with defaults
     const mergeWithDefaultSettings = (
         currentSettings: BaseColumnSetting<ProjectDisplay>[]
     ) => {
         const mergedSettings = [...defaultProjectColumnSettings];
-
-        // Update existing settings with stored values
         currentSettings.forEach((setting) => {
             const index = mergedSettings.findIndex(
                 (def) => def.accessorKey === setting.accessorKey
@@ -122,9 +123,9 @@ function RouteComponent() {
                 };
             }
         });
-
         return mergedSettings;
     };
+
 
     // Then use it with useColumnSettings
     const { settings, saveSettings, reorderColumns } = useColumnSettings({
@@ -148,7 +149,6 @@ function RouteComponent() {
                 const categoriesResponse = await getProjectCategories();
                 setCategories(categoriesResponse || []);
 
-                // Only log users when they're actually loaded
                 if (!usersLoading && users.length > 0) {
                     console.log("Loaded users:", users);
                 }
@@ -159,7 +159,7 @@ function RouteComponent() {
         };
 
         fetchInitialData();
-    }, [workspaceid, users, usersLoading]); // Add users and usersLoading to dependencies
+    }, [workspaceid, users, usersLoading]);
 
     const companyOptions = useMemo(
         () =>
@@ -214,22 +214,28 @@ function RouteComponent() {
                         },
                     };
                 }
-
                 if (setting.accessorKey === 'categoryid') {
                     return {
                         id: setting.accessorKey,
                         accessorKey: setting.accessorKey,
                         header: defaultSetting?.header || setting.header,
                         cell: ({ row }) => {
-                            if (!isEditable) return defaultCellRenderer({ getValue: () => row.original.category?.name });
+                            // Safely handle null category
+                            const categoryId = row.original.category?.categoryId;
+                            const categoryName = row.original.category?.name;
+                            
+                            if (!isEditable) {
+                                return defaultCellRenderer({ getValue: () => categoryName || '-' });
+                            }
+                            
                             return (
                                 <Select
-                                    value={String(row.original.categoryid)}
+                                    value={categoryId ? String(categoryId) : ""}
                                     onValueChange={value => {
                                         setUpdateDataFromChild(prev => 
                                             prev.map(item => 
                                                 item.projectid === row.original.projectid
-                                                    ? { ...item, categoryid: Number(value) }
+                                                    ? { ...item, categoryid: value ? Number(value) : null }
                                                     : item
                                             )
                                         );
@@ -239,8 +245,12 @@ function RouteComponent() {
                                         <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="">No Category</SelectItem>
                                         {categories.map(category => (
-                                            <SelectItem key={category.categoryid} value={String(category.categoryid)}>
+                                            <SelectItem 
+                                                key={category.categoryid} 
+                                                value={String(category.categoryid)}
+                                            >
                                                 {category.categoryname}
                                             </SelectItem>
                                         ))}
@@ -574,7 +584,7 @@ function RouteComponent() {
                         }
                     </div>
                     <div className="flex-1">
-                        <DataTable
+                    <DataTable
                             columns={columns}
                             data={isEditable ? updateDataFromChild : projects} // Switch data source based on edit mode
                             loading={loading}
@@ -616,6 +626,10 @@ function RouteComponent() {
                                     type: "date",
                                 },
                             }}
+                            total={total}
+                            currentPage={currentPage}
+                            onPageChange={setCurrentPage}
+                            pageSize={pageSize}
                         />
                     </div>
                 </TabsContent>

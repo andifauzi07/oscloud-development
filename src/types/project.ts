@@ -59,13 +59,35 @@ interface ProjectFinancials {
 }
 
 export interface Project {
-    projectid: number;
+    projectId: number;
     name: string;
-    startdate: string;
-    enddate: string;
-    workspaceid: number;
-    companyid: number;
+    description: string | null;
+    startDate: string;
+    endDate: string;
     status: string | null;
+    requiredStaffNumber: number;
+    manager: {
+        userId: string;
+        name: string;
+        email: string;
+    };
+    company: {
+        companyId: number;
+        name: string;
+    };
+    category: {
+        categoryId: number;
+        name: string;
+        parentCategoryId: number | null;
+    } | null;
+    assignedStaff: {
+        assignmentid: number;
+        projectid: number;
+        employeeid: number;
+        rateemployeeid: number;
+        ratetype: string;
+        breakhours: number;
+    }[];
     costs: {
         food: number;
         break: number;
@@ -77,26 +99,6 @@ export interface Project {
         costume_cost: number;
         sales_profit: number;
         transport_cost: number;
-    };
-    managerid: string;
-    description: string | null;
-    requiredstaffnumber: number;
-    manager: {
-        userId: string;
-        name: string;
-    };
-    company: {
-        companyId: number;
-        name: string;
-        logo: string;
-    };
-    assignedStaff: AssignedStaff[];
-    personnel: any[];
-    requiredStaffNumber: number;
-    currentStaffCount: number;
-    financials: {
-        totalLabourCost: number;
-        totalTransportFee: number;
     };
 }
 

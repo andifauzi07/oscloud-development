@@ -9,6 +9,7 @@ import { Button } from './button';
 import Loading from '../Loading';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import EmojiPicker from 'emoji-picker-react';
 
 const preloadImage = (src: string) => {
 	if (!src) return;
@@ -254,6 +255,17 @@ export function DataTable<TData, TValue>({
 		getSortedRowModel: getSortedRowModel(),
 		enableSorting: false,
 		enableMultiSort: false,
+		// Add pagination state
+		state: {
+			pagination: {
+				pageIndex: currentPage - 1, // Convert 1-based to 0-based index
+				pageSize: pageSize,
+			},
+		},
+		// Add manual pagination flag
+		manualPagination: true,
+		// Add total rows count
+		pageCount: Math.ceil(total / pageSize),
 	});
 
 	// Handle row drag-and-drop
@@ -517,42 +529,52 @@ export function DataTable<TData, TValue>({
 						{onPageChange && (
 							<div className="flex items-center justify-between px-4 py-4 border-t">
 								<div className="flex-1 text-sm text-gray-500">
-									{/* If you want to show total records info */}
-									Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total} entries
+									{total > 0 ? (
+										`Showing ${((currentPage - 1) * pageSize) + 1} to ${Math.min(currentPage * pageSize, total)} of ${total} entries`
+									) : (
+										'No entries'
+									)}
 								</div>
-								<div className="flex items-center gap-2">
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => onPageChange(currentPage - 1)}
-										disabled={currentPage <= 1}
-										className="w-8 h-8 p-0"
-									>
-										<ChevronLeft className="w-4 h-4" />
-									</Button>
-									<div className="flex items-center gap-1">
-										<Input
-											type="number"
-											min={1}
-											max={Math.ceil(total / pageSize)}
-											value={currentPage}
-											onChange={(e) => onPageChange(Number(e.target.value))}
-											className="w-16 h-8 text-center"
-										/>
-										<span className="text-sm text-gray-500">
-											of {Math.ceil(total / pageSize)}
-										</span>
+								{total > 0 && (
+									<div className="flex items-center gap-2">
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => onPageChange?.(currentPage - 1)}
+											disabled={currentPage <= 1}
+											className="w-8 h-8 rounded-none"
+										>
+											<ChevronLeft className="w-4 h-4" />
+										</Button>
+										<div className="flex flex-row items-center gap-2">
+											<Input
+												type="number"
+												enableEmoji={false}
+												min={1}
+												max={Math.ceil(total / pageSize)}
+												value={currentPage}
+												onChange={(e) => {
+													const page = Math.max(1, Math.min(Math.ceil(total / pageSize), Number(e.target.value)));
+													onPageChange?.(page);
+												}}
+												className="w-8 h-8 p-0 text-center border-none rounded-none"
+											/>
+											<div className="flex items-center gap-2 text-sm text-gray-500">
+												<span>of</span>
+												<span className="w-8 text-center">{Math.ceil(total / pageSize)}</span>
+											</div>
+										</div>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => onPageChange?.(currentPage + 1)}
+											disabled={currentPage >= Math.ceil(total / pageSize)}
+											className="w-8 h-8 rounded-none"
+										>
+											<ChevronRight className="w-4 h-4" />
+										</Button>
 									</div>
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => onPageChange(currentPage + 1)}
-										disabled={currentPage >= Math.ceil(total / pageSize)}
-										className="w-8 h-8 p-0"
-									>
-										<ChevronRight className="w-4 h-4" />
-									</Button>
-								</div>
+								)}
 							</div>
 						)}
 					</>

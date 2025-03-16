@@ -159,16 +159,21 @@ const costColumns = Object.entries({
 	other_cost: 'Other Cost',
 	sales_profit: 'Sales Profit',
 }).map(([key, label], index) => ({
-	accessorKey: `costs.${key}` as keyof ProjectDisplay, // Changed to access nested costs object
+	accessorKey: `costs.${key}` as keyof ProjectDisplay,
 	header: label,
 	label: label,
 	type: 'number' as const,
 	date_created: new Date().toISOString(),
 	status: 'shown' as const,
 	order: 8 + index,
-	cell: ({ row }: CellContext<ProjectDisplay, unknown>) => {
-		const cost = row.original.costs?.[key as keyof typeof row.original.costs] || 0;
-		return <span>¥{cost.toLocaleString()}</span>;
+	cell: ({ row }) => {
+		// Get the costs object safely
+		const costs = row.original?.costs;
+		// If costs exists, get the specific cost value, otherwise default to 0
+		const value = costs ? (costs[key as keyof typeof costs] ?? 0) : 0;
+		// Convert to number to ensure we can use toLocaleString
+		const numericValue = Number(value);
+		return <span>¥{numericValue.toLocaleString()}</span>;
 	},
 }));
 
@@ -194,24 +199,24 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		cell: ({ row }) => <span>{row.original.manager?.name}</span>, // Access nested property in cell renderer
 	},
 	{
-		accessorKey: 'startdate', // Changed from startDate to match Project type
+		accessorKey: 'startDate', // Changed from startdate to startDate
 		header: 'Starting',
 		label: 'Starting',
 		type: 'date',
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 3,
-		cell: ({ row }) => (row.original.startdate ? new Date(row.original.startdate).toLocaleDateString() : 'N/A'),
+		cell: ({ row }) => (row.original.startDate ? new Date(row.original.startDate).toLocaleDateString() : 'N/A'),
 	},
 	{
-		accessorKey: 'enddate', // Changed from endDate to match Project type
+		accessorKey: 'endDate', // Changed from enddate to endDate
 		header: 'End',
 		label: 'End',
 		type: 'date',
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 4,
-		cell: ({ row }) => (row.original.enddate ? new Date(row.original.enddate).toLocaleDateString() : 'N/A'),
+		cell: ({ row }) => (row.original.endDate ? new Date(row.original.endDate).toLocaleDateString() : 'N/A'),
 	},
 	{
 		accessorKey: 'companyid', // Changed from company.name to match Project type
@@ -266,7 +271,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 						<Link
 							to={`/projects/$projectId`}
 							params={{
-								projectId: row.original.projectid.toString(),
+								projectId: row.original.projectId.toString(),
 							}}>
 							View
 						</Link>

@@ -200,10 +200,20 @@ export const fetchProjects = createAsyncThunk(
         const queryParams = new URLSearchParams();
         if (filters) {
             Object.entries(filters).forEach(([key, value]) => {
-                if (value) queryParams.append(key.toLowerCase(), value.toString());
+                if (value !== undefined && value !== null) {
+                    if (key === 'page') {
+                        queryParams.append('page', value.toString());
+                    } else if (key === 'limit') {
+                        queryParams.append('limit', value.toString());
+                    } else {
+                        queryParams.append(key.toLowerCase(), value.toString());
+                    }
+                }
             });
         }
-        const response = await apiClient.get<ProjectsResponse>(`/workspaces/${workspaceId}/projects${queryParams.toString() ? `?${queryParams}` : ''}`);
+        const response = await apiClient.get<ProjectsResponse>(
+            `/workspaces/${workspaceId}/projects${queryParams.toString() ? `?${queryParams}` : ''}`
+        );
         return response.data;
     }
 );
@@ -433,6 +443,12 @@ const projectSlice = createSlice({
     reducers: {
         clearCurrentProject: (state) => {
             state.currentProject = null;
+        },
+        setCurrentPage: (state, action) => {
+            state.currentPage = action.payload;
+        },
+        setLimit: (state, action) => {
+            state.limit = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -510,5 +526,5 @@ const projectSlice = createSlice({
     },
 });
 
-export const { clearCurrentProject } = projectSlice.actions;
+export const { clearCurrentProject, setCurrentPage, setLimit } = projectSlice.actions;
 export default projectSlice.reducer;
