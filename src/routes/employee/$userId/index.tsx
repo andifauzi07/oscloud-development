@@ -87,7 +87,7 @@ function RouteComponent() {
 		},
 		{
 			label: 'Category',
-			value: editedEmployee.employeeCategoryId?.toString() || employee?.employeeCategory?.categoryid?.toString() || '-',
+			value: employee?.employeeCategory?.categoryname?.toString() || editedEmployee.name?.toString() || '-',
 			key: 'employeeCategoryId',
 			options: categories
 				? categories.map((c: any) => ({
