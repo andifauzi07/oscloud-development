@@ -41,8 +41,41 @@ function RouteComponent() {
 		// employeeId: someEmployeeId,
 	});
 
-	const filteredEmployees = useMemo(() => employees?.filter((employee: any) => employee.name.toLowerCase().includes(debouncedSearch.toLowerCase())), [employees, debouncedSearch]);
+	const filteredEmployees = useMemo(() => {
+		return employees?.filter((employee: any) => {
+			const matchesSearch = employee.name.toLowerCase().includes(debouncedSearch.toLowerCase());
 
+			// Get record performance for this employee
+			const records = performanceData?.filter((record: any) => record.employeeid === employee.employeeid) || [];
+
+			// If no date range is selected, display employees that match the search criteria.
+			if (!dateRange.startDate && !dateRange.endDate) {
+				return matchesSearch;
+			}
+
+			// Filter record as date range.
+			const filteredRecords = records.filter((record: any) => {
+				const completedDate = record.completedDate; // Make sure this field is available and in YYYY-MM-DD format.
+				// If both dates are selected.
+				if (dateRange.startDate && dateRange.endDate) {
+					return completedDate >= dateRange.startDate && completedDate <= dateRange.endDate;
+				}
+				// if just start date selected
+				if (dateRange.startDate && !dateRange.endDate) {
+					return completedDate >= dateRange.startDate;
+				}
+				// if just end date selected
+				if (!dateRange.startDate && dateRange.endDate) {
+					return completedDate <= dateRange.endDate;
+				}
+				return true;
+			});
+
+			// Display employees if they match the search criteria and have at least one valid record.
+			return matchesSearch && filteredRecords.length > 0;
+		});
+	}, [employees, debouncedSearch, performanceData, dateRange]);
+	
 	const columns = useMemo(
 		() => [
 			{
