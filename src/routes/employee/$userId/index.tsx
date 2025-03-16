@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useParams } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MenuList from '@/components/menuList';
-import { useEmployee } from '@/hooks/useEmployee';
+import { useEmployee, useEmployeeCategories } from '@/hooks/useEmployee';
 import { useCallback, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
@@ -36,7 +36,7 @@ function RouteComponent() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedEmployee, setEditedEmployee] = useState<EditedEmployee>({});
 	const { employee, loading, error, updateEmployeeData } = useEmployee(Number(userId));
-	// const { categories } = useEmployeeCategories();
+	const { categories } = useEmployeeCategories();
 
 	if (loading || !employee) {
 		return <Loading />;
@@ -89,8 +89,8 @@ function RouteComponent() {
 			label: 'Category',
 			value: editedEmployee.employeeCategoryId?.toString() || employee?.employeeCategory?.categoryid?.toString() || '-',
 			key: 'employeeCategoryId',
-			options: Array.isArray(employee?.employeeCategory)
-				? employee.employeeCategory.map((c: any) => ({
+			options: categories
+				? categories.map((c: any) => ({
 						value: c.categoryid.toString(),
 						label: c.categoryname,
 					}))
@@ -163,7 +163,7 @@ function RouteComponent() {
 						{/* Image and list container */}
 						<div className="flex">
 							{/* Left side - Image section */}
-							<div className="w-[30%] flex flex-col border-b">
+							<div className="w-[30%] flex flex-col border-b h-[300px] border-r">
 								<figure className="w-full h-[65%] relative overflow-hidden">
 									<img
 										className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%]"
@@ -174,10 +174,10 @@ function RouteComponent() {
 								<div className="flex flex-col items-center">
 									<h4 className="py-3">Edit profile image</h4>
 									<p className="pb-3 text-gray-500">PNG, JPEG, (3MG)</p>
-									<div>
+									<div className="flex w-full justify-center flex-col gap-4 py-4 px-8">
 										<label
 											htmlFor="profile_upload"
-											className="cursor-pointer bg-[#f2f2f2] w-48 h-12 flex justify-center items-center hover:bg-muted transition">
+											className="cursor-pointer bg-[#f2f2f2] w-full h-12 flex justify-center items-center hover:bg-muted transition">
 											UPLOAD
 										</label>
 										<Input
@@ -193,6 +193,7 @@ function RouteComponent() {
 							{/* Right side - Info sections */}
 							<div className="w-[70%] overflow-y-auto">
 								<InfoSection
+									className="border-l-0"
 									items={basicInfo}
 									title="Basic Information"
 									isEditing={isEditing}

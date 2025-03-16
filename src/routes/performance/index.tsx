@@ -191,7 +191,7 @@ function RouteComponent() {
 				</div>
 				<div className="flex flex-row space-y-2">
 					<div className="flex flex-col w-full space-y-2">
-						<label className="text-sm font-semibold">Workspaces</label>
+						<label className="text-sm font-semibold">Use Templates</label>
 						<Select
 							defaultValue={defaultTemplate?.templateid.toString()}
 							onValueChange={handleSelectTemplate}>
