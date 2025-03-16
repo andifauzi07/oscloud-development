@@ -19,7 +19,7 @@ export const Route = createFileRoute('/employee/setting/')({
 });
 
 const categoryColumns = [
-	{ accessorKey: 'categoryName', header: () => <h1 className="pl-8 py-2">Category Name</h1>, cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.categoryName}</h1> },
+	{ accessorKey: 'categoryName', header: () => <h1 className="py-2">Category Name</h1>, cell: ({ row }: any) => <h1 className="py-2">{row.original.categoryName}</h1> },
 	{ accessorKey: 'parentCategory', header: 'Parent Category' },
 ];
 
@@ -47,8 +47,8 @@ const employeeCategoryColumns = [
 	{
 		id: 'category',
 		accessorKey: 'category',
-		header: () => <h1 className="pl-8 text-xs">Category</h1>,
-		cell: ({ row }: any) => <h1 className="pl-8">{row.original.category}</h1>,
+		header: () => <h1 className="text-xs">Category</h1>,
+		cell: ({ row }: any) => <h1 className="">{row.original.category}</h1>,
 	},
 	{
 		id: 'parentCategory',
@@ -78,9 +78,9 @@ const employeeCategoryColumns = [
 const departmentColumns = [
 	{
 		id: 'departmentname',
-		header: () => <h1 className="pl-8">Category</h1>,
+		header: () => <h1 className="">Category</h1>,
 		accessorKey: 'departmentname',
-		cell: ({ row }: any) => <h1 className="pl-8 py-2">{row.original.departmentname}</h1>,
+		cell: ({ row }: any) => <h1 className="py-2">{row.original.departmentname}</h1>,
 	},
 	{
 		id: 'parentdepartmentid',
@@ -285,9 +285,7 @@ function RouteComponent() {
 						)}
 					</div>
 					<DataTable
-						// enableColumnDragAndDrop={editable}
-						// enableRowDragAndDrop
-						enableRowDragAndDrop={true}
+						// enableRowDragAndDrop={true}
 						columns={dataFieldColumns}
 						data={memoizedDataFieldSettingsColumns}
 						loading={false}
@@ -296,12 +294,12 @@ function RouteComponent() {
 							const evaluatedData = typeof updateFunctionOrData === 'function' ? updateFunctionOrData([...memoizedDataFieldSettingsColumns]) : updateFunctionOrData;
 							setUpdateDataFromChild(evaluatedData);
 						}}
-						onRowDragEnd={({ oldIndex, newIndex }) => {
-							console.log('data di geser dari : ', oldIndex);
-							console.log('ke : ', newIndex);
+						// onRowDragEnd={({ oldIndex, newIndex }) => {
+						// 	console.log('data di geser dari : ', oldIndex);
+						// 	console.log('ke : ', newIndex);
 
-							// reorderColumns(oldIndex, newIndex);
-						}}
+						// reorderColumns(oldIndex, newIndex);
+						// }}
 						nonEditableColumns={['action*', 'status*']}
 					/>
 				</TabsContent>

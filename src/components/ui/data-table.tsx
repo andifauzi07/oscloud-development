@@ -487,7 +487,7 @@ export function DataTable<TData, TValue>({
 															padding: isImage ? '0' : undefined, // Explicitly remove padding for image columns
 														}}
 														className={cn(
-															'text-xs whitespace-nowrap text-left font-bold text-[#0a0a30]',
+															'text-xs whitespace-nowrap pl-8 text-left font-bold text-[#0a0a30]',
 															isNumeric && 'text-right',
 															isAction && 'sticky right-0 bg-gray-100 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]',
 															!isImage && '', // Only add padding if not an image column
@@ -529,7 +529,7 @@ export function DataTable<TData, TValue>({
 															)}>
 															<div
 																className={cn(
-																	'flex h-full',
+																	'flex h-full pl-8',
 																	isNumeric && 'justify-end',
 																	isAction && 'justify-center',
 																	!isNumeric && !isAction && 'justify-start',

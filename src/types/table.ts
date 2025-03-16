@@ -3,7 +3,7 @@ import { ColumnDef, CellContext } from '@tanstack/react-table';
 export type TableColumnType = 'text' | 'number' | 'boolean' | 'email' | 'date' | 'file' | 'image' | 'actions';
 
 export interface BaseColumnSetting<T> {
-	minWidth: number;
+	minWidth?: number;
 	id?: string | number;
 	accessorKey: keyof T & string; // Ensure it's a string key
 	label?: string;
