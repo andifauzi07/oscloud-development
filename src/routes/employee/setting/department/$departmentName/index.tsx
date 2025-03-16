@@ -248,7 +248,8 @@ function RouteComponent() {
 			/>
 
 			{/* Search Section */}
-			<div className="">
+
+			{/* <div className="">
 				<TitleWrapper>
 					<h1>Member adjustment</h1>
 				</TitleWrapper>
@@ -260,10 +261,12 @@ function RouteComponent() {
 								<span className="pr-2">
 									{addStaff.length} / {filteredEmployeesByDepartments.length}
 								</span>
-							</div>
-						</div>
-						{/* Added Members List */}
-						<div className="flex flex-col">
+							</div> 
+						</div> */}
+
+			{/* Added Members List */}
+
+			{/* <div className="flex flex-col">
 							{addStaff.map((employee, index) => (
 								<div
 									key={index}
@@ -278,8 +281,8 @@ function RouteComponent() {
 									</Button>
 								</div>
 							))}
-						</div>
-					</div>
+						</div> */}
+			{/* </div>
 					<div className="w-full">
 						<div className="flex items-center p-4 border-l border-r">
 							<h1>Adding Staff Department</h1>
@@ -294,10 +297,10 @@ function RouteComponent() {
 									placeholder="Search by name, email, etc."
 									className="border rounded-none"
 								/>
-							</div>
+							</div> */}
 
-							{/* Status Toggle */}
-							<div className="flex flex-row gap-2">
+			{/* Status Toggle */}
+			{/* <div className="flex flex-row gap-2">
 								<div className="flex flex-col space-y-2">
 									<Label>Status</Label>
 									<div className="flex">
@@ -313,9 +316,9 @@ function RouteComponent() {
 											All
 										</Button>
 									</div>
-								</div>
-								{/* Advanced Search */}
-								<div className="flex flex-col space-y-2">
+								</div> */}
+			{/* Advanced Search */}
+			{/* <div className="flex flex-col space-y-2">
 									<Label>‎</Label>
 									<AdvancedFilterPopover fields={searchField} />
 								</div>
@@ -330,7 +333,7 @@ function RouteComponent() {
 						</div>
 					</div>
 				</div>
-			</div>
+			</div> */}
 		</div>
 	);
 }
