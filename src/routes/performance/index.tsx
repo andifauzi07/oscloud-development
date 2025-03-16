@@ -44,6 +44,9 @@ function RouteComponent() {
 	const filteredEmployees = useMemo(() => {
 		if (!Array.isArray(employees)) return [];
 
+		const startDateObj = dateRange.startDate ? new Date(dateRange.startDate) : null
+		const endDateObj = dateRange.endDate ? new Date(dateRange.endDate) : null
+
 		return employees.filter((employee: any) => {
 			const matchesSearch = employee.name.toLowerCase().includes(debouncedSearch.toLowerCase());
 
@@ -53,24 +56,22 @@ function RouteComponent() {
 			: [];
 
 			// If no date range is selected, display employees that match the search criteria.
-			if (!dateRange.startDate && !dateRange.endDate) {
+			if (!startDateObj && !endDateObj) {
 				return matchesSearch;
 			}
 
 			// Filter record as date range.
 			const filteredRecords = records.filter((record: any) => {
-				const completedDate = record.completedDate; // Make sure this field is available and in YYYY-MM-DD format.
-				// If both dates are selected.
-				if (dateRange.startDate && dateRange.endDate) {
-					return completedDate >= dateRange.startDate && completedDate <= dateRange.endDate;
+				if (!record.completeDate) return false;
+				const recordDate = new Date(record.completedDate);
+				if (startDateObj && endDateObj) {
+					return recordDate >= startDateObj && recordDate <= endDateObj;
 				}
-				// if just start date selected
-				if (dateRange.startDate && !dateRange.endDate) {
-					return completedDate >= dateRange.startDate;
+				if (startDateObj && !endDateObj) {
+					return recordDate >= startDateObj;
 				}
-				// if just end date selected
-				if (!dateRange.startDate && dateRange.endDate) {
-					return completedDate <= dateRange.endDate;
+				if (!startDateObj && endDateObj) {
+					return recordDate <= endDateObj;
 				}
 				return true;
 			});
