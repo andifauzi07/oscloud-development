@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TabsContent } from "@radix-ui/react-tabs";
 import ScheduleTable from "@/components/EmployeTimeLine";
-import { default } from '../../../postcss.config';
 
 export const Route = createFileRoute("/projects/")({
     component: ProjectsRouteComponent,
