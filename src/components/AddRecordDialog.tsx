@@ -45,10 +45,16 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		onSave({
+		
+		// Ensure dates are properly formatted before saving
+		const processedData = {
 			...formData,
+			startdate: formData.startdate || new Date().toISOString().split('T')[0], // Default to today if not set
+			enddate: formData.enddate || new Date().toISOString().split('T')[0],  // Default to today if not set
 			costs: costs,
-		});
+		};
+
+		onSave(processedData);
 		setIsOpen(false);
 		setFormData({});
 		setCosts({});
@@ -70,6 +76,9 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 		// Default non-editable columns
 		const defaultNonEditable = ['profileimage', 'actions'];
 		if (defaultNonEditable.includes(column.accessorKey)) return false;
+
+		// Skip cost columns if enableCosts is true
+		if (enableCosts && column.accessorKey.startsWith('costs.')) return false;
 
 		// Check custom non-editable columns with wildcard support
 		if (nonEditableColumns) {

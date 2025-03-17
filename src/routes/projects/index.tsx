@@ -18,148 +18,72 @@ import { CreateProjectRequest, UpdateProjectRequest } from "@/types/project";
 import { ColumnDef } from "@tanstack/react-table";
 import { useCompanies } from "@/hooks/useCompany";
 import { useUserData } from "@/hooks/useUserData";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { BaseColumnSetting } from "@/types/table";
-import { DurationInput } from "@/components/ui/duration-input";
-import { ProjectsTimeline } from "@/components/ProjectsTimeline";
-import { TimelineCalendar } from "@/components/timeline/TimeLineSchedule";
-import { Project as TimelineProject } from "@/components/timeline/propsTypes";
-import ScheduleTable from "@/components/EmployeTimeLine";
 import { useUsers } from "@/hooks/useUser";
-import { fetchProjectCategories } from "@/store/slices/projectSlice";
-import { useSaveEdits } from "@/hooks/handler/useSaveEdit";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { AppUser } from "@/types/user";
+import { ProjectCategory } from "@/store/slices/projectSlice";
+import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@radix-ui/react-tabs";
+import ScheduleTable from "@/components/EmployeTimeLine";
+import { default } from '../../../postcss.config';
 
 export const Route = createFileRoute("/projects/")({
-    component: RouteComponent,
+    component: ProjectsRouteComponent,
 });
 
 const defaultCellRenderer = ({ getValue }: any) => {
     const value = getValue();
-    if (value === null || value === undefined) {
-        return <span className="text-xs whitespace-nowrap">-</span>;
-    }
-    return <span className="text-xs whitespace-nowrap">{String(value)}</span>;
+    return <span className="text-xs whitespace-nowrap">{value ?? "-"}</span>;
 };
 
-const field = [
+const advancedFilterFields = [
     {
         key: "status",
         label: "Status",
-        type: "toogle",
-
+        type: "toggle",
         options: ["All", "Active", "Inactive"],
     },
-    {
-        key: "employeeid",
-        label: "Employee Id",
-        type: "number",
-    },
-    {
-        key: "email",
-        label: "Email",
-        type: "email",
-    },
-    {
-        key: "name",
-        label: "Name",
-        type: "text",
-    },
-    {
-        key: "depertment",
-        label: "Department",
-        type: "text",
-    },
+    { key: "employeeid", label: "Employee Id", type: "number" },
+    { key: "email", label: "Email", type: "email" },
+    { key: "name", label: "Name", type: "text" },
+    { key: "department", label: "Department", type: "text" },
 ];
 
-function RouteComponent() {
+function ProjectsRouteComponent() {
     const [searchKeyword, setSearchKeyword] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("");
-    const [startDate, setStartDate] = useState<string>("");
-    const [endDate, setEndDate] = useState<string>("");
-    const debouncedKeyword = useDebounce(searchKeyword, 500);
     const [isEditable, setIsEditable] = useState(false);
-    const [categories, setCategories] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [categoryOptions, setCategoryOptions] = useState<
+        Array<{ value: number; label: string }>
+    >([]);
     const [updateDataFromChild, setUpdateDataFromChild] = useState<
         ProjectDisplay[]
     >([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+
+    const debouncedKeyword = useDebounce(searchKeyword, 500);
 
     const filters = useMemo(
         () => ({
             status: statusFilter || undefined,
             search: debouncedKeyword || undefined,
-            startDate: startDate || undefined,
-            endDate: endDate || undefined,
-            limit: pageSize,     // FIXED
-            page: currentPage,   // FIXED
+            page: currentPage,
+            limit: pageSize,
         }),
-        [statusFilter, debouncedKeyword, startDate, endDate, currentPage, pageSize]
+        [statusFilter, debouncedKeyword, currentPage, pageSize]
     );
 
-    const { projects, loading, error, total, page, limit } = useProjects(filters);
+    const { projects, loading, total } = useProjects(filters);
     const { addProject, editProject, getProjectCategories } = useProject();
-
-    const mergeWithDefaultSettings = (
-        currentSettings: BaseColumnSetting<ProjectDisplay>[]
-    ) => {
-        const mergedSettings = [...defaultProjectColumnSettings];
-        currentSettings.forEach((setting) => {
-            const index = mergedSettings.findIndex(
-                (def) => def.accessorKey === setting.accessorKey
-            );
-            if (index !== -1) {
-                mergedSettings[index] = {
-                    ...mergedSettings[index],
-                    ...setting,
-                };
-            }
-        });
-        return mergedSettings;
-    };
-
-
-    // Then use it with useColumnSettings
     const { settings, saveSettings, reorderColumns } = useColumnSettings({
         storageKey: "projectColumnSettings",
         defaultSettings: defaultProjectColumnSettings,
-        onInitialize: mergeWithDefaultSettings, // Add this option to the hook
     });
 
     const { companies } = useCompanies();
-    const { currentUser } = useUserData();
+    const { currentUser, isWorkspaceReady } = useUserData();
     const workspaceid = currentUser?.workspaceid;
-
-    // Get managers using the existing selector
-    const { users, loading: usersLoading } = useUsers(Number(workspaceid));
-
-    useEffect(() => {
-        const fetchInitialData = async () => {
-            if (!workspaceid) return;
-
-            try {
-                const categoriesResponse = await getProjectCategories();
-                setCategories(categoriesResponse || []);
-
-                if (!usersLoading && users.length > 0) {
-                    console.log("Loaded users:", users);
-                }
-            } catch (error) {
-                console.error("Error fetching initial data:", error);
-                setCategories([]);
-            }
-        };
-
-        fetchInitialData();
-    }, [workspaceid, users, usersLoading]);
+    const { users } = useUsers(Number(workspaceid)); // Add this hook to get users data
 
     const companyOptions = useMemo(
         () =>
@@ -170,172 +94,51 @@ function RouteComponent() {
         [companies]
     );
 
+    const managerOptions = useMemo(
+        () =>
+            users?.map((user: any) => ({
+                value: user.id.toString(),
+                label: user.email,
+            })) || [],
+        [users]
+    );
+
     const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
         return settings
-            .filter(setting => setting.status === "shown")
+            .filter((setting) => setting.status === "shown")
             .sort((a, b) => a.order - b.order)
             .map((setting) => {
                 const defaultSetting = defaultProjectColumnSettings.find(
-                    def => def.accessorKey === setting.accessorKey
+                    (def) => def.accessorKey === setting.accessorKey
                 );
-
-                if (setting.accessorKey === 'managerid') {
-                    return {
-                        id: setting.accessorKey,
-                        accessorKey: setting.accessorKey,
-                        header: defaultSetting?.header || setting.header,
-                        cell: ({ row }) => {
-                            if (!isEditable) return defaultCellRenderer({ getValue: () => row.original.manager?.name });
-                            return (
-                                <Select
-                                    value={row.original.managerid}
-                                    onValueChange={value => {
-                                        setUpdateDataFromChild(prev => 
-                                            prev.map(item => 
-                                                item.projectid === row.original.projectid
-                                                    ? { ...item, managerid: value }
-                                                    : item
-                                            )
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select manager" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {users.map(manager => (
-                                            <SelectItem key={manager.userid} value={manager.userid}>
-                                                {manager.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            );
-                        },
-                    };
-                }
-                if (setting.accessorKey === 'categoryid') {
-                    return {
-                        id: setting.accessorKey,
-                        accessorKey: setting.accessorKey,
-                        header: defaultSetting?.header || setting.header,
-                        cell: ({ row }) => {
-                            // Safely handle null category
-                            const categoryId = row.original.category?.categoryId;
-                            const categoryName = row.original.category?.name;
-                            
-                            if (!isEditable) {
-                                return defaultCellRenderer({ getValue: () => categoryName || '-' });
-                            }
-                            
-                            return (
-                                <Select
-                                    value={categoryId ? String(categoryId) : ""}
-                                    onValueChange={value => {
-                                        setUpdateDataFromChild(prev => 
-                                            prev.map(item => 
-                                                item.projectid === row.original.projectid
-                                                    ? { ...item, categoryid: value ? Number(value) : null }
-                                                    : item
-                                            )
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="">No Category</SelectItem>
-                                        {categories.map(category => (
-                                            <SelectItem 
-                                                key={category.categoryid} 
-                                                value={String(category.categoryid)}
-                                            >
-                                                {category.categoryname}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            );
-                        },
-                    };
-                }
-
-                if (setting.accessorKey === 'costs') {
-                    return {
-                        id: setting.accessorKey,
-                        accessorKey: setting.accessorKey,
-                        header: defaultSetting?.header || setting.header,
-                        cell: ({ row }) => {
-                            if (!isEditable) {
-                                const costs = row.original.costs || {};
-                                return defaultCellRenderer({
-                                    getValue: () => Object.entries(costs)
-                                        .map(([k, v]) => `${k}: ${v}`)
-                                        .join(', ')
-                                });
-                            }
-                            return (
-                                <div className="space-y-2">
-                                    {Object.entries(row.original.costs || {}).map(([key, value]) => (
-                                        <div key={key} className="flex items-center gap-2">
-                                            <label className="text-xs">{key}:</label>
-                                            <Input
-                                                type="number"
-                                                value={value}
-                                                onChange={(e) => {
-                                                    setUpdateDataFromChild(prev => 
-                                                        prev.map(item => 
-                                                            item.projectid === row.original.projectid
-                                                                ? { 
-                                                                    ...item, 
-                                                                    costs: {
-                                                                        ...item.costs,
-                                                                        [key]: Number(e.target.value)
-                                                                    }
-                                                                }
-                                                                : item
-                                                        )
-                                                    );
-                                                }}
-                                                className="w-24 h-6"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            );
-                        },
-                    };
-                }
-
                 return {
-                    id: setting.accessorKey,
-                    accessorKey: setting.accessorKey,
+                    id: String(setting.accessorKey),
+                    accessorKey: setting.accessorKey as string,
                     header: defaultSetting?.header || setting.header,
-                    cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
+                    cell:
+                        defaultSetting?.cell ||
+                        setting.cell ||
+                        defaultCellRenderer,
                 };
             });
-    }, [settings, categories, users, isEditable]);
+    }, [settings]);
 
     const handleAddRecord = useCallback(
-        async (data: any) => {
+        async (data: Partial<Project>) => {
             try {
-                if (!data.name?.trim()) {
-                    throw new Error("Project name is required");
-                }
+                if (!data.name) throw new Error("Project name is required");
+                if (!data.startdate) throw new Error("Start date is required");
 
                 const newProjectRequest: CreateProjectRequest = {
                     name: data.name,
-                    startDate: data.startdate,
-                    endDate: data.enddate,
+                    startdate: data.startdate,
+                    enddate: data.enddate,
                     status: "Active",
-                    managerid: Number(data.managerid),
+                    managerid: currentUser?.userid || 1,
                     companyid: Number(data.companyid),
-                    workspaceid: Number(workspaceid),
-                    // Only include categoryid if it's a valid number and not 0
-                    categoryid: data.categoryid && Number(data.categoryid) > 0 
-                        ? Number(data.categoryid) 
-                        : null,
+                    workspaceid: 1,
+                    categoryid:
+                        data.categoryid ? Number(data.categoryid) : null, // Add category ID
                     costs: data.costs || {
                         food: 0,
                         break: 0,
@@ -351,81 +154,87 @@ function RouteComponent() {
                 };
 
                 await addProject(newProjectRequest);
-                alert("Added project!");
+                alert("Project created successfully");
             } catch (error) {
                 console.error("Failed to add project:", error);
                 alert("Failed to create project");
-                throw error;
             }
         },
-        [addProject, workspaceid]
+        [addProject, currentUser]
     );
 
     const handleStatusChange = useCallback((newStatus: string) => {
         setStatusFilter(newStatus);
     }, []);
 
-    const saveEdits = useSaveEdits<ProjectDisplay>();
-
-    const handleSaveEdits = async () => {
+    const handleSave = useCallback(async () => {
         try {
-            const isSuccess = await saveEdits(
-                projects,
-                updateDataFromChild,
-                "projectid",
-                [
-                    "name",
-                    "startdate",
-                    "enddate",
-                    "status",
-                    "managerid",
-                    "categoryid",
-                    "costs",
-                ],
-                async (projectId: number, data: Partial<ProjectDisplay>) => {
+            if (!updateDataFromChild.length) {
+                alert("No changes to save");
+                return;
+            }
+
+            await Promise.all(
+                updateDataFromChild.map(async (project) => {
+                    if (!project.projectId) return;
+
                     const updatePayload: UpdateProjectRequest = {
-                        name: data.name,
-                        startdate: data.startdate,
-                        enddate: data.enddate,
-                        status: data.status,
-                        managerid: data.managerid,
-                        categoryid: Number(data.categoryid),
-                        costs: data.costs,
+                        name: project.name,
+                        startdate: project.startDate,
+                        enddate: project.endDate,
+                        status: project.status,
+                        companyid: Number(project.companyid),
+                        managerid: project.managerid,
+                        categoryid: Number(project.categoryid),
                     };
 
                     await editProject({
-                        projectId,
+                        projectId: project.projectId,
                         data: updatePayload,
                     });
-                }
+                })
             );
 
             setIsEditable(false);
-            if (isSuccess) {
-                alert("Projects updated successfully");
-            }
+            setUpdateDataFromChild([]);
+            alert("Projects updated successfully");
         } catch (error) {
             console.error("Error updating projects:", error);
             alert("Failed to update projects");
         }
-    };
+    }, [editProject, updateDataFromChild]);
 
-    const getProjectsData = useCallback((): TimelineProject[] => {
-        return projects.map((project) => ({
-            projectId: project.projectid,
-            name: project.name || "",
-            startDate: project.startdate || null,
-            endDate: project.enddate || null,
-            manager: {
-                userId: project.managerid || 0,
-                name: project.managername || "Unassigned",
-            },
-            status: project.status || null,
-        }));
-    }, [projects]);
+    const toggleEditMode = useCallback(() => {
+        setIsEditable((prev) => !prev);
+    }, []);
 
-    if (!workspaceid) {
-        return <div>Loading workspace information...</div>;
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                if (!isWorkspaceReady || !workspaceid) {
+                    return;
+                }
+                const categories = await getProjectCategories();
+                setCategoryOptions(
+                    categories.map((category: ProjectCategory) => ({
+                        value: category.categoryid,
+                        label: category.categoryname,
+                    }))
+                );
+            } catch (error) {
+                console.error("Failed to load categories:", error);
+            }
+        };
+
+        loadCategories();
+    }, [workspaceid, getProjectCategories, isWorkspaceReady]);
+
+    if (!isWorkspaceReady) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
+            </div>
+        );
     }
 
     return (
@@ -437,7 +246,6 @@ function RouteComponent() {
                 </Link>
             </TitleWrapper>
 
-            {/* Filter Section */}
             <div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
                 <div className="flex gap-8">
                     <div className="flex flex-col space-y-2 bg-white md:w-auto">
@@ -445,18 +253,12 @@ function RouteComponent() {
                         <Input
                             type="keyword"
                             id="keyword"
-                            placeholder=""
+                            placeholder="Search projects..."
                             className="border rounded-none w-[400px]"
                             value={searchKeyword}
                             onChange={(e) => setSearchKeyword(e.target.value)}
                         />
                     </div>
-                    <DurationInput
-                        startDate={startDate}
-                        endDate={endDate}
-                        onStartDateChange={setStartDate}
-                        onEndDateChange={setEndDate}
-                    />
                     <div className="flex flex-col space-y-2">
                         <Label>Status</Label>
                         <div className="flex">
@@ -490,12 +292,76 @@ function RouteComponent() {
                 <div className="flex flex-col items-end space-y-2">
                     <Label>‎</Label>
                     <div className="flex items-center gap-4">
-                        <AdvancedFilterPopover fields={field} />
+                        <AdvancedFilterPopover fields={advancedFilterFields} />
                     </div>
                 </div>
             </div>
 
-            {/* Tabs Section */}
+            <div className="flex justify-end flex-none w-full bg-white">
+                {isEditable ?
+                    <>
+                        <Button
+                            onClick={() => {
+                                setIsEditable(false);
+                                setUpdateDataFromChild([]);
+                            }}
+                            className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
+                        >
+                            CANCEL
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10"
+                        >
+                            SAVE
+                        </Button>
+                    </>
+                :   <>
+                        <AddRecordDialog
+                            columns={columns}
+                            onSave={handleAddRecord}
+                            nonEditableColumns={[
+                                "projectid",
+                                "created_at",
+                                "updated_at",
+                                "assignedStaff",
+                                "connectedPersonnel",
+                                "detail",
+                                "Members",
+                                "costs.*",
+                                "startDate",
+                                "endDate",
+                            ]}
+                            selectFields={{
+                                companyid: { options: companyOptions },
+                                managerid: {
+                                    options: users.map((manager) => ({
+                                        value: manager.id,
+                                        label: manager.email,
+                                    })),
+                                },
+                                categoryid: { options: categoryOptions },
+                            }}
+                            customFields={{
+                                duration: {
+                                    type: "dateRange",
+                                    startKey: "startdate",
+                                    endKey: "enddate",
+                                    label: "Duration",
+                                },
+                            }}
+                            enableCosts={true}
+                        />
+                        <Button
+                            onClick={() => setIsEditable(true)}
+                            className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
+                        >
+                            EDIT
+                        </Button>
+                    </>
+                }
+            </div>
+
             <Tabs defaultValue="list">
                 <TabsList className="border-b justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
                     <TabsTrigger
@@ -512,81 +378,11 @@ function RouteComponent() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="list" className="m-0">
-                    <div className="flex justify-end flex-none bg-white">
-                        <AddRecordDialog
-                            columns={columns}
-                            onSave={handleAddRecord}
-                            nonEditableColumns={[
-                                "projectid",
-                                "created_at",
-                                "updated_at",
-                                "assignedStaff",
-                                "connectedPersonnel",
-                                "costs",
-                                "managerid",
-                                "categoryid",
-                            ]}
-                            selectFields={{
-                                companyid: {
-                                    options: companyOptions,
-                                },
-                                managerid: {
-                                    options: users.map((manager) => ({
-                                        value: manager.userid,
-                                        label: manager.name,
-                                    })),
-                                },
-                                categoryid: {
-                                    options:
-                                        Array.isArray(categories) ?
-                                            categories.map((category) => ({
-                                                value: category.categoryid,
-                                                label: category.categoryname,
-                                            }))
-                                        :   [],
-                                },
-                            }}
-                            customFields={{
-                                duration: {
-                                    type: "dateRange",
-                                    startKey: "startdate",
-                                    endKey: "enddate",
-                                    label: "Duration",
-                                },
-                            }}
-                            enableCosts={true}
-                        />
-                        {isEditable ?
-                            <>
-                                <Button
-                                    onClick={() => setIsEditable(false)}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
-                                >
-                                    CANCEL
-                                </Button>
-                                <Button
-                                    onClick={handleSaveEdits}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
-                                >
-                                    SAVE
-                                </Button>
-                            </>
-                        :   <Button
-                                onClick={() => {
-                                    setIsEditable(true);
-                                    setUpdateDataFromChild([...projects]); // Initialize with current projects
-                                }}
-                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
-                            >
-                                EDIT
-                            </Button>
-                        }
-                    </div>
+                <TabsContent value="list">
                     <div className="flex-1">
-                    <DataTable
+                        <DataTable
                             columns={columns}
-                            data={isEditable ? updateDataFromChild : projects} // Switch data source based on edit mode
+                            data={projects}
                             loading={loading}
                             isEditable={isEditable}
                             setTableData={setUpdateDataFromChild}
@@ -599,32 +395,14 @@ function RouteComponent() {
                                 "costs",
                             ]}
                             selectFields={{
+                                companyid: { options: companyOptions },
                                 managerid: {
-                                    options: users
-                                        .filter((manager) => manager?.userid)
-                                        .map((manager) => ({
-                                            value:
-                                                manager.userid?.toString() ||
-                                                "",
-                                            label:
-                                                manager.name ||
-                                                "Unnamed Manager",
-                                        })),
-                                },
-                                categoryid: {
-                                    options: categories.map((category) => ({
-                                        value: category.categoryid.toString(),
-                                        label: category.categoryname,
+                                    options: users.map((manager) => ({
+                                        value: manager.id,
+                                        label: manager.email,
                                     })),
                                 },
-                            }}
-                            customFields={{
-                                startdate: {
-                                    type: "date",
-                                },
-                                enddate: {
-                                    type: "date",
-                                },
+                                categoryid: { options: categoryOptions },
                             }}
                             total={total}
                             currentPage={currentPage}
@@ -633,79 +411,10 @@ function RouteComponent() {
                         />
                     </div>
                 </TabsContent>
-
-                <TabsContent value="timeline" className="m-0">
-                    <div className="flex justify-end flex-none bg-white">
-                        <AddRecordDialog
-                            columns={columns}
-                            onSave={handleAddRecord}
-                            nonEditableColumns={[
-                                "projectid",
-                                "created_at",
-                                "updated_at",
-                                "assignedStaff",
-                                "connectedPersonnel",
-                                "costs",
-                                "managerid",
-                                "categoryid",
-                            ]}
-                            selectFields={{
-                                companyid: {
-                                    options: companyOptions,
-                                },
-                                managerid: {
-                                    options: users.map((manager) => ({
-                                        value: manager.userid,
-                                        label: manager.name,
-                                    })),
-                                },
-                                categoryid: {
-                                    options:
-                                        Array.isArray(categories) ?
-                                            categories.map((category) => ({
-                                                value: category.categoryid,
-                                                label: category.categoryname,
-                                            }))
-                                        :   [],
-                                },
-                            }}
-                            customFields={{
-                                duration: {
-                                    type: "dateRange",
-                                    startKey: "startdate",
-                                    endKey: "enddate",
-                                    label: "Duration",
-                                },
-                            }}
-                            enableCosts={true}
-                        />
-                        {isEditable ?
-                            <>
-                                <Button
-                                    onClick={() => setIsEditable(false)}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
-                                >
-                                    CANCEL
-                                </Button>
-                                <Button
-                                    onClick={handleSaveEdits}
-                                    className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
-                                >
-                                    SAVE
-                                </Button>
-                            </>
-                        :   <Button
-                                onClick={() => setIsEditable(true)}
-                                className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
-                            >
-                                EDIT
-                            </Button>
-                        }
-                    </div>
-
-                    <div className="flex-1 overflow-x-auto">
+                <TabsContent value="timeline">
+                <div className="flex-1 overflow-x-auto">
                         <ScheduleTable
-                            projects={getProjectsData()}
+                            projects={projects}
                             currentDate={new Date()}
                         />
                     </div>

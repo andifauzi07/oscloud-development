@@ -12,14 +12,14 @@ interface Project {
     enddate: string | null;
     manager: {
         userId: number;
-        name: string;
+        email: string;  // Changed from name to email
     };
     status: string | null;
     // ... other properties
 }
 
 interface Manager {
-    name: string;
+    email: string;     // Changed from name to email
     projects: Project[];
 }
 
@@ -33,11 +33,11 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ projects }) => {
         const managersMap = new Map<string, Manager>();
 
         projects.forEach((project) => {
-            const managerName = project.manager?.name || "Unknown Manager";
-            if (!managersMap.has(managerName)) {
-                managersMap.set(managerName, { name: managerName, projects: [] });
+            const managerEmail = project.manager?.email || "Unknown Email";  // Changed to use email
+            if (!managersMap.has(managerEmail)) {
+                managersMap.set(managerEmail, { email: managerEmail, projects: [] });  // Changed to use email
             }
-            managersMap.get(managerName)!.projects.push(project);
+            managersMap.get(managerEmail)!.projects.push(project);
         });
 
         return Array.from(managersMap.values());
@@ -111,7 +111,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ projects }) => {
                     {managers.map((manager, managerIndex) => (
                         <tr key={managerIndex} className="">
                             <td className="py-2 font-bold text-center bg-white border-b whitespace-nowrap">
-                                {manager.name}
+                                {manager.email}  {/* Changed from name to email */}
                             </td>
                             {daysInRange.map((day, dayIndex) => {
                                 const project = manager.projects.find((p) => {

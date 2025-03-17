@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
 import type { UpdateUserData, UserFilters } from '@/types/user';
@@ -22,24 +22,33 @@ import {
 
 export const useUserData = () => {
 	const dispatch = useDispatch<AppDispatch>();
+	const [isWorkspaceReady, setIsWorkspaceReady] = useState(false);
 
-	// Fix the selector types by explicitly typing state as RootState
-	const users = useSelector((state: RootState) => selectUsers(state));
 	const currentUser = useSelector((state: RootState) => selectCurrentUser(state));
+	const users = useSelector((state: RootState) => selectUsers(state));
 	const selectedUser = useSelector((state: RootState) => selectSelectedUser(state));
 	const loading = useSelector((state: RootState) => selectUserLoading(state));
 	const error = useSelector((state: RootState) => selectUserError(state));
 	const session = useSelector((state: RootState) => state.auth.session);
 
-	// Memoize complex computations
 	const adminUsers = useSelector((state: RootState) => selectUsersByRole(state, 'Admin'));
 	const activeUsers = useSelector((state: RootState) => selectUsersByStatus(state, 'Active'));
 
-	// Effect for fetching current user
+	// Primary effect to fetch current user and set workspace ready state
 	useEffect(() => {
-		if (session?.user && !currentUser && !loading) {
-			dispatch(fetchCurrentUser());
-		}
+		const initializeUser = async () => {
+			if (session?.user && !currentUser && !loading) {
+				try {
+					await dispatch(fetchCurrentUser()).unwrap();
+					setIsWorkspaceReady(true);
+				} catch (error) {
+					console.error('Failed to fetch current user:', error);
+					setIsWorkspaceReady(false);
+				}
+			}
+		};
+
+		initializeUser();
 	}, [dispatch, session?.user, currentUser, loading]);
 
 	// Memoized action creators
@@ -89,6 +98,7 @@ export const useUserData = () => {
 		loading,
 		error,
 		isAuthenticated: !!session?.user,
+		isWorkspaceReady,
 
 		// Actions
 		getUsers,

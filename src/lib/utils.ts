@@ -12,3 +12,13 @@ export function formatUrlString(str: string): string {
 export function revertUrlString(str: string): string {
 	return str.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
+export function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    wait: number
+): (...args: Parameters<T>) => void {
+    let timeout: NodeJS.Timeout;
+    return (...args: Parameters<T>) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+    };
+}

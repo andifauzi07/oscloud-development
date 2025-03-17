@@ -8,7 +8,7 @@ import { Input } from './input';
 import { Button } from './button';
 import Loading from '../Loading';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, debounce } from '@/lib/utils';
 import EmojiPicker from 'emoji-picker-react';
 
 const preloadImage = (src: string) => {
@@ -61,81 +61,104 @@ interface EditableCellProps<TData> {
 	};
 	updateData: (index: number, id: string, value: any) => void;
 	isEditable: boolean;
+	selectOptions?: { value: string; label: string }[];
+	customField?: {
+		type: 'date' | 'time' | 'datetime';
+	};
 }
 
-const EditableCell = ({
-	value: initialValue,
-	row: { index },
-	column: { id },
-	updateData,
-	isEditable,
-	selectOptions,
-	customField,
-}: {
-	value: any;
-	row: { index: number };
-	column: { id: string };
-	updateData: (index: number, id: string, value: any) => void;
-	isEditable: boolean;
-	selectOptions?: { value: string; label: string }[];
-	customField?: { type: string };
-}) => {
-	const [value, setValue] = useState(initialValue);
+const EditableCell = memo(
+	({
+		value: initialValue,
+		row: { index },
+		column: { id },
+		updateData,
+		isEditable,
+		selectOptions,
+		customField,
+	}: EditableCellProps<any>) => {
+		const [localValue, setLocalValue] = useState(initialValue?.toString() || "");
 
-	useEffect(() => {
-		setValue(initialValue);
-	}, [initialValue]);
+		// Update localValue when initialValue changes
+		useEffect(() => {
+			setLocalValue(initialValue?.toString() || "");
+		}, [initialValue]);
 
-	if (!isEditable) {
-		return <span className="text-xs">{value}</span>;
-	}
-
-	if (selectOptions) {
-		return (
-			<select
-				value={value || ''}
-				onChange={(e) => {
-					setValue(e.target.value);
-					updateData(index, id, e.target.value);
-				}}
-				className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0">
-				<option value="">Select...</option>
-				{selectOptions.map((option) => (
-					<option
-						key={option.value}
-						value={option.value}>
-						{option.label}
-					</option>
-				))}
-			</select>
+		const handleChange = useCallback(
+			(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+				const newValue = e.target.value;
+				setLocalValue(newValue);
+				
+				// For select fields, convert to number if the options contain number values
+				if (selectOptions) {
+					const option = selectOptions.find(opt => opt.value.toString() === newValue);
+					const finalValue = typeof option?.value === 'number' ? Number(newValue) : newValue;
+					updateData(index, id, finalValue);
+				} else {
+					updateData(index, id, newValue);
+				}
+			},
+			[index, id, updateData, selectOptions]
 		);
-	}
 
-	if (customField?.type === 'date') {
+		if (!isEditable) {
+			if (selectOptions) {
+				const option = selectOptions.find(opt => opt.value.toString() === initialValue?.toString());
+				return <span className="text-xs">{option?.label || initialValue}</span>;
+			}
+			return <span className="text-xs">{initialValue}</span>;
+		}
+
+		if (selectOptions) {
+			const currentValue = initialValue?.toString() || "";
+			const option = selectOptions.find(opt => opt.value.toString() === initialValue?.toString());
+			return (
+				<select
+					value={currentValue}
+					onChange={handleChange}
+					className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
+				>
+					{selectOptions.map((option) => (
+						<option 
+							key={option.value} 
+							value={option.value.toString()}
+						>
+							{option.label}
+						</option>
+					))}
+				</select>
+			);
+		}
+
+		if (customField?.type === 'date') {
+			return (
+				<input
+					type="date"
+					value={localValue || ''}
+					onChange={handleChange}
+					className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
+				/>
+			);
+		}
+
 		return (
 			<input
-				type="date"
-				value={value || ''}
-				onChange={(e) => {
-					setValue(e.target.value);
-					updateData(index, id, e.target.value);
-				}}
+				value={localValue || ""}
+				onChange={handleChange}
 				className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
 			/>
 		);
+	},
+	(prevProps, nextProps) => {
+		return (
+			prevProps.value === nextProps.value &&
+			prevProps.isEditable === nextProps.isEditable &&
+			prevProps.row.index === nextProps.row.index &&
+			prevProps.column.id === nextProps.column.id &&
+			JSON.stringify(prevProps.selectOptions) === JSON.stringify(nextProps.selectOptions)
+		);
 	}
-
-	return (
-		<input
-			value={value || ''}
-			onChange={(e) => {
-				setValue(e.target.value);
-				updateData(index, id, e.target.value);
-			}}
-			className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
-		/>
-	);
-};
+);
 
 // Memoized Table Row component
 const TableRowMemo = memo(({ row, columns }: { row: any; columns: any[] }) => (
@@ -155,7 +178,7 @@ export function DataTable<TData, TValue>({
 	enableColumnDragAndDrop = false,
 	isEditable = false,
 	nonEditableColumns = [], // Provide empty array as default
-	// onSave,
+	onSave, // Make sure onSave is included in props
 	onRowDragEnd,
 	total = 0,
 	currentPage = 1,
@@ -164,8 +187,29 @@ export function DataTable<TData, TValue>({
 	selectFields,
 	setTableData,
 }: DataTableProps<TData, TValue>) {
-	// const [tableData, setTableData] = useState<TData[]>(data);
-	const [tableColumns, setTableColumns] = useState(() => columns);
+	// Add a local state to track changes
+	const [localData, setLocalData] = useState(data);
+	
+	// Add state for tableColumns
+	const [tableColumns, setTableColumns] = useState(() => 
+		columns.map(column => ({
+			...column,
+			id: column.id || column.accessorKey || String(Math.random())
+		}))
+	);
+
+	// Update tableColumns when columns prop changes
+	useEffect(() => {
+		setTableColumns(columns.map(column => ({
+			...column,
+			id: column.id || column.accessorKey || String(Math.random())
+		})));
+	}, [columns]);
+
+	// Update local data when prop data changes
+	useEffect(() => {
+		setLocalData(data);
+	}, [data]);
 
 	// Update tableData when data prop changes
 	useEffect(() => {
@@ -189,37 +233,6 @@ export function DataTable<TData, TValue>({
 				});
 
 			if (shouldEdit) {
-				const isSelectField = selectFields && columnId && selectFields[columnId];
-
-				if (isSelectField) {
-					return {
-						...col,
-						cell: (props: CellContext<TData, TValue>) => (
-							<select
-								value={props.getValue() as string}
-								onChange={(e) => {
-									setTableData?.((prevData: any) => {
-										return prevData.map((row: any, rowIndex: any) => {
-											if (rowIndex === props.row.index) {
-												return { ...row, [columnId]: e.target.value };
-											}
-											return row;
-										});
-									});
-								}}
-								className="h-8 p-0 text-xs bg-transparent border-0 focus:ring-0">
-								{selectFields[columnId].options.map((option) => (
-									<option
-										key={option.value}
-										value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
-						),
-					};
-				}
-
 				return {
 					...col,
 					cell: (props: CellContext<TData, TValue>) => (
@@ -228,16 +241,17 @@ export function DataTable<TData, TValue>({
 							row={{ index: props.row.index, original: props.row.original }}
 							column={{ id: columnId }}
 							updateData={(index: number, id: string, value: any) => {
-								setTableData?.((prevData: any) => {
-									return prevData.map((row: any, rowIndex: any) => {
-										if (rowIndex === index) {
-											return { ...row, [id]: value };
-										}
-										return row;
-									});
+								const newData = localData.map((row: any, rowIndex: number) => {
+									if (rowIndex === index) {
+										return { ...row, [id]: value };
+									}
+									return row;
 								});
+								setLocalData(newData);
+								setTableData?.(newData);
 							}}
 							isEditable={isEditable}
+							selectOptions={selectFields?.[columnId]?.options}
 						/>
 					),
 				};
@@ -245,12 +259,12 @@ export function DataTable<TData, TValue>({
 			return col;
 		});
 		setTableColumns(editableColumns);
-	}, [isEditable, columns, selectFields]); // Addedd nonEditableColumns from dependencies
+	}, [isEditable, columns, selectFields, localData]);
 
 	const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
 	const table = useReactTable({
-		data: data,
+		data: localData,
 		columns: tableColumns,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
