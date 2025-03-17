@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MenuList from '@/components/menuList';
 import { useEffect, useState } from 'react';
-import { Company, CompanyUpdate } from '@/types/company';
+import { CompanyUpdate } from '@/types/company';
 import { useCompanies } from '@/hooks/useCompany';
-import { supabase } from '@/backend/supabase/supabaseClient';
 import Loading from '@/components/Loading';
 import { cn } from '@/lib/utils';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -38,8 +37,7 @@ function CompanyDetail() {
 		}
 	}, [companyId, fetchCompany]);
 
-	useEffect(() => {
-	}, [selectedCompany?.logo, editedCompany.logo]);
+	useEffect(() => {}, [selectedCompany?.logo, editedCompany.logo]);
 
 	const handleValueChange = (key: string, value: string) => {
 		setEditedCompany((prev) => ({
@@ -61,7 +59,7 @@ function CompanyDetail() {
 			}
 
 			const updatePayload: CompanyUpdate = {
-				logo: imgUrl
+				logo: imgUrl,
 			};
 
 			await updateCompany(selectedCompany.companyid, updatePayload);
@@ -92,12 +90,12 @@ function CompanyDetail() {
 				city: editedCompany.city,
 				product: editedCompany.product,
 				email: editedCompany.email,
-				categoryGroup: editedCompany.category_group,  // Keep as category_group
-				managerId: editedCompany.managerid,  // Keep as string for now
+				categoryGroup: editedCompany.category_group, // Keep as category_group
+				managerId: editedCompany.managerid, // Keep as string for now
 			};
 
 			// Remove undefined properties
-			Object.keys(updatePayload).forEach(key => {
+			Object.keys(updatePayload).forEach((key) => {
 				if (updatePayload[key as keyof CompanyUpdate] === undefined) {
 					delete updatePayload[key as keyof CompanyUpdate];
 				}
@@ -147,7 +145,7 @@ function CompanyDetail() {
 		},
 		{
 			label: 'Created Date',
-			value: selectedCompany.createdAt?.split("T")[0] || '',
+			value: selectedCompany.createdAt?.split('T')[0] || '',
 			nonEditable: true,
 		},
 		{
@@ -170,7 +168,7 @@ function CompanyDetail() {
 	const managerInfo = [
 		{
 			label: 'Manager',
-			value: selectedCompany.managerid || selectedCompany.manager?.userId || 'Unassigned',  // Keep as string for now
+			value: selectedCompany.managerid || selectedCompany.manager?.userId || 'Unassigned', // Keep as string for now
 			nonEditable: true,
 		},
 	];

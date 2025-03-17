@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Company, CreateCompanyRequest, UpdateCompanyRequest, CompanyUpdate } from '@/types/company';
 import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { defaultCompanyColumnSettings } from '@/config/columnSettings';
+import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 
 export const Route = createFileRoute('/company/')({
 	component: RouteComponent,
@@ -65,7 +66,9 @@ function RouteComponent() {
 	const debouncedSearchKeyword = useDebounce(searchKeyword, 500);
 	const [isEditable, setIsEditable] = useState(false);
 	const filters = useMemo(() => ({ category: '' }), []);
-	const { companies, loading, addCompany, updateCompany } = useCompanies(filters); // This is the companies data
+	const { companies, loading, addCompany, updateCompany } = useCompanies(filters);
+	const [updateDataFromChild, setUpdateDataFromChild] = useState(companies);
+	const handleSaveEdits = useSaveEdits<Company>();
 
 	const { settings, saveSettings, reorderColumns } = useColumnSettings<Company>({
 		storageKey: 'companyColumnSettings',
@@ -73,7 +76,7 @@ function RouteComponent() {
 	});
 	const columns = useMemo<ColumnDef<Company, any>[]>(() => {
 		return settings
-			.filter((setting) => setting.status === 'shown')
+			.filter((setting) => setting.status === 'Active')
 			.sort((a, b) => a.order - b.order)
 			.map((setting) => {
 				// Find the matching default setting to get the original cell renderer
@@ -82,7 +85,7 @@ function RouteComponent() {
 				return {
 					id: String(setting.accessorKey),
 					accessorKey: setting.accessorKey as string,
-					header: setting.header || setting.label,
+					header: setting.label,
 					// Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
 					cell: defaultSetting?.cell || setting.cell || defaultCellRenderer,
 				};
@@ -90,43 +93,67 @@ function RouteComponent() {
 	}, [settings]);
 
 	const transformedCompanies = useMemo(() => {
-		return companies.map((company: any) => ({
-			companyid: company.companyid,
-			name: company.name,
-			logo: company.logo,
-			email: company.email,
-			city: company.city,
-			product: company.product,
-			category_group: company.category_group,
-			created_at: company.created_at,
-			managerid: company.managerid, // Keep as string, don't convert to number
-			workspaceid: company.workspaceid,
-			personnel: company.personnel.map((p: any) => ({
-				...p,
-				status: p.status as 'Active' | 'Inactive' | 'Blocked',
-				managerid: p.managerid, // Keep as string here too
-			})),
-			activeLeads: company.activeLeads || 0,
-			totalContractValue: company.totalContractValue || 0,
-			detail: company.detail || {},
-		}));
+		if (!companies) return [];
+		return companies.map((company: any) => {
+			const transformed = {
+				companyid: company.companyid,
+				name: company.name,
+				logo: company.logo,
+				email: company.email,
+				city: company.city,
+				product: company.product,
+				category_group: company.category_group,
+				created_at: company.created_at,
+				managerid: company.managerid,
+				workspaceid: company.workspaceid,
+				personnel:
+					company.personnel?.map((p: any) => ({
+						...p,
+						status: p.status as 'Active' | 'Inactive' | 'Blocked',
+						managerid: p.managerid,
+					})) || [],
+				activeLeads: company.activeLeads || 0,
+				totalContractValue: company.totalContractValue || 0,
+				detail: company.detail || {},
+			};
+			return transformed;
+		});
 	}, [companies]);
 
 	const filteredCompanies = useMemo(() => {
 		return transformedCompanies.filter((company) => {
-			if (!statusFilter) return true;
+			// Filter berdasarkan status
+			if (statusFilter && statusFilter !== 'All') {
+				const hasMatchingStatus = company.personnel.some((p: { status: string }) => p.status === statusFilter);
+				if (!hasMatchingStatus) return false;
+			}
+
+			// Filter berdasarkan keyword pencarian
+			if (debouncedSearchKeyword) {
+				const searchLower = debouncedSearchKeyword.toLowerCase();
+				return (
+					(company.name?.toLowerCase() || '').includes(searchLower) ||
+					(company.email?.toLowerCase() || '').includes(searchLower) ||
+					(company.city?.toLowerCase() || '').includes(searchLower) ||
+					(company.product?.toLowerCase() || '').includes(searchLower) ||
+					(company.category_group?.toLowerCase() || '').includes(searchLower)
+				);
+			}
+
 			return true;
 		});
-	}, [transformedCompanies, statusFilter]);
+	}, [transformedCompanies, statusFilter, debouncedSearchKeyword]);
+
+	// Update updateDataFromChild when filteredCompanies changes
+	useEffect(() => {
+		setUpdateDataFromChild(filteredCompanies);
+	}, [filteredCompanies]);
 
 	const handleAddRecord = useCallback(
 		async (data: Partial<Company>) => {
 			try {
 				if (!data.name) {
 					throw new Error('Company name is required');
-				}
-				if (!data.managerid) {
-					throw new Error('Manager ID is required');
 				}
 
 				const newCompanyRequest: CreateCompanyRequest = {
@@ -136,7 +163,7 @@ function RouteComponent() {
 					product: data.product || '',
 					email: data.email || '',
 					category_group: data.category_group || '',
-					managerid: data.managerid, // Now we know it's not null/undefined
+					managerid: data.managerid || '', // Type assertion karena sudah divalidasi
 					personnel: [],
 				};
 
@@ -145,58 +172,72 @@ function RouteComponent() {
 				console.error('Failed to add record:', error);
 				throw error;
 			}
+			console.log('INI DATA YANG DIKIRIM : ', data);
 		},
 		[addCompany]
 	);
 
-	const handleSaveEdits = useCallback(
-		async (updatedData: Partial<Company>[]) => {
-			try {
-				const updatePromises = updatedData.map(async (company) => {
-					const companyId = company.companyid;
-					if (!companyId) {
-						throw new Error(`Company ID is required for updates (Company: ${company.name || 'unknown'})`);
-					}
+	const editButton = useCallback(() => {
+		return (
+			<>
+				{isEditable ? (
+					<Button
+						onClick={() => {
+							setIsEditable((prev) => !prev);
+						}}
+						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+						CANCEL
+					</Button>
+				) : (
+					<AddRecordDialog
+						columns={columns}
+						onSave={handleAddRecord}
+						nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'created_at*', 'managerid', 'detail', 'activeLeads', 'totalContractValue']}
+						selectFields={{
+							category_group: {
+								options: [
+									{ value: 'tech', label: 'Technology' },
+									{ value: 'finance', label: 'Finance' },
+								],
+							},
+						}}
+					/>
+				)}
 
-					const updatePayload: CompanyUpdate = {};
-					if (company.name !== undefined) updatePayload.name = company.name;
-					if (company.logo !== undefined) updatePayload.logo = company.logo || undefined;
-					if (company.city !== undefined) updatePayload.city = company.city || undefined;
-					if (company.product !== undefined) updatePayload.product = company.product || undefined;
-					if (company.email !== undefined) updatePayload.email = company.email || undefined;
-					if (company.category_group !== undefined) updatePayload.categoryGroup = company.category_group || undefined;
-					if (company.managerid !== undefined) updatePayload.managerId = company.managerid; // Keep as string
-
-					if (Object.keys(updatePayload).length === 0) {
-						return Promise.resolve();
-					}
-
-					return updateCompany(companyId, updatePayload);
-				});
-
-				await Promise.all(updatePromises);
-				setIsEditable(false);
-				alert('Companies updated successfully');
-			} catch (error: any) {
-				alert('Failed to save updates: ' + error);
-			}
-		},
-		[updateCompany]
-	);
+				{isEditable ? (
+					<Button
+						onClick={async () => {
+							const result = await handleSaveEdits(filteredCompanies, updateDataFromChild, 'companyid', ['name', 'email', 'city', 'product', 'category_group', 'managerid'], async (id: number, data: Partial<Company>) => {
+								const transformedData = {
+									name: data.name || undefined,
+									email: data.email || undefined,
+									city: data.city || undefined,
+									product: data.product || undefined,
+									category_group: data.category_group || undefined,
+									logo: data.logo || undefined,
+								};
+								await updateCompany(id, transformedData);
+							});
+							setIsEditable(false);
+							console.log(result);
+						}}
+						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
+						SAVE
+					</Button>
+				) : (
+					<Button
+						onClick={() => setIsEditable((prev) => !prev)}
+						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+						EDIT
+					</Button>
+				)}
+			</>
+		);
+	}, [isEditable, filteredCompanies, updateDataFromChild, updateCompany]);
 
 	const handleStatusChange = useCallback((newStatus: string) => {
 		setStatusFilter(newStatus);
 	}, []);
-
-	const editButton = useCallback(() => {
-		return (
-			<Button
-				onClick={() => setIsEditable((prev) => !prev)}
-				className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-				EDIT+
-			</Button>
-		);
-	}, [isEditable]);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -242,30 +283,15 @@ function RouteComponent() {
 					</div>
 				</div>
 
-				<div className="flex flex-col items-end space-y-2">
+				{/* <div className="flex flex-col items-end space-y-2">
 					<Label>‎</Label>
 					<div className="flex items-center gap-4">
 						<AdvancedFilterPopover fields={field} />
 					</div>
-				</div>
+				</div> */}
 			</div>
 
-			<div className="flex justify-end flex-none bg-white">
-				<AddRecordDialog
-					columns={columns}
-					onSave={handleAddRecord}
-					nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'created_at', 'managerid', 'detail', 'activeLeads', 'totalContractValue']}
-					selectFields={{
-						category_group: {
-							options: [
-								{ value: 'tech', label: 'Technology' },
-								{ value: 'finance', label: 'Finance' },
-							],
-						},
-					}}
-				/>
-				{editButton()}
-			</div>
+			<div className="flex justify-end flex-none bg-white">{editButton()}</div>
 			<div className="flex-1 overflow-auto">
 				<div className="max-w-full overflow-x-auto">
 					<DataTable
@@ -273,8 +299,15 @@ function RouteComponent() {
 						data={filteredCompanies}
 						loading={loading}
 						isEditable={isEditable}
-						onSave={handleSaveEdits}
-						nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'activeLeads', 'totalContractValue']}
+						nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'activeLeads', 'totalContractValue', 'created_at*', 'detail*']}
+						setTableData={(updateFunctionOrData) => {
+							if (typeof updateFunctionOrData === 'function') {
+								const newData = updateFunctionOrData(updateDataFromChild);
+								setUpdateDataFromChild(newData);
+							} else {
+								setUpdateDataFromChild(updateFunctionOrData);
+							}
+						}}
 					/>
 				</div>
 			</div>

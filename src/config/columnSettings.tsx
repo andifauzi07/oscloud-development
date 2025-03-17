@@ -78,7 +78,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		order: 6,
 	},
 	{
-		accessorKey: 'createdAt', // Type assertion
+		accessorKey: 'created_at', // Type assertion
 		header: 'Created at',
 		label: 'Created at',
 		type: 'date',
@@ -130,17 +130,19 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		status: 'Active',
 		order: 12,
 		cell: ({ row }: CellContext<Company, any>) => (
-			<Link
-				to={`/company/$companyId`}
-				params={{
-					companyId: row.original.companyid.toString(),
-				}}>
-				<Button
-					variant="outline"
-					className="w-20 h-full border">
-					DETAIL
-				</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link
+					to={`/company/$companyId`}
+					params={{
+						companyId: row.original.companyid.toString(),
+					}}>
+					<Button
+						variant="outline"
+						className="w-20 h-full border">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
