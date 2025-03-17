@@ -18,6 +18,7 @@ import { User } from "@/types/payroll";
 import { AssignedStaff } from "@/store/slices/projectSlice";
 import { toast } from "@/components/ui/use-toast";
 import { User as CurrentUser } from "@/types/user";
+import { Link } from "@tanstack/react-router";
 
 interface EditedTimeSlot {
     date: string;
@@ -412,16 +413,19 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                         value={currentProject?.company?.name}
                         editComponent={
                             <Select
-                                value={editedGeneralInfo.companyId}
-                                onValueChange={(value) =>
+                                value={String(editedGeneralInfo.companyId || currentProject?.companyid || '')}
+                                onValueChange={(value) => {
+                                    console.log('Company onValueChange:', { value });
                                     setEditedGeneralInfo((prev) => ({
                                         ...prev,
                                         companyId: value,
                                     }))
-                                }
+                                }}
                             >
                                 <SelectTrigger className="h-8">
-                                    <SelectValue placeholder="Select company" />
+                                    <SelectValue>
+                                        {companies?.find(c => String(c.companyid) === String(editedGeneralInfo.companyId || currentProject?.companyid))?.name || "Select company"}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {companies?.map((company) => (
@@ -492,28 +496,39 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                     />
 
                     {/* Manager */}
+                    {console.log('Manager Debug:', {
+                        currentProject,
+                        editedGeneralInfo,
+                        currentManagerId: currentProject?.manager?.id,
+                        users,
+                        selectedManagerValue: editedGeneralInfo.managerId || currentProject?.manager?.userid || '',
+                        foundManager: users?.find(u => u.id === (editedGeneralInfo.managerId || currentProject?.manager?.userid))
+                    })}
                     <InfoField
                         label="Manager"
                         isEditing={isEditingGeneral}
                         value={currentProject?.manager?.name}
                         editComponent={
                             <Select
-                                value={editedGeneralInfo.managerId}
-                                onValueChange={(value) =>
+                                value={editedGeneralInfo.managerId || currentProject?.managerid || ''}
+                                onValueChange={(value) => {
+                                    console.log('Manager onValueChange:', { value });
                                     setEditedGeneralInfo((prev) => ({
                                         ...prev,
                                         managerId: value,
                                     }))
-                                }
+                                }}
                             >
                                 <SelectTrigger className="h-8">
-                                    <SelectValue placeholder="Select manager" />
+                                    <SelectValue>
+                                        {users?.find(u => u.id === (editedGeneralInfo.managerId || currentProject?.managerid))?.email || "Select manager"}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {users?.map((user) => (
                                         <SelectItem
-                                            key={user.userid}
-                                            value={user.userid}
+                                            key={user.id}
+                                            value={user.id}
                                         >
                                             {user.email}
                                         </SelectItem>
@@ -539,6 +554,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                                             parseInt(e.target.value) || 0,
                                     }))
                                 }
+                                enableEmoji={false}
                                 className="h-8"
                             />
                         }
@@ -592,22 +608,13 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                             <h1>Assigned staffs</h1>
                         </div>
                         <div className="flex">
-                            <Button
-                                className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
-                                onClick={() =>
-                                    setIsEditingStaff(!isEditingStaff)
-                                }
-                            >
-                                EDIT
-                            </Button>
-                            {isEditingStaff && (
+                            <Link to="/employee">
                                 <Button
                                     className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
-                                    onClick={() => setIsEditingStaff(false)}
                                 >
-                                    SAVE
+                                    EDIT
                                 </Button>
-                            )}
+                            </Link>
                         </div>
                     </div>
                 </div>
