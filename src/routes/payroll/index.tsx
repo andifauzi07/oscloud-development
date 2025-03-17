@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DataTable } from '@/components/ui/data-table';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, RowData, TableMeta } from '@tanstack/react-table';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { Label } from '@/components/ui/label';
 import { useUserData } from '@/hooks/useUserData';
@@ -12,8 +12,18 @@ import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { Employee } from '@/types/payroll';
 import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
 import { useCreatePayment, usePayrollEmployees, useUpdatePaymentStatus } from '@/hooks/usePayroll';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEmployeeCategories } from '@/hooks/useEmployee';
+
+// Deklarasi tipe untuk TableMeta
+declare module '@tanstack/react-table' {
+	interface TableMeta<TData extends RowData> {
+		editable?: boolean;
+		isLoading?: boolean;
+		employeeCategoryOptions?: Array<{ value: string; label: string }>;
+		updateData?: (data: TData[]) => void;
+	}
+}
 
 export const Route = createFileRoute('/payroll/')({
 	component: RouteComponent,
@@ -62,7 +72,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 		cell: ({ row, table }) => {
 			// Get editable state from table meta
 			const isEditable = table.options.meta?.editable as boolean;
-			
+
 			if (isEditable) {
 				return (
 					<Select
@@ -71,23 +81,24 @@ const columns: ColumnDef<PayrollRow>[] = [
 							// Get the current data from table
 							const currentData = table.options.data as PayrollRow[];
 							const updatedData = [...currentData];
-							const rowIndex = updatedData.findIndex(item => item.id === row.original.id);
+							const rowIndex = updatedData.findIndex((item) => item.id === row.original.id);
 							if (rowIndex !== -1) {
 								updatedData[rowIndex] = {
 									...updatedData[rowIndex],
-									employeeCategory: value
+									employeeCategory: value,
 								};
 								// Update through table meta
 								table.options.meta?.updateData?.(updatedData);
 							}
-						}}
-					>
+						}}>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select category" />
 						</SelectTrigger>
 						<SelectContent>
 							{(table.options.meta?.employeeCategoryOptions as Array<{ value: string; label: string }>)?.map((option: { value: string; label: string }) => (
-								<SelectItem key={option.value} value={option.value}>
+								<SelectItem
+									key={option.value}
+									value={option.value}>
 									{option.label}
 								</SelectItem>
 							))}
@@ -195,6 +206,9 @@ function RouteComponent() {
 	const { createPayment, loading: creatingPayment } = useCreatePayment();
 	const { updatePaymentStatus, loading: updatingStatus } = useUpdatePaymentStatus();
 
+	// State untuk menampung data yang diubah dari DataTable
+	const [updateDataFromChild, setUpdateDataFromChild] = useState<PayrollRow[]>([]);
+
 	// Update local data when employees change
 	useEffect(() => {
 		if (employees) {
@@ -210,6 +224,7 @@ function RouteComponent() {
 				joinedOn: employee.joineddate ? new Date(employee.joineddate).toISOString().split('T')[0] : 'Unknown',
 			}));
 			setLocalData(tableData);
+			// setUpdateDataFromChild(tableData);
 		}
 	}, [employees]);
 
@@ -231,48 +246,6 @@ function RouteComponent() {
 			console.error('Failed to add record:', error);
 		}
 	};
-
-	const handleUpdateData = useCallback(async (updatedData: PayrollRow[]) => {
-		setIsLoading(true);
-		try {
-			const changes = updatedData.filter((newRow) => {
-				const originalRow = localData.find(row => row.id === newRow.id);
-				return originalRow && JSON.stringify(originalRow) !== JSON.stringify(newRow);
-			});
-
-			if (changes.length === 0) {
-				setEditable(false);
-				return;
-			}
-
-			await Promise.all(
-				changes.map(async (row) => {
-					const employee = employees?.find(e => e.employeeId?.toString() === row.id);
-					if (!employee) return;
-
-					const updatePayload = {
-						employeecategory: {
-							categoryname: row.employeeCategory
-						},
-						// Add other fields that need updating
-					};
-
-					await updatePaymentStatus(Number(row.id), {
-						status: 'Updated',
-						data: updatePayload
-					});
-				})
-			);
-
-			setLocalData(updatedData);
-			setEditable(false);
-		} catch (error) {
-			console.error('Failed to save updates:', error);
-			// Optionally show error toast/alert here
-		} finally {
-			setIsLoading(false);
-		}
-	}, [localData, employees, updatePaymentStatus]);
 
 	// Enhanced filtering with type safety
 	const filteredEmployees =
@@ -339,21 +312,91 @@ function RouteComponent() {
 						</div>
 					</div>
 					<div className="flex justify-end flex-none w-full bg-white">
-						<AddRecordDialog
-							columns={columns}
-							onSave={handleAddRecord}
-							nonEditableColumns={['image', 'id', 'joinedOn', 'numberOfPayment', 'action']}
-							selectFields={{
-								employeeCategory: {
-									options: employeeCategoryOptions,
-								},
-							}}
-						/>
-						<Button
-							onClick={() => setEditable((prev) => !prev)}
-							className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
-							{editable ? 'CANCEL' : 'EDIT+'}
-						</Button>
+						{editable ? (
+							<Button
+								onClick={() => setEditable(false)}
+								className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+								CANCEL
+							</Button>
+						) : (
+							<AddRecordDialog
+								columns={columns}
+								onSave={handleAddRecord}
+								nonEditableColumns={['image', 'id', 'joinedOn', 'numberOfPayment', 'action']}
+								selectFields={{
+									employeeCategory: {
+										options: employeeCategoryOptions,
+									},
+								}}
+							/>
+						)}
+
+						{editable ? (
+							<Button
+								onClick={async () => {
+									try {
+										// Konversi data dari PayrollRow ke EmployeeData untuk diproses
+										const originalEmployees =
+											employees?.map((employee) => ({
+												employeeId: employee.employeeId,
+												employeecategory: {
+													categoryname: employee.employeecategory?.categoryname || '',
+												},
+											})) || [];
+
+										const updatedEmployees = updateDataFromChild.map((row) => ({
+											employeeId: Number(row.id),
+											employeecategory: {
+												categoryname: row.employeeCategory,
+											},
+										}));
+
+										// Cari perubahan data
+										const changedData = updatedEmployees.filter((updatedItem) => {
+											const originalItem = originalEmployees.find((item) => item.employeeId === updatedItem.employeeId);
+
+											if (!originalItem) return false;
+
+											return originalItem.employeecategory.categoryname !== updatedItem.employeecategory.categoryname;
+										});
+
+										if (changedData.length === 0) {
+											setEditable(false);
+											return;
+										}
+
+										// Proses perubahan data
+										await Promise.all(
+											changedData.map(async (item) => {
+												await updatePaymentStatus(item.employeeId, {
+													status: 'Updated',
+													data: {
+														employeecategory: {
+															categoryname: item.employeecategory.categoryname,
+														},
+													},
+												});
+											})
+										);
+
+										console.log('Success edit data');
+										setEditable(false);
+										setIsLoading(false);
+									} catch (error) {
+										console.error('Failed to save updates:', error);
+										setIsLoading(false);
+									}
+								}}
+								className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
+								SAVE
+							</Button>
+						) : (
+							<Button
+								onClick={() => setEditable(true)}
+								className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+								EDIT
+							</Button>
+						)}
 					</div>
 					<DataTable
 						columns={columns}
@@ -361,14 +404,16 @@ function RouteComponent() {
 						loading={employeesLoading || creatingPayment || updatingStatus || isLoading}
 						isEditable={editable}
 						nonEditableColumns={['image', 'joinedOn', 'numberOfPayment', 'id', 'action']}
-						onSave={handleUpdateData}
+						setTableData={(updateFunctionOrData) => {
+							const evaluatedData = typeof updateFunctionOrData === 'function' ? updateFunctionOrData([...localData]) : updateFunctionOrData;
+							setUpdateDataFromChild(evaluatedData);
+						}}
 						meta={{
 							editable,
 							isLoading,
 							employeeCategoryOptions,
-							updateData: handleUpdateData
+							updateData: setUpdateDataFromChild,
 						}}
-						// error={error?.toString()}
 					/>
 				</TabsContent>
 

@@ -1,120 +1,124 @@
 export interface Employee {
-    employeeId: number;
-    name: string;
-    category: string;
-    rates: { type: string; ratevalue: number }[];
-    totalPayment: number;
-    numberOfPayments: number;
-    joinedDate: Date;
-    profileimage: string;
+	employeeId: number;
+	name: string;
+	category: string;
+	rates: { type: string; ratevalue: number }[];
+	totalPayment: number;
+	numberOfPayments: number;
+	joinedDate: Date;
+	profileimage: string;
+	employeecategory?: {
+		categoryid?: number;
+		categoryname?: string;
+	};
 }
 
 export interface User {
-    userId: number;
-    name: string;
+	userId: number;
+	name: string;
 }
 
 // Define types
 export interface PaymentDetail {
-    detailId: number;
-    projectId: number;
-    projectName: string;
-    hoursWorked: number;
-    transportFee: number;
-    totalAmount: number;
-  }
+	detailId: number;
+	projectId: number;
+	projectName: string;
+	hoursWorked: number;
+	transportFee: number;
+	totalAmount: number;
+}
 
 export interface Payment {
-    paymentid: number;
-    employeeid: number;
-    employeename: string;
-    status: string;
-    details: PaymentDetail[];
-    totalPayment: number;
-    createdby: {
-        userid: number;
-        name: string;
-    };
-    created_at: string;
+	paymentid: number;
+	employeeid: number;
+	employeename: string;
+	status: string;
+	details: PaymentDetail[];
+	totalPayment: number;
+	createdby: {
+		userid: number;
+		name: string;
+	};
+	created_at: string;
 }
 
 export interface PayrollResponse {
-    payments: Payment[];
-    employees: Employee[];
+	payments: Payment[];
+	employees: Employee[];
 }
 
 export interface PaymentDetailCreate {
-    projectid: number;
-    hoursworked: number;
-    transportfee: number;
+	projectid: number;
+	hoursworked: number;
+	transportfee: number;
 }
 
 export interface PaymentCreate {
-    employeeid: number;
-    details: PaymentDetailCreate[];
+	employeeid: number;
+	details: PaymentDetailCreate[];
 }
 
 export interface PaymentUpdate {
-    status: string;
+	status: string;
 }
 
 export interface EmployeePaymentResponse {
-    paymentId: number;
-    employeeId: number;
-    employeeName: string;
-    status: string;
-    details: PaymentDetailResponse[];
-    totalPayment: number;
-    createdBy: {
-        userid: number;
-        name: string;
-    };
-    createdDate: string;
+	paymentId: number;
+	employeeId: number;
+	employeeName: string;
+	status: string;
+	details: PaymentDetailResponse[];
+	totalPayment: number;
+	createdBy: {
+		userid: number;
+		name: string;
+	};
+	createdDate: string;
 }
 export interface PaymentDetailResponse {
-    detailId: number;
-    projectId: number;
-    projectName: string;
-    hoursWorked: number;
-    transportFee: number;
-    totalAmount: number;
+	detailId: number;
+	projectId: number;
+	projectName: string;
+	hoursWorked: number;
+	transportFee: number;
+	totalAmount: number;
 }
 
 export interface EmployeeProfile {
-    employeeId: number;
-    name: string;
-    profileimage: string;
-    joinedDate: string;
-    category: string;
-    department: string;
-    rates: Array<{
-        type: string;
-        ratevalue: number;
-    }>;
+	employeeId: number;
+	name: string;
+	profileimage: string;
+	joinedDate: string;
+	category: string;
+	department: string;
+	rates: Array<{
+		type: string;
+		ratevalue: number;
+	}>;
 }
 
 export interface EmployeeProject {
-    projectId: number;
-    projectName: string;
-    startDate: string;
-    endDate: string;
-    break_hours: number;
-    duration: number;
-    hourlyRate: number;
-    transportFee: number;
-    totalFee: number;
-  }
-  export interface EmployeePayment {
-    paymentId: number;
-    employeeId: number;
-    employeeName: string;
-    profileimage: string;
-    status: string;
-    details: PaymentDetail[];
-    totalPayment: number;
-    createdBy: {
-      userid: number;
-      name: string;
-    };
-    createdDate: string;
-  }
+	projectId: number;
+	projectName: string;
+	startDate: string;
+	endDate: string;
+	break_hours: number;
+	duration: number;
+	hourlyRate: number;
+	transportFee: number;
+	totalFee: number;
+}
+export interface EmployeePayment {
+	paymentId: number;
+	employeeId: number;
+	employeeName: string;
+	profileimage: string;
+	status: string;
+	details: PaymentDetail[];
+	totalPayment: number;
+	createdBy: {
+		userid: number;
+		name: string;
+	};
+	createdDate: string;
+}
