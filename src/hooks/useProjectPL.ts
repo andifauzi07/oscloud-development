@@ -39,7 +39,10 @@ export const useProjectPL = (projectId: number) => {
 
         // Calculate profit
         const totalProfit = revenueCost - totalCosts;
-        const profitability = revenueCost > 0 ? (totalProfit / revenueCost) * 100 : 0;
+
+        // Calculate profitability (as a percentage)
+        // Only calculate if totalCosts is greater than 0 to avoid division by zero
+        const profitability = totalCosts > 0 ? (totalProfit / totalCosts) * 100 : 0;
 
         // Cost breakdown for the pie chart
         const costBreakdown = [
