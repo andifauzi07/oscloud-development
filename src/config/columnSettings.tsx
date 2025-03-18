@@ -787,7 +787,7 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		order: 3,
 		cell: ({ row }) => {
-			console.log("Current row data:", row.original);
+			console.log('Current row data:', row.original);
 			// If duration is provided directly
 			if (typeof row.original.duration === 'number') {
 				return `${row.original.duration} days`;
@@ -804,32 +804,11 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		order: 4,
 		cell: ({ row }) => {
-<<<<<<< HEAD
 			const employee = row.original.employee;
 			const rate = employee?.rates?.find((r) => r.type === 'A')?.ratevalue || employee?.rates?.find((r) => r.type === 'B')?.ratevalue || 0;
 			return `¥${rate}`;
 		},
 	},
-=======
-            return `¥${row.original.hourlyRate}`;
-		},
-	},
-    {
-        accessorKey: 'transportFee',
-        header: 'Transport Fee',
-        type: 'number',
-        label: 'Transport Fee',
-        date_created: new Date().toISOString(),
-        status: 'Active',
-        order: 5,
-        cell: ({ row }) => {
-            return `¥${row.original.transportFee}`;
-        },
-    },
-
-	...costColumns,
-    
->>>>>>> daeef071396415afc6dd423fc65c7692c71fae9d
 	{
 		accessorKey: 'totalFee',
 		header: 'Total Fee',
@@ -839,7 +818,7 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		order: 5 + costColumns.length + 1,
 		cell: ({ row }) => {
-            return `¥${row.original.totalFee}`;
+			return `¥${row.original.totalFee}`;
 		},
 	},
 
@@ -854,7 +833,7 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		cell: ({ row }) => {
 			// Get the ID safely with fallback
 			const projectId = row.original?.projectId || row.original?.project?.projectId || '';
-			
+
 			return (
 				<div className="flex justify-end w-full">
 					<div className="sticky right-0 bg-white">
