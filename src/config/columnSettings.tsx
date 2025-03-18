@@ -239,7 +239,10 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 6,
-		cell: ({ row }) => <span>{row.original.category?.name || '-'}</span>,
+		cell: ({ row }) => {
+			const category = row.original.category;
+			return <span>{category?.name || '-'}</span>;
+		},
 	},
 	{
 		accessorKey: 'assignedStaff',
