@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { useUserData } from "@/hooks/useUserData";
@@ -39,31 +39,51 @@ export const useProjects = (filters?: {
     const dispatch = useDispatch<AppDispatch>();
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
-    const { projects, loading, error, total, currentPage: page, limit } = useSelector(
-        (state: RootState) => state.project
-    );
+    
+    const memoizedFilters = useMemo(() => filters, [
+        filters?.keyword,
+        filters?.startDate,
+        filters?.endDate,
+        filters?.status,
+        filters?.page,
+        filters?.limit
+    ]);
 
     useEffect(() => {
-        if (workspaceid) {
-            dispatch(fetchProjects({
-                workspaceId: Number(workspaceid),
-                filters: {
-                    ...filters,
-                    page: filters?.page || 1,
-                    limit: filters?.limit || 10
-                }
-            }));
-        }
-    }, [dispatch, workspaceid, filters]);
+        let mounted = true;
 
-    return {
-        projects,
-        loading,
-        error,
-        total,
-        page,
-        limit
-    };
+        const fetchData = async () => {
+            if (!workspaceid) return;
+
+            try {
+                await dispatch(fetchProjects({
+                    workspaceId: Number(workspaceid),
+                    filters: memoizedFilters
+                })).unwrap();
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            mounted = false;
+        };
+    }, [dispatch, workspaceid, memoizedFilters]);
+
+    const state = useSelector((state: RootState) => ({
+        projects: state.project.projects,
+        loading: state.project.loading,
+        error: state.project.error,
+        total: state.project.total,
+        page: state.project.currentPage,
+        limit: state.project.limit
+    }));
+
+    console.log('useProjects state:', state);
+
+    return state;
 };
 
 export const useProject = () => {

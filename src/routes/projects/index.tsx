@@ -72,8 +72,8 @@ function ProjectsRouteComponent() {
         [statusFilter, debouncedKeyword, currentPage, pageSize]
     );
 
-    const { projects, loading, total } = useProjects(filters);
-    const { addProject, editProject, getProjectCategories } = useProject();
+    const { projects, loading, error, total, page, limit } = useProjects(filters);
+    const { addProject, editProject, getProjectCategories, getProjects } = useProject();
     const { settings, saveSettings, reorderColumns } = useColumnSettings({
         storageKey: "projectColumnSettings",
         defaultSettings: defaultProjectColumnSettings,
@@ -194,6 +194,9 @@ function ProjectsRouteComponent() {
                 })
             );
 
+            // Refresh projects after saving
+            await getProjects(filters);
+
             setIsEditable(false);
             setUpdateDataFromChild([]);
             alert("Projects updated successfully");
@@ -201,7 +204,7 @@ function ProjectsRouteComponent() {
             console.error("Error updating projects:", error);
             alert("Failed to update projects");
         }
-    }, [editProject, updateDataFromChild]);
+    }, [editProject, updateDataFromChild, getProjects, filters]);
 
     const toggleEditMode = useCallback(() => {
         setIsEditable((prev) => !prev);
@@ -228,9 +231,18 @@ function ProjectsRouteComponent() {
         loadCategories();
     }, [workspaceid, getProjectCategories, isWorkspaceReady]);
 
-    if (!isWorkspaceReady) {
+    useEffect(() => {
+        if (error) {
+            toast.error("Failed to load projects");
+        }
+    }, [error]);
+
+    if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
+                {projects.length}
+                {isWorkspaceReady}
+                {loading}
                 <div className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
             </div>
         );

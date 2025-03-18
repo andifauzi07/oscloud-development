@@ -143,6 +143,7 @@ export const Route = createFileRoute("/projects/$projectId/")({
 });
 
 function ProjectView() {
+    // Get projectId from route params
     const { projectId } = Route.useParams();
     const { currentUser } = useUserData();
     const {
@@ -154,6 +155,10 @@ function ProjectView() {
         assignProjectStaff,
         removeProjectStaff
     } = useProject();
+
+    // Add console.log to debug
+    console.log('Route Params:', { projectId, type: typeof projectId });
+
     const { addAvailability, updateAvailability: updateAvailabilityDetails } =
         useAvailability();
     const { companies } = useCompanies();
@@ -193,6 +198,9 @@ function ProjectView() {
         },
     });
     const [isEditingStaff, setIsEditingStaff] = useState(false);
+
+    // Add loading state
+    const [isLoading, setIsLoading] = useState(true);
 
     // Create enhanced employees data that combines both sources
     const enhancedEmployees = useMemo(() => {
@@ -281,19 +289,31 @@ function ProjectView() {
     // Initial data fetch
     useEffect(() => {
         const loadData = async () => {
-            if (!currentUser?.workspaceid) return;
+            setIsLoading(true);
+            
+            if (!currentUser?.workspaceid) {
+                console.log('Waiting for workspace ID...');
+                return;
+            }
 
-            // Load categories first
-            const response = await getProjectCategories();
-            setCategories(response);
-            // Then load project details
-            if (projectId) {
+            // Remove this check since we know projectId exists from the URL
+            try {
+                // Load categories first
+                const response = await getProjectCategories();
+                setCategories(response);
+                
+                // Then load project details - ensure projectId is a number
                 await getProjectById(Number(projectId));
+            } catch (error) {
+                console.error('Error loading project:', error);
+                toast.error(error instanceof Error ? error.message : 'Failed to load project data');
+            } finally {
+                setIsLoading(false);
             }
         };
 
         loadData();
-    }, [currentUser?.workspaceid, projectId]);
+    }, [currentUser?.workspaceid, projectId, getProjectById, getProjectCategories]);
 
     // Effect to update form when currentProject changes
     useEffect(() => {
@@ -337,6 +357,7 @@ function ProjectView() {
         }
     };
 
+    // Show loading state while waiting for workspace ID
     if (!currentUser?.workspaceid) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -345,7 +366,8 @@ function ProjectView() {
         );
     }
 
-    if (loading) {
+    // Show loading state while waiting for data
+    if (isLoading || loading) {
         return (
             <div className="flex items-center justify-center h-full">
                 <p>Loading project details...</p>
@@ -353,6 +375,7 @@ function ProjectView() {
         );
     }
 
+    // Show error state if no project found
     if (!currentProject) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -433,7 +456,7 @@ function ProjectView() {
                 />
 
                 <ProjectPLTab
-                    plData={plData}
+                    projectId={Number(projectId)}
                     onEditRevenue={handleEditRevenue}
                     onEditExpenditures={handleEditExpenditures}
                 />
