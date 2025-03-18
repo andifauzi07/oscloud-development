@@ -136,8 +136,7 @@ function ProjectsRouteComponent() {
                     managerid: currentUser?.userid || 1,
                     companyid: Number(data.companyid),
                     workspaceid: 1,
-                    categoryid:
-                        data.categoryid ? Number(data.categoryid) : null, // Add category ID
+                    categoryid: data.categoryid ? Number(data.categoryid) : null,
                     costs: data.costs || {
                         food: 0,
                         break: 0,
@@ -153,13 +152,15 @@ function ProjectsRouteComponent() {
                 };
 
                 await addProject(newProjectRequest);
-                alert("Project created successfully");
+                // Immediately refetch projects after successful addition
+                await getProjects(filters);
+                toast.success("Project created successfully");
             } catch (error) {
                 console.error("Failed to add project:", error);
-                alert("Failed to create project");
+                toast.error("Failed to create project");
             }
         },
-        [addProject, currentUser]
+        [addProject, currentUser, getProjects, filters]
     );
 
     const handleStatusChange = useCallback((newStatus: string) => {
