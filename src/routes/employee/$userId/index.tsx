@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MenuList from '@/components/menuList';
 import { useEmployee, useEmployeeCategories } from '@/hooks/useEmployee';
+import { useDepartments } from '@/hooks/useDepartment';
 import { useCallback, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
@@ -18,18 +19,6 @@ interface EditedEmployee {
 	email?: string;
 	employeeCategoryId?: number;
 	profileImage?: string;
-	departmentId?: number;
-	workspaceid?: number;
-	department?: {
-		departmentid: number;
-		departmentname: string;
-		parentdepartmentid: number | null;
-	};
-	employeeCategory?: {
-		categoryid: number;
-		categoryname: string;
-		parentcategoryid: number;
-	};
 }
 
 export const Route = createFileRoute('/employee/$userId/')({
@@ -52,7 +41,8 @@ function RouteComponent() {
 	const [editedEmployee, setEditedEmployee] = useState<EditedEmployee>({});
 	const { employee, loading, error, updateEmployeeData } = useEmployee(Number(userId));
 	const { categories } = useEmployeeCategories();
-	const { settings, saveSettings, reorderColumns } = useColumnSettings<Employee>({
+	const { departments } = useDepartments();
+	const { settings, saveSettings, reorderColumns } = useColumnSettings<any>({
 		storageKey: 'EmployeeColumnSetting',
 		defaultSettings: defaultEmployeeColumnSettings,
 	});
@@ -96,26 +86,24 @@ function RouteComponent() {
 					? employee?.employeeid?.toString() || '-'
 					: setting.accessorKey === 'employeeCategoryId'
 						? employee?.employeeCategory?.categoryname?.toString() || '-'
-						: editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
+						: setting.accessorKey === 'departmentId'
+							? employee?.department?.departmentname?.toString() || '-'
+							: editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
 			nonEditable: setting.accessorKey === 'employeeid',
 			options:
-				setting.accessorKey === 'employeeCategoryId'
+				setting.accessorKey === 'employeecategoryid'
 					? categories?.map((c: any) => ({
-							value: c.categoryid.toString() || '-',
-							label: c.categoryname || '-',
+							value: c.categoryid.toString(),
+							label: c.categoryname,
 						})) || []
-					: undefined,
+					: setting.accessorKey === 'departmentid'
+						? departments?.map((d: any) => ({
+								value: d.departmentid.toString(),
+								label: d.departmentname,
+							})) || []
+						: undefined,
 		}));
-
-	// const contractInfo = [
-	// 	{ label: 'UserID', value: '終日' },
-	// 	{ label: '名前', value: '9:00 ~ 17:00' },
-	// 	{ label: 'なまえ', value: '終日' },
-	// 	{ label: '誕生日', value: '終日' },
-	// 	{ label: '2024.11.25', value: '9:00 ~ 17:00' },
-	// 	{ label: '2024.11.28', value: '終日' },
-	// ];
 
 	return (
 		<div className="flex-1 h-full">
@@ -173,7 +161,7 @@ function RouteComponent() {
 						{/* Image and list container */}
 						<div className="flex">
 							{/* Left side - Image section */}
-							<div className="w-[30%] flex flex-col border-b h-[350px]">
+							<div className="w-[30%] flex flex-col border-b h-[300px] border-r">
 								<figure className="w-full h-[65%] relative overflow-hidden">
 									<img
 										className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%]"
@@ -201,14 +189,14 @@ function RouteComponent() {
 							</div>
 
 							{/* Right side - Info sections */}
-							<div className="w-[70%] border-l overflow-y-auto">
+							<div className="w-[70%] overflow-y-auto">
 								<InfoSection
 									className="border-l-0"
 									items={basicInfo}
-									title="一般情報"
+									title="Basic Information"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
-									nonEditableFields={['employeeid']} // Add nonEditableFields prop
+									nonEditableFields={['employeeId']} // Add nonEditableFields prop
 								/>
 							</div>
 						</div>
