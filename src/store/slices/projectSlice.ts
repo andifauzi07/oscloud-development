@@ -201,13 +201,7 @@ export const fetchProjects = createAsyncThunk(
         if (filters) {
             Object.entries(filters).forEach(([key, value]) => {
                 if (value !== undefined && value !== null) {
-                    if (key === 'page') {
-                        queryParams.append('page', value.toString());
-                    } else if (key === 'limit') {
-                        queryParams.append('limit', value.toString());
-                    } else {
-                        queryParams.append(key.toLowerCase(), value.toString());
-                    }
+                    queryParams.append(key.toLowerCase(), value.toString());
                 }
             });
         }
@@ -252,12 +246,18 @@ export const fetchProjectById = createAsyncThunk(
                     }
                 } catch (error) {
                     console.error('Failed to get category details:', error);
+                    // Continue execution even if category lookup fails
                 }
             }
 
             return projectData;
-        } catch (error) {
-            return rejectWithValue(error);
+        } catch (error: any) {
+            // Return a serializable error object
+            return rejectWithValue({
+                message: error.response?.data?.message || error.message || 'Failed to fetch project',
+                status: error.response?.status,
+                data: error.response?.data
+            });
         }
     }
 );
@@ -454,19 +454,24 @@ const projectSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchProjects.pending, (state) => {
+                console.log('fetchProjects.pending');
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchProjects.fulfilled, (state, action) => {
+                console.log('fetchProjects.fulfilled', action.payload);
                 state.loading = false;
                 state.projects = action.payload.projects;
                 state.total = action.payload.total;
                 state.currentPage = action.payload.page;
                 state.limit = action.payload.limit;
+                state.error = null;
             })
             .addCase(fetchProjects.rejected, (state, action) => {
+                console.log('fetchProjects.rejected', action.error);
                 state.loading = false;
-                state.error = action.error.message || null;
+                state.error = action.error.message || 'Failed to fetch projects';
+                state.projects = [];
             })
             .addCase(fetchProjectById.pending, (state) => {
                 state.loading = true;
@@ -479,7 +484,10 @@ const projectSlice = createSlice({
             })
             .addCase(fetchProjectById.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload as string || 'Failed to fetch project';
+                state.error = action.payload 
+                    ? (action.payload as { message: string }).message 
+                    : 'Failed to fetch project';
+                state.currentProject = null;
             })
             .addCase(fetchProjectCategories.pending, (state) => {
                 state.loading = true;

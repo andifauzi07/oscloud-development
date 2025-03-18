@@ -1,3 +1,4 @@
+import React from 'react';
 import { CellContext } from '@tanstack/react-table';
 import { BaseColumnSetting } from '@/types/table';
 import { Company, Project, ProjectDisplay, Payment, PaymentDetail } from '@/types/company';
@@ -130,7 +131,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		status: 'Active',
 		order: 12,
 		cell: ({ row }: CellContext<Company, any>) => (
-			<div className="w-full flex justify-end">
+			<div className="flex justify-end w-full">
 				<Link
 					to={`/company/$companyId`}
 					params={{
@@ -725,8 +726,8 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'break',
-		header: 'Break Hours',
-		label: 'Break Hours',
+		header: 'Break',
+		label: 'Break',
 		type: 'number',
 		date_created: new Date().toISOString(),
 		status: 'Active',
@@ -745,29 +746,38 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		order: 3,
 		cell: ({ row }) => {
-			const details = row.original.employee?.details[0];
-			if (!details) return '-';
-			const startDate = new Date(details.startDate);
-			const endDate = new Date(details.endDate);
-			const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-			const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-			return `${diffDays} days`;
+			console.log("Current row data:", row.original);
+			// If duration is provided directly
+			if (typeof row.original.duration === 'number') {
+				return `${row.original.duration} days`;
+			}
+			return '-';
 		},
 	},
 	{
 		accessorKey: 'hourlyRate',
 		header: 'Hour Rate',
-		label: 'Hour Rate',
 		type: 'number',
+		label: 'Hour Rate',
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 4,
 		cell: ({ row }) => {
-			const employee = row.original.employee;
-			const rate = employee?.rates?.find(r => r.type === 'A')?.ratevalue || employee?.rates?.find(r => r.type === 'B')?.ratevalue || 0;
-			return `¥${rate}`;
+            return `¥${row.original.hourlyRate}`;
 		},
 	},
+    {
+        accessorKey: 'transportFee',
+        header: 'Transport Fee',
+        type: 'number',
+        label: 'Transport Fee',
+        date_created: new Date().toISOString(),
+        status: 'Active',
+        order: 5,
+        cell: ({ row }) => {
+            return `¥${row.original.transportFee}`;
+        },
+    },
 
 	...costColumns,
     
@@ -778,20 +788,9 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		date_created: new Date().toISOString(),
 		status: 'Active',
-		order: 5,
+		order: 5 + costColumns.length + 1,
 		cell: ({ row }) => {
-			const totalFee = costColumns.map((cost) => {
-				const cellValue = cost.cell?.({ row });
-				// Handle the cell value properly with type checking
-				if (React.isValidElement(cellValue)) {
-					const content = cellValue.props.children;
-					if (typeof content === 'string') {
-						return Number(content.replace(/[^0-9.-]+/g, '')) || 0;
-					}
-				}
-				return 0;
-			});
-			return `¥${totalFee.reduce((sum, value) => sum + value, 0)}`;
+            return `¥${row.original.totalFee}`;
 		},
 	},
 
@@ -803,22 +802,27 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 99,
-		cell: ({ row }) => (
-			<div className="flex justify-end w-full">
-				<div className="sticky right-0 bg-white">
-					<Button
-						variant="outline"
-						className="w-20 border ">
-						<Link
-							to={`/projects/$projectId`}
-							params={{
-								projectId: row.original.projectId.toString(),
-							}}>
-							View
-						</Link>
-					</Button>
+		cell: ({ row }) => {
+			// Get the ID safely with fallback
+			const projectId = row.original?.projectId || row.original?.project?.projectId || '';
+			
+			return (
+				<div className="flex justify-end w-full">
+					<div className="sticky right-0 bg-white">
+						<Button
+							variant="outline"
+							className="w-20 border">
+							<Link
+								to={`/projects/$projectId`}
+								params={{
+									projectId: projectId.toString(),
+								}}>
+								View
+							</Link>
+						</Button>
+					</div>
 				</div>
-			</div>
-		),
+			);
+		},
 	},
 ];
