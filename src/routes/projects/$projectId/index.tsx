@@ -427,9 +427,9 @@ function ProjectView() {
                 />
 
                 <ProjectPaymentTab
-                    mockPaymentStaff={mockPaymentStaff}
                     advancedSearchFields={advancedSearchFields}
                     loading={loading}
+                    currentProject={currentProject}
                 />
 
                 <ProjectPLTab
