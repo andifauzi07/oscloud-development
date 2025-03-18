@@ -191,6 +191,12 @@ function RouteComponent() {
 				cell: ({ row }) => <h1>{row.original.type}</h1>,
 			},
 			{
+				id: 'category',
+				accessorKey: 'category',
+				header: 'Category',
+				cell: ({ row }) => <h1>{row.original.category || '-'}</h1>,
+			},
+			{
 				id: 'status',
 				accessorKey: 'status',
 				header: 'Status',

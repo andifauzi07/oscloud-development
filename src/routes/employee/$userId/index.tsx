@@ -77,16 +77,28 @@ function RouteComponent() {
 		}
 	};
 
+	const excludedColumns = ['面談結果', 'SNS'];
+
 	const basicInfo = settings
-		.filter((setting) => setting.header !== '' && setting.label !== '')
+		.filter((setting) => {
+			if (!setting.header || !setting.label) {
+				return false;
+			}
+
+			if (setting.category && excludedColumns.includes(setting.category)) {
+				return false;
+			}
+
+			return true;
+		})
 		.map((setting) => ({
 			label: setting.header,
 			value:
 				setting.accessorKey === 'employeeid'
 					? employee?.employeeid?.toString() || '-'
-					: setting.accessorKey === 'employeeCategoryId'
+					: setting.accessorKey === 'employeecategoryid'
 						? employee?.employeeCategory?.categoryname?.toString() || '-'
-						: setting.accessorKey === 'departmentId'
+						: setting.accessorKey === 'departmentid'
 							? employee?.department?.departmentname?.toString() || '-'
 							: editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
@@ -105,6 +117,20 @@ function RouteComponent() {
 						: undefined,
 		}));
 
+	const unitPrice = settings
+		.filter((setting) => setting.category === '単価')
+		.map((setting) => ({
+			label: setting.header,
+			value: setting.category === '単価' ? employee?.unitprice?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
+			key: setting.accessorKey,
+		}));
+	const sns = settings
+		.filter((setting) => setting.category === 'SNS')
+		.map((setting) => ({
+			label: setting.header,
+			value: setting.category === 'SNS' ? employee?.sns?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
+			key: setting.accessorKey,
+		}));
 	return (
 		<div className="flex-1 h-full">
 			<div className="items-center flex-none min-h-0 border-b border-r">
@@ -161,7 +187,7 @@ function RouteComponent() {
 						{/* Image and list container */}
 						<div className="flex">
 							{/* Left side - Image section */}
-							<div className="w-[30%] flex flex-col border-b h-[300px] border-r">
+							<div className="w-[30%] flex flex-col border-b h-[300px]">
 								<figure className="w-full h-[65%] relative overflow-hidden">
 									<img
 										className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%]"
@@ -189,11 +215,27 @@ function RouteComponent() {
 							</div>
 
 							{/* Right side - Info sections */}
-							<div className="w-[70%] overflow-y-auto">
+							<div className="w-[70%] overflow-y-auto border-l">
 								<InfoSection
 									className="border-l-0"
 									items={basicInfo}
-									title="Basic Information"
+									title="基本情報"
+									isEditing={isEditing}
+									onValueChange={handleValueChange}
+									nonEditableFields={['employeeId']} // Add nonEditableFields prop
+								/>
+								<InfoSection
+									className="border-l-0"
+									items={unitPrice}
+									title="単価"
+									isEditing={isEditing}
+									onValueChange={handleValueChange}
+									nonEditableFields={['employeeId']} // Add nonEditableFields prop
+								/>
+								<InfoSection
+									className="border-l-0"
+									items={sns}
+									title="SNS"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
 									nonEditableFields={['employeeId']} // Add nonEditableFields prop
