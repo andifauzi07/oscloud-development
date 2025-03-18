@@ -1,6 +1,6 @@
 import { CellContext } from '@tanstack/react-table';
 import { BaseColumnSetting } from '@/types/table';
-import { Company, Project, ProjectDisplay } from '@/types/company';
+import { Company, Project, ProjectDisplay, Payment, PaymentDetail } from '@/types/company';
 import { Link } from '@tanstack/react-router';
 import { memo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -379,6 +379,116 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 						DETAIL
 					</Button>
 				</Link>
+			</div>
+		),
+	},
+];
+
+export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
+	{
+		accessorKey: 'name',
+		header: 'Employee Name',
+		label: 'Employee Name',
+		type: 'text',
+		date_created: new Date().toISOString(),
+		status: 'Active',
+		order: 1,
+	},
+	{
+		accessorKey: 'break',
+		header: 'Break Hours',
+		label: 'Break Hours',
+		type: 'number',
+		date_created: new Date().toISOString(),
+		status: 'Active',
+		order: 2,
+		cell: ({ row }) => {
+			const details = row.original.employee?.details[0];
+			return details?.break || 0;
+		},
+	},
+	{
+		accessorKey: 'duration',
+		header: 'Duration',
+		label: 'Duration',
+		type: 'text',
+		date_created: new Date().toISOString(),
+		status: 'Active',
+		order: 3,
+		cell: ({ row }) => {
+			const details = row.original.employee?.details[0];
+			if (!details) return '-';
+			const startDate = new Date(details.startDate);
+			const endDate = new Date(details.endDate);
+			const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+			const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+			return `${diffDays} days`;
+		},
+	},
+	{
+		accessorKey: 'hourlyRate',
+		header: 'Hour Rate',
+		label: 'Hour Rate',
+		type: 'number',
+		date_created: new Date().toISOString(),
+		status: 'Active',
+		order: 4,
+		cell: ({ row }) => {
+			const employee = row.original.employee;
+			const rate = employee?.rates?.find(r => r.type === 'A')?.ratevalue || employee?.rates?.find(r => r.type === 'B')?.ratevalue || 0;
+			return `¥${rate}`;
+		},
+	},
+
+	...costColumns,
+    
+	{
+		accessorKey: 'totalFee',
+		header: 'Total Fee',
+		label: 'Total Fee',
+		type: 'number',
+		date_created: new Date().toISOString(),
+		status: 'Active',
+		order: 5,
+		cell: ({ row }) => {
+			const totalFee = costColumns.map((cost) => {
+				const cellValue = cost.cell?.({ row });
+				// Handle the cell value properly with type checking
+				if (React.isValidElement(cellValue)) {
+					const content = cellValue.props.children;
+					if (typeof content === 'string') {
+						return Number(content.replace(/[^0-9.-]+/g, '')) || 0;
+					}
+				}
+				return 0;
+			});
+			return `¥${totalFee.reduce((sum, value) => sum + value, 0)}`;
+		},
+	},
+
+	{
+		accessorKey: 'detail',
+		header: '',
+		label: '',
+		type: 'text',
+		date_created: new Date().toISOString(),
+		status: 'Active',
+		order: 99,
+		cell: ({ row }) => (
+			<div className="flex justify-end w-full">
+				<div className="sticky right-0 bg-white">
+					<Button
+						variant="outline"
+						className="w-20 border ">
+						<Link
+							to={`/projects/$projectId`}
+							params={{
+								projectId: row.original.projectId.toString(),
+							}}>
+							View
+						</Link>
+					</Button>
+				</div>
 			</div>
 		),
 	},

@@ -608,7 +608,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                             <h1>Assigned staffs</h1>
                         </div>
                         <div className="flex">
-                            <Link to="/employee">
+                            <Link to="/payroll">
                                 <Button
                                     className="w-20 h-10 text-black bg-transparent border-l link border-r-none"
                                 >

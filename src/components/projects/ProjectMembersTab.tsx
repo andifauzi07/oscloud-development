@@ -88,7 +88,7 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
     const [rateValue, setRateValue] = useState('');
     const [rateType, setRateType] = useState('A');
     const [showRateDialog, setShowRateDialog] = useState(false);
-    const { getEmployeeRates: getRates, createRate } = useHourlyRates(currentUser?.workspaceid); // Get createRate from the hook
+    const { getEmployeeRates: getRates, createRate, updateRate } = useHourlyRates(Number(currentUser?.workspaceid)); // Get createRate and updateRate from the hook
 
     // Fetch rates when component mounts
     useEffect(() => {
@@ -162,14 +162,38 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
         }
 
         try {
-            // Use createRate with camelCase keys
-            await createRate({
-                employeeId: selectedEmployeeId,  // camelCase
-                type: rateType,                  // camelCase
-                ratevalue: Number(rateValue)     // camelCase
+            // Log initial values for debugging
+            console.log('Starting rate creation/update with:', {
+                selectedEmployeeId,
+                rateType,
+                rateValue: Number(rateValue)
             });
 
-            // Only proceed with assignment if rate creation was successful
+            // Get existing rates
+            const existingRates = await getRates(selectedEmployeeId);
+            console.log('Existing rates:', existingRates);
+
+            // Check if rates exist in the response
+            const existingRate = existingRates?.rates?.find(rate => rate.type === rateType);
+            console.log('Found existing rate:', existingRate);
+
+            if (existingRate) {
+                console.log('Updating existing rate');
+                await updateRate(
+                    selectedEmployeeId,
+                    rateType,
+                    Number(rateValue)
+                );
+            } else {
+                console.log('Creating new rate');
+                await createRate({
+                    employeeId: selectedEmployeeId,
+                    type: rateType,
+                    ratevalue: Number(rateValue)
+                });
+            }
+
+            // Proceed with project staff assignment
             await assignProjectStaff(Number(projectId), selectedEmployeeId);
             await getProjectById(Number(projectId));
             
@@ -181,8 +205,19 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
             
             alert("Employee assigned successfully");
         } catch (error: any) {
-            console.error("Failed to set rate or assign employee:", error);
-            alert(error.response?.data?.message || "Failed to set hourly rate");
+            console.error("Detailed error:", {
+                error,
+                response: error.response,
+                message: error.message,
+                data: error.response?.data
+            });
+            
+            // More specific error message
+            const errorMessage = error.response?.data?.detail || 
+                               error.response?.data?.message || 
+                               error.message || 
+                               "Failed to set hourly rate";
+            alert(errorMessage);
         }
     };
 
