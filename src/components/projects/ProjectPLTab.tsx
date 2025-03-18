@@ -25,9 +25,6 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({
     return (
         <TabsContent className="m-0" value="P/L">
             <TitleWrapper>
-                <h1>Member adjustment</h1>
-            </TitleWrapper>
-            <TitleWrapper>
                 <h1>Profit & Loss</h1>
             </TitleWrapper>
 
