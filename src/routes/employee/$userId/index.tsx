@@ -9,12 +9,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import Loading from '@/components/Loading';
 import { TitleWrapper, InfoSection } from '@/components/wrapperElement';
+import { useColumnSettings } from '@/hooks/useColumnSettings';
+import { Employee } from '@/types/employee';
+import { defaultEmployeeColumnSettings } from '@/config/columnSettings';
 
 interface EditedEmployee {
 	name?: string;
 	email?: string;
 	employeeCategoryId?: number;
 	profileImage?: string;
+	departmentId?: number;
+	workspaceid?: number;
+	department?: {
+		departmentid: number;
+		departmentname: string;
+		parentdepartmentid: number | null;
+	};
+	employeeCategory?: {
+		categoryid: number;
+		categoryname: string;
+		parentcategoryid: number;
+	};
 }
 
 export const Route = createFileRoute('/employee/$userId/')({
@@ -37,6 +52,10 @@ function RouteComponent() {
 	const [editedEmployee, setEditedEmployee] = useState<EditedEmployee>({});
 	const { employee, loading, error, updateEmployeeData } = useEmployee(Number(userId));
 	const { categories } = useEmployeeCategories();
+	const { settings, saveSettings, reorderColumns } = useColumnSettings<Employee>({
+		storageKey: 'EmployeeColumnSetting',
+		defaultSettings: defaultEmployeeColumnSettings,
+	});
 
 	if (loading || !employee) {
 		return <Loading />;
@@ -68,44 +87,35 @@ function RouteComponent() {
 		}
 	};
 
-	const basicInfo = [
-		{
-			label: 'Employee ID',
-			value: employee?.employeeid?.toString() || '-',
-			key: 'employeeId',
-			nonEditable: true, // Make ID non-editable
-		},
-		{
-			label: 'Name',
-			value: editedEmployee.name || employee?.name || '-',
-			key: 'name',
-		},
-		{
-			label: 'Email',
-			value: editedEmployee.email || employee?.email || '-',
-			key: 'email',
-		},
-		{
-			label: 'Category',
-			value: employee?.employeeCategory?.categoryname?.toString() || editedEmployee.name?.toString() || '-',
-			key: 'employeeCategoryId',
-			options: categories
-				? categories.map((c: any) => ({
-						value: c.categoryid.toString(),
-						label: c.categoryname,
-					}))
-				: [],
-		},
-	];
+	const basicInfo = settings
+		.filter((setting) => setting.header !== '' && setting.label !== '')
+		.map((setting) => ({
+			label: setting.header,
+			value:
+				setting.accessorKey === 'employeeid'
+					? employee?.employeeid?.toString() || '-'
+					: setting.accessorKey === 'employeeCategoryId'
+						? employee?.employeeCategory?.categoryname?.toString() || '-'
+						: editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
+			key: setting.accessorKey,
+			nonEditable: setting.accessorKey === 'employeeid',
+			options:
+				setting.accessorKey === 'employeeCategoryId'
+					? categories?.map((c: any) => ({
+							value: c.categoryid.toString() || '-',
+							label: c.categoryname || '-',
+						})) || []
+					: undefined,
+		}));
 
-	const contractInfo = [
-		{ label: 'UserID', value: '終日' },
-		{ label: '名前', value: '9:00 ~ 17:00' },
-		{ label: 'なまえ', value: '終日' },
-		{ label: '誕生日', value: '終日' },
-		{ label: '2024.11.25', value: '9:00 ~ 17:00' },
-		{ label: '2024.11.28', value: '終日' },
-	];
+	// const contractInfo = [
+	// 	{ label: 'UserID', value: '終日' },
+	// 	{ label: '名前', value: '9:00 ~ 17:00' },
+	// 	{ label: 'なまえ', value: '終日' },
+	// 	{ label: '誕生日', value: '終日' },
+	// 	{ label: '2024.11.25', value: '9:00 ~ 17:00' },
+	// 	{ label: '2024.11.28', value: '終日' },
+	// ];
 
 	return (
 		<div className="flex-1 h-full">
@@ -163,7 +173,7 @@ function RouteComponent() {
 						{/* Image and list container */}
 						<div className="flex">
 							{/* Left side - Image section */}
-							<div className="w-[30%] flex flex-col border-b h-[300px] border-r">
+							<div className="w-[30%] flex flex-col border-b h-[350px]">
 								<figure className="w-full h-[65%] relative overflow-hidden">
 									<img
 										className="w-full absolute top-[50%] left-[50%] right-[50%] transform translate-x-[-50%] translate-y-[-50%]"
@@ -191,14 +201,14 @@ function RouteComponent() {
 							</div>
 
 							{/* Right side - Info sections */}
-							<div className="w-[70%] overflow-y-auto">
+							<div className="w-[70%] border-l overflow-y-auto">
 								<InfoSection
 									className="border-l-0"
 									items={basicInfo}
-									title="Basic Information"
+									title="一般情報"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
-									nonEditableFields={['employeeId']} // Add nonEditableFields prop
+									nonEditableFields={['employeeid']} // Add nonEditableFields prop
 								/>
 							</div>
 						</div>

@@ -1,6 +1,6 @@
 import { ColumnDef, CellContext } from '@tanstack/react-table';
 
-export type TableColumnType = 'text' | 'number' | 'boolean' | 'email' | 'date' | 'file' | 'image' | 'actions';
+export type TableColumnType = 'text' | 'number' | 'boolean' | 'email' | 'date' | 'file' | 'image' | 'actions' | 'dropdown' | 'url' | 'multiLineText';
 
 export interface BaseColumnSetting<T> {
 	minWidth?: number;
