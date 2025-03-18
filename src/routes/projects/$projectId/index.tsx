@@ -456,7 +456,7 @@ function ProjectView() {
                 />
 
                 <ProjectPLTab
-                    plData={plData}
+                    projectId={Number(projectId)}
                     onEditRevenue={handleEditRevenue}
                     onEditExpenditures={handleEditExpenditures}
                 />

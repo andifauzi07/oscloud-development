@@ -3,51 +3,25 @@ import { Button } from '@/components/ui/button';
 import { TabsContent } from '@/components/ui/tabs';
 import { TitleWrapper } from '@/components/wrapperElement';
 import { GraphicChart } from '../graphicChart';
-
-interface PLData {
-    revenue: {
-        revenueCost: number;
-        otherCost: number;
-    };
-    expenditures: {
-        labourCost: number;
-        transportCost: number;
-        costumeCost: number;
-        managerFee: number;
-        otherCost: number;
-    };
-    profit: {
-        total: number;
-        profitability: number;
-        salesProfit: number;
-    };
-}
+import { useProjectPL } from '@/hooks/useProjectPL';
 
 interface ProjectPLTabProps {
-    plData?: PLData;
+    projectId: number;
     onEditRevenue?: () => void;
     onEditExpenditures?: () => void;
 }
 
 export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({
-    plData = {
-        revenue: { revenueCost: 1000000, otherCost: 0 },
-        expenditures: {
-            labourCost: 10000,
-            transportCost: 10000,
-            costumeCost: 10000,
-            managerFee: 10000,
-            otherCost: 10000
-        },
-        profit: {
-            total: 280000,
-            profitability: 15,
-            salesProfit: 10000
-        }
-    },
+    projectId,
     onEditRevenue = () => {},
     onEditExpenditures = () => {}
 }) => {
+    const plData = useProjectPL(projectId);
+
+    if (!plData) {
+        return <TabsContent className="m-0" value="P/L">Loading...</TabsContent>;
+    }
+
     return (
         <TabsContent className="m-0" value="P/L">
             <TitleWrapper>
@@ -76,7 +50,7 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({
                         <div className="flex items-center justify-center w-full p-4 bg-gray-100 border-t border-b">
                             <h2>Cost Breakdown</h2>
                         </div>
-                        <GraphicChart />
+                        <GraphicChart title="Cost Breakdown" description='Project Expenses' data={plData.costBreakdown} />
                     </div>
                 </div>
 
