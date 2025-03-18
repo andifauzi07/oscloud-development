@@ -1,12 +1,19 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useProject } from './useProject';
 import { usePayments } from './usePayroll';
 
 export const useProjectPL = (projectId: number) => {
-    const { currentProject } = useProject();
+    const { currentProject, getProjectById } = useProject();
     const { payments } = usePayments();
 
-    return useMemo(() => {
+    // Create a refresh function that can be called after updates
+    const refreshProjectData = useCallback(() => {
+        if (projectId) {
+            return getProjectById(projectId);
+        }
+    }, [getProjectById, projectId]);
+
+    const plData = useMemo(() => {
         if (!currentProject || !payments) {
             return null;
         }
@@ -27,9 +34,9 @@ export const useProjectPL = (projectId: number) => {
         // Calculate total revenue
         const revenueCost = costs.revenue || 0;
 
-        // Calculate total expenditures
-        const labourCost = currentProject.financials?.totalLabourCost || 0;
-        const transportCost = currentProject.financials?.totalTransportFee || 0;
+        // Use values directly from costs instead of financials
+        const labourCost = costs.labour_cost || 0;
+        const transportCost = costs.transport_cost || 0;
         const costumeCost = costs.costume_cost || 0;
         const managerFee = costs.manager_fee || 0;
         const otherCosts = costs.other_cost || 0;
@@ -41,7 +48,6 @@ export const useProjectPL = (projectId: number) => {
         const totalProfit = revenueCost - totalCosts;
 
         // Calculate profitability (as a percentage)
-        // Only calculate if totalCosts is greater than 0 to avoid division by zero
         const profitability = totalCosts > 0 ? (totalProfit / totalCosts) * 100 : 0;
 
         // Cost breakdown for the pie chart
@@ -73,4 +79,12 @@ export const useProjectPL = (projectId: number) => {
             costBreakdown
         };
     }, [currentProject, payments]);
+
+    return {
+        ...plData,
+        refreshProjectData
+    };
 };
+
+
+

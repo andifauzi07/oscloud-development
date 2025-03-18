@@ -66,35 +66,6 @@ interface EnhancedEmployee {
 }
 
 
-// Define mock data for AssignedStaff
-export const mockAssignedStaff: AssignedStaff[] = [
-    {
-        id: 1,
-        image: "/public/vite.svg",
-        name: "John Doe",
-        status: "Active",
-        money: 5000.75,
-        money2: 3000.5,
-        grade: "A",
-    },
-];
-
-export const mockPaymentStaff: PaymentStaff[] = [
-    {
-        id: "1",
-        image: "/public/vite.svg",
-        name: "John Doe",
-        break: 30,
-        duration: 8.5,
-        hour_rate: 20,
-        transport_fee: 15,
-        cost_a: 50,
-        cost_b: 30,
-        costum_fee: 10,
-        total_fee: 225,
-    },
-];
-
 // Columns for Assigned Staff
 const assignedStaffColumns: ColumnDef<AssignedStaff>[] = [
     {
@@ -157,8 +128,6 @@ function ProjectView() {
     } = useProject();
 
     // Add console.log to debug
-    console.log('Route Params:', { projectId, type: typeof projectId });
-
     const { addAvailability, updateAvailability: updateAvailabilityDetails } =
         useAvailability();
     const { companies } = useCompanies();
@@ -306,7 +275,7 @@ function ProjectView() {
                 await getProjectById(Number(projectId));
             } catch (error) {
                 console.error('Error loading project:', error);
-                toast.error(error instanceof Error ? error.message : 'Failed to load project data');
+                alert(error instanceof Error ? error.message : 'Failed to load project data');
             } finally {
                 setIsLoading(false);
             }

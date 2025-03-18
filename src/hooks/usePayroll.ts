@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { useUserData } from "@/hooks/useUserData";
@@ -38,13 +38,41 @@ export const usePayments = (filters?: Record<string, any>) => {
         (state: RootState) => state.payroll
     );
 
+    // Memoize the filters object to prevent infinite re-renders
+    const memoizedFilters = useMemo(() => filters, [
+        // Explicitly list all filter properties that should trigger a re-fetch
+        filters?.startDate,
+        filters?.endDate,
+        filters?.status,
+        filters?.page,
+        filters?.limit,
+        // Add any other filter properties that should trigger a re-fetch
+    ]);
+
     useEffect(() => {
-        if (workspaceid) {
-            dispatch(
-                fetchPayments({ workspaceId: Number(workspaceid), filters })
-            );
-        }
-    }, [dispatch, workspaceid, filters]);
+        let mounted = true;
+
+        const fetchData = async () => {
+            if (!workspaceid || !mounted) return;
+
+            try {
+                await dispatch(
+                    fetchPayments({ 
+                        workspaceId: Number(workspaceid), 
+                        filters: memoizedFilters 
+                    })
+                );
+            } catch (error) {
+                console.error('Error fetching payments:', error);
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            mounted = false;
+        };
+    }, [dispatch, workspaceid, memoizedFilters]); // Use memoizedFilters instead of filters
 
     return { payments, loading, error };
 };
