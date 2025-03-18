@@ -1,26 +1,143 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { TabsContent } from '@/components/ui/tabs';
 import { TitleWrapper } from '@/components/wrapperElement';
 import { GraphicChart } from '../graphicChart';
 import { useProjectPL } from '@/hooks/useProjectPL';
+import { useProject } from '@/hooks/useProject';
+import { Input } from '@/components/ui/input';
 
 interface ProjectPLTabProps {
     projectId: number;
-    onEditRevenue?: () => void;
-    onEditExpenditures?: () => void;
 }
 
-export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({
-    projectId,
-    onEditRevenue = () => {},
-    onEditExpenditures = () => {}
-}) => {
+export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
     const plData = useProjectPL(projectId);
+    const { editProject, currentProject } = useProject();
+    
+    const [isRevenueEditable, setIsRevenueEditable] = useState(false);
+    const [isExpendituresEditable, setIsExpendituresEditable] = useState(false);
+    
+    const [revenueForm, setRevenueForm] = useState({
+        revenue: 0,
+        otherCost: 0
+    });
 
-    if (!plData) {
+    const [expendituresForm, setExpendituresForm] = useState({
+        labourCost: 0,
+        transportCost: 0,
+        costumeCost: 0,
+        managerFee: 0,
+        otherCost: 0
+    });
+
+    if (!plData || !currentProject) {
         return <TabsContent className="m-0" value="P/L">Loading...</TabsContent>;
     }
+
+    const handleRevenueEdit = () => {
+        setRevenueForm({
+            revenue: plData.revenue.revenueCost,
+            otherCost: plData.revenue.otherCost
+        });
+        setIsRevenueEditable(true);
+    };
+
+    const handleExpendituresEdit = () => {
+        setExpendituresForm({
+            labourCost: plData.expenditures.labourCost,
+            transportCost: plData.expenditures.transportCost,
+            costumeCost: plData.expenditures.costumeCost,
+            managerFee: plData.expenditures.managerFee,
+            otherCost: plData.expenditures.otherCost
+        });
+        setIsExpendituresEditable(true);
+    };
+
+    const handleRevenueSave = async () => {
+        try {
+            const updateData = {
+                ...currentProject,
+                costs: {
+                    ...currentProject.costs,
+                    revenue: revenueForm.revenue,
+                    other_cost: revenueForm.otherCost
+                }
+            };
+
+            await editProject({
+                projectId,
+                data: updateData
+            });
+
+            // Refresh the data after successful save
+            await plData.refreshProjectData();
+            setIsRevenueEditable(false);
+        } catch (error) {
+            console.error('Failed to update revenue:', error);
+            alert('Failed to update revenue');
+        }
+    };
+
+    const handleExpendituresSave = async () => {
+        try {
+            // Create a new costs object that preserves all existing costs
+            const updatedCosts = {
+                ...currentProject.costs,
+                labour_cost: Number(expendituresForm.labourCost),
+                transport_cost: Number(expendituresForm.transportCost),
+                costume_cost: Number(expendituresForm.costumeCost),
+                manager_fee: Number(expendituresForm.managerFee),
+                other_cost: Number(expendituresForm.otherCost)
+            };
+
+            // Format the update data to match the API structure
+            const updateData = {
+                projectid: projectId,
+                name: currentProject.name,
+                startdate: currentProject.startdate,
+                enddate: currentProject.enddate,
+                workspaceid: currentProject.workspaceid,
+                companyid: currentProject.companyid,
+                status: currentProject.status,
+                managerid: currentProject.managerid,
+                description: currentProject.description,
+                requiredstaffnumber: currentProject.requiredstaffnumber,
+                categoryid: currentProject.categoryid,
+                costs: updatedCosts
+            };
+
+            await editProject({
+                projectId,
+                data: updateData
+            });
+
+            await plData.refreshProjectData();
+            setIsExpendituresEditable(false);
+        } catch (error) {
+            console.error('Failed to update expenditures:', error);
+            alert('Failed to update expenditures');
+        }
+    };
+
+    const handleRevenueCancel = () => {
+        setIsRevenueEditable(false);
+        setRevenueForm({
+            revenue: plData.revenue.revenueCost,
+            otherCost: plData.revenue.otherCost
+        });
+    };
+
+    const handleExpendituresCancel = () => {
+        setIsExpendituresEditable(false);
+        setExpendituresForm({
+            labourCost: plData.expenditures.labourCost,
+            transportCost: plData.expenditures.transportCost,
+            costumeCost: plData.expenditures.costumeCost,
+            managerFee: plData.expenditures.managerFee,
+            otherCost: plData.expenditures.otherCost
+        });
+    };
 
     return (
         <TabsContent className="m-0" value="P/L">
@@ -55,52 +172,118 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({
                 <div className="w-2/3">
                     <div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
                         <h2>Sales Revenue</h2>
-                        <Button
-                            variant="link"
-                            className="hover:cursor-pointer"
-                            onClick={onEditRevenue}
-                        >
-                            EDIT
-                        </Button>
+                        {isRevenueEditable ? (
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="ghost"
+                                    className="hover:cursor-pointer"
+                                    onClick={handleRevenueCancel}
+                                >
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="hover:cursor-pointer"
+                                    onClick={handleRevenueSave}
+                                >
+                                    SAVE
+                                </Button>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="link"
+                                className="hover:cursor-pointer"
+                                onClick={handleRevenueEdit}
+                            >
+                                EDIT
+                            </Button>
+                        )}
                     </div>
                     <div className="flex w-full gap-2 p-4 border-b border-r">
                         <h2>Revenue Cost</h2>
-                        <h2>{plData.revenue.revenueCost.toLocaleString()} USD</h2>
+                        {isRevenueEditable ? (
+                            <Input
+                                type="number"
+                                value={revenueForm.revenue}
+                                onChange={(e) => setRevenueForm(prev => ({
+                                    ...prev,
+                                    revenue: Number(e.target.value)
+                                }))}
+                                className="w-40"
+                            />
+                        ) : (
+                            <h2>{plData.revenue.revenueCost.toLocaleString()} USD</h2>
+                        )}
                     </div>
                     <div className="flex w-full gap-2 p-4 border-b border-r">
                         <h2>Other Cost</h2>
-                        <h2>{plData.revenue.otherCost.toLocaleString()} USD</h2>
+                        {isRevenueEditable ? (
+                            <Input
+                                type="number"
+                                value={revenueForm.otherCost}
+                                onChange={(e) => setRevenueForm(prev => ({
+                                    ...prev,
+                                    otherCost: Number(e.target.value)
+                                }))}
+                                className="w-40"
+                            />
+                        ) : (
+                            <h2>{plData.revenue.otherCost.toLocaleString()} USD</h2>
+                        )}
                     </div>
                     <div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
                         <h2>Expenditures</h2>
-                        <Button
-                            variant="link"
-                            className="hover:cursor-pointer"
-                            onClick={onEditExpenditures}
-                        >
-                            EDIT
-                        </Button>
+                        {isExpendituresEditable ? (
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="ghost"
+                                    className="hover:cursor-pointer"
+                                    onClick={handleExpendituresCancel}
+                                >
+                                    CANCEL
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="hover:cursor-pointer"
+                                    onClick={handleExpendituresSave}
+                                >
+                                    SAVE
+                                </Button>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="link"
+                                className="hover:cursor-pointer"
+                                onClick={handleExpendituresEdit}
+                            >
+                                EDIT
+                            </Button>
+                        )}
                     </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Labour Cost</h2>
-                        <h2>{plData.expenditures.labourCost.toLocaleString()} USD</h2>
-                    </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Transport Cost</h2>
-                        <h2>{plData.expenditures.transportCost.toLocaleString()} USD</h2>
-                    </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Costume Cost</h2>
-                        <h2>{plData.expenditures.costumeCost.toLocaleString()} USD</h2>
-                    </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Manager Fee</h2>
-                        <h2>{plData.expenditures.managerFee.toLocaleString()} USD</h2>
-                    </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Other Cost</h2>
-                        <h2>{plData.expenditures.otherCost.toLocaleString()} USD</h2>
-                    </div>
+                    {Object.entries({
+                        'Labour Cost': 'labourCost',
+                        'Transport Cost': 'transportCost',
+                        'Costume Cost': 'costumeCost',
+                        'Manager Fee': 'managerFee',
+                        'Other Cost': 'otherCost'
+                    }).map(([label, key]) => (
+                        <div key={key} className="flex w-full gap-2 p-4 border-b border-r">
+                            <h2>{label}</h2>
+                            {isExpendituresEditable ? (
+                                <Input
+                                    type="number"
+                                    value={expendituresForm[key as keyof typeof expendituresForm]}
+                                    onChange={(e) => setExpendituresForm(prev => ({
+                                        ...prev,
+                                        [key]: Number(e.target.value)
+                                    }))}
+                                    className="w-40"
+                                />
+                            ) : (
+                                <h2>{plData.expenditures[key as keyof typeof plData.expenditures].toLocaleString()} USD</h2>
+                            )}
+                        </div>
+                    ))}
                     <div className="flex items-center justify-start w-full p-4 bg-gray-100 border-b border-r">
                         <h2>Profit</h2>
                     </div>

@@ -202,7 +202,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		cell: ({ row }) => <span>{row.original.manager?.name}</span>, // Access nested property in cell renderer
 	},
 	{
-		accessorKey: 'startDate', // Changed from startdate to startDate
+		accessorKey: 'startdate', // Changed from startdate to startDate
 		header: 'Starting',
 		label: 'Starting',
 		type: 'date',
@@ -212,7 +212,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		cell: ({ row }) => (row.original.startDate ? new Date(row.original.startDate).toLocaleDateString() : 'N/A'),
 	},
 	{
-		accessorKey: 'endDate', // Changed from enddate to endDate
+		accessorKey: 'enddate', // Changed from enddate to endDate
 		header: 'End',
 		label: 'End',
 		type: 'date',
@@ -239,7 +239,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 6,
-		cell: ({ row }) => <span>{row.original.category?.name}</span>,
+		cell: ({ row }) => <span>{row.original.category?.name || "-"}</span>,
 	},
 	{
 		accessorKey: 'assignedStaff',
@@ -746,7 +746,6 @@ export const defaultPaymentColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		order: 3,
 		cell: ({ row }) => {
-			console.log("Current row data:", row.original);
 			// If duration is provided directly
 			if (typeof row.original.duration === 'number') {
 				return `${row.original.duration} days`;
