@@ -102,7 +102,7 @@ export default function AdvancedFilterPopover({ fields }: AdvancedFilterPopoverP
 						<Button
 							variant="outline"
 							onClick={handleReset}>
-							Reset
+							リセット
 						</Button>
 					</div>
 				</div>

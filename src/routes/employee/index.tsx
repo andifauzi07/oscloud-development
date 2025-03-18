@@ -27,22 +27,22 @@ const field = [
 	},
 	{
 		key: 'name',
-		label: 'Name',
+		label: 'フルネーム',
 		type: 'text',
 	},
 	{
 		key: 'employeeCategory',
-		label: 'Employee Category',
+		label: 'カテゴリー',
 		type: 'text',
 	},
 	{
 		key: 'email',
-		label: 'Email',
+		label: 'メアド',
 		type: 'email',
 	},
 	{
 		key: 'depertment',
-		label: 'Department',
+		label: '部署',
 		type: 'text',
 	},
 ];
@@ -155,7 +155,7 @@ function RouteComponent() {
 			};
 
 			await addEmployee(processedData);
-			console.log('Adding new record:', processedData);
+			console.log('Adding new record:', data);
 		} catch (error) {
 			console.error('Failed to add record:', error);
 		}
@@ -225,6 +225,7 @@ function RouteComponent() {
 						onSave={handleAddRecord}
 						nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
 						selectFields={selectFields}
+						// enableCosts={true}
 					/>
 				)}
 

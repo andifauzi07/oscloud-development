@@ -296,7 +296,10 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		cell: ({ row }: any) => (
 			<img
 				className="object-cover w-10 h-10"
-				src={row.original.profileimage || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+				src={
+					row.original.profileimage ||
+					'https://www.google.com/imgres?q=japanese%20face%20profile%20picture%20front&imgurl=https%3A%2F%2Fimg.freepik.com%2Ffree-photo%2Fkorean-young-woman-s-close-up-portrait-female-model-white-shirt-smiling-looking-happy-concept-human-emotions-facial-expression-front-view_155003-18251.jpg&imgrefurl=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Fjapanese-face%2F4&docid=rKwtNPLSsXTDPM&tbnid=bsTG6-a_ygqFmM&vet=12ahUKEwjvzJXB_JKMAxX2zDgGHTg5CM8QM3oECE0QAA..i&w=626&h=417&hcb=2&itg=1&ved=2ahUKEwjvzJXB_JKMAxX2zDgGHTg5CM8QM3oECE0QAA'
+				}
 				alt={`${row.original.name}'s profile`}
 			/>
 		),
@@ -304,7 +307,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	{
 		accessorKey: 'employeeid',
 		header: 'ID',
-		label: 'Employee ID',
+		label: 'ID',
 		type: 'number',
 		status: 'Active',
 		order: 2,
@@ -312,8 +315,8 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'name',
-		header: 'Name',
-		label: 'Name',
+		header: 'フルネーム',
+		label: 'フルネーム',
 		type: 'text',
 		status: 'Active',
 		order: 3,
@@ -328,8 +331,8 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'employeecategoryid',
-		header: 'Employee Category',
-		label: 'Employee Category',
+		header: 'カテゴリー',
+		label: 'カテゴリー',
 		type: 'number',
 		status: 'Active',
 		order: 4,
@@ -337,8 +340,8 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'email',
-		header: 'Email',
-		label: 'Email',
+		header: 'メアド',
+		label: 'メアド',
 		type: 'email',
 		status: 'Active',
 		order: 5,
@@ -355,8 +358,8 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'departmentid',
-		header: 'Department',
-		label: 'Department',
+		header: '部署',
+		label: '部署',
 		type: 'text',
 		status: 'Active',
 		order: 6,
