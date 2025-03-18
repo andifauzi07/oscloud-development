@@ -467,7 +467,7 @@ export function DataTable<TData, TValue>({
 										<TableRow key={headerGroup.id}>
 											{headerGroup.headers.map((header) => {
 												const isNumeric = header.column.columnDef.type === 'number';
-												const isAction = header.column.id === 'detail' || header.column.id === 'actions';
+												const isAction = header.column.id === 'detail' || header.column.id === 'actions' || header.column.id === 'assign';
 												const isImage = header.column.id === 'logo' || header.column.id === 'profileimage';
 
 												return (
@@ -500,7 +500,7 @@ export function DataTable<TData, TValue>({
 												className="border-t">
 												{row.getVisibleCells().map((cell) => {
 													const isNumeric = cell.column.columnDef.type === 'number';
-													const isAction = cell.column.id === 'detail' || cell.column.id === 'actions';
+													const isAction = cell.column.id === 'detail' || cell.column.id === 'actions' || cell.column.id === 'assign';
 													const isImage = cell.column.columnDef.type === 'image';
 
 													return (

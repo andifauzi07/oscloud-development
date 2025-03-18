@@ -21,6 +21,10 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import EmojiPicker from 'emoji-picker-react';
+import { defaultEmployeeColumnSettings } from "@/config/columnSettings";
+import { useColumnSettings } from "@/hooks/useColumnSettings";
+import { CompanyPersonnelLeadsListDataTable } from "../companyPersonnelLeadsListDataTable";
 
 interface ProjectMembersTabProps {
     currentProject: Project;
@@ -86,7 +90,6 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
     const [isRatePopoverOpen, setIsRatePopoverOpen] = useState(false);
     const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
     const [rateValue, setRateValue] = useState('');
-    const [rateType, setRateType] = useState('A');
     const [showRateDialog, setShowRateDialog] = useState(false);
     const { getEmployeeRates: getRates, createRate, updateRate } = useHourlyRates(Number(currentUser?.workspaceid)); // Get createRate and updateRate from the hook
 
@@ -135,6 +138,16 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
             return;
         }
 
+        // Check staff limit
+        const currentStaffCount = currentProject?.assignedStaff?.length || 0;
+        const requiredStaffNumber = currentProject?.requiredstaffnumber || 0;
+        const isStaffLimitReached = requiredStaffNumber > 0 && currentStaffCount >= requiredStaffNumber;
+
+        if (isStaffLimitReached) {
+            alert(`Cannot assign more staff. Required staff limit (${requiredStaffNumber}) has been reached.`);
+            return;
+        }
+
         try {
             // Fetch the employee's rates
             const rates = await getRates(employeeId);
@@ -165,7 +178,6 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
             // Log initial values for debugging
             console.log('Starting rate creation/update with:', {
                 selectedEmployeeId,
-                rateType,
                 rateValue: Number(rateValue)
             });
 
@@ -174,21 +186,21 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
             console.log('Existing rates:', existingRates);
 
             // Check if rates exist in the response
-            const existingRate = existingRates?.rates?.find(rate => rate.type === rateType);
+            const existingRate = existingRates?.rates?.find(rate => rate.type === 'A');
             console.log('Found existing rate:', existingRate);
 
             if (existingRate) {
                 console.log('Updating existing rate');
                 await updateRate(
                     selectedEmployeeId,
-                    rateType,
+                    'A',
                     Number(rateValue)
                 );
             } else {
                 console.log('Creating new rate');
                 await createRate({
                     employeeId: selectedEmployeeId,
-                    type: rateType,
+                    type: 'A',
                     ratevalue: Number(rateValue)
                 });
             }
@@ -200,7 +212,6 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
             // Reset form state
             setShowRateDialog(false);
             setRateValue('');
-            setRateType('A');
             setSelectedEmployeeId(null);
             
             alert("Employee assigned successfully");
@@ -238,6 +249,97 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
         }
     };
 
+    const { settings, saveSettings } = useColumnSettings<Employee>({
+        storageKey: 'ProjectMembersEmployeeColumnSetting',
+        defaultSettings: defaultEmployeeColumnSettings,
+    });
+
+    const columns = useMemo<ColumnDef<Employee, any>[]>(() => {
+        // Get current and required staff numbers
+        console.log('Current project:', currentProject);
+        const currentStaffCount = currentProject?.assignedStaff?.length || 0;
+        const requiredStaffNumber = currentProject?.requiredStaffNumber || 0;
+        const isStaffLimitReached = requiredStaffNumber > 0 && currentStaffCount >= requiredStaffNumber;
+
+        // Filter out the 'detail' column and create base columns
+        const baseColumns = settings
+            .filter((setting) => setting.status === 'Active' && setting.accessorKey !== 'actions') // Remove the detail button
+            .sort((a, b) => a.order - b.order)
+            .map((setting) => {
+                const defaultSetting = defaultEmployeeColumnSettings.find(
+                    (def) => def.accessorKey === setting.accessorKey
+                );
+                return {
+                    id: String(setting.accessorKey),
+                    accessorKey: setting.accessorKey as string,
+                    header: setting.header || setting.label,
+                    cell: defaultSetting?.cell || setting.cell,
+                };
+            });
+
+        // Create the assign column separately
+        const assignColumn = {
+            accessorKey: 'assign',
+            header: '',
+            label: '',
+            status: 'active',
+            order: 99,
+            cell: ({ row }: any) => {
+                const isAssigned = currentProject?.assignedStaff?.some(
+                    (staff) => staff.employeeId === row.original.employeeid
+                );
+
+                let buttonText = "ASSIGN";
+                let isDisabled = isAssigned;
+                let tooltipText = "";
+
+                if (isAssigned) {
+                    buttonText = "ASSIGNED";
+                    tooltipText = "Already assigned to this project";
+                } else if (isStaffLimitReached) {
+                    isDisabled = true;
+                    tooltipText = `Required staff limit (${requiredStaffNumber}) reached`;
+                }
+
+                return (
+                    <div className="flex justify-end w-full">
+                        <div className="sticky right-0 bg-white">
+                            <Button
+                                variant="outline"
+                                className="w-20 py-2 border rounded-none"
+                                size="sm"
+                                disabled={isDisabled}
+                                onClick={() => handleAssignEmployee(row.original.employeeid)}
+                                title={tooltipText}  // Add tooltip
+                            >
+                                {buttonText}
+                            </Button>
+                        </div>
+                    </div>
+                );
+            },
+        };
+
+        // Return the combined columns array
+        return [...baseColumns, assignColumn];
+    }, [settings, currentProject, handleAssignEmployee]);
+
+    const getRateValue = (staff: any) => {
+        // First try to get rate from the rates array
+        if (staff.rates && Array.isArray(staff.rates)) {
+            const rateA = staff.rates.find(
+                (rate: any) => rate.type === "A"
+            )?.value;
+            if (rateA !== undefined) return rateA;
+        }
+
+        // Fallback to rateValue if rates array is not available
+        if (staff.rateValue !== undefined) return staff.rateValue;
+
+        return null;
+    };
+
+    /* Original memberColumns - kept for reference
     const memberColumns = [
         {
             accessorKey: "profileimage",
@@ -311,33 +413,19 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
             },
         },
     ];
-
-    const getRateValue = (staff: any) => {
-        // First try to get rate from the rates array
-        if (staff.rates && Array.isArray(staff.rates)) {
-            const rateA = staff.rates.find(
-                (rate: any) => rate.type === "A"
-            )?.value;
-            if (rateA !== undefined) return rateA;
-        }
-
-        // Fallback to rateValue if rates array is not available
-        if (staff.rateValue !== undefined) return staff.rateValue;
-
-        return null;
-    };
-
+    */
     return (
         <>
             <TabsContent className="m-0" value="members">
                 <TitleWrapper>
-                    <h1>Member adjustment</h1>
+                    <h1>メンバー調整</h1>
                 </TitleWrapper>
-                <div className="flex flex-row bg-white">
-                    {/* Assigned Members Section */}
-                    <div className="w-1/3 py-2 border-r">
+                {/* Added overflow-x-auto to handle horizontal overflow */}
+                <div className="flex flex-row min-w-0 overflow-x-auto bg-white">
+                    {/* Assigned Members Section - made width more flexible */}
+                    <div className="w-[300px] min-w-[300px] py-2 border-r">
                         <div className="flex items-center justify-between px-8 py-3 mb-4 border-b">
-                            <h3 >Assigned</h3>
+                            <h3>Assigned</h3>
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-gray-600">
                                     {currentProject?.assignedStaff?.length || 0} /{" "}
@@ -352,8 +440,8 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
                         />
                     </div>
 
-                    {/* Available Members Section */}
-                    <div className="w-full">
+                    {/* Available Members Section - added min-w-0 to allow shrinking */}
+                    <div className="flex-1 min-w-0">
                         <div className="flex items-center p-4 border-b">
                             <h1>Available Members</h1>
                         </div>
@@ -366,9 +454,9 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
                             field={field}
                         />
 
-                        <div className="border-l">
+                        <div className="overflow-x-auto border-l">
                             <DataTable
-                                columns={memberColumns}
+                                columns={columns}
                                 data={filteredEmployees}
                                 loading={loading || employeesLoading}
                             />
@@ -383,7 +471,6 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
                     if (!open) {
                         setShowRateDialog(false);
                         setRateValue('');
-                        setRateType('A');
                         setSelectedEmployeeId(null);
                     }
                 }}
@@ -397,29 +484,13 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="rateType">Rate Type</Label>
-                            <Select
-                                value={rateType}
-                                onValueChange={setRateType}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select rate type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="A">Type A</SelectItem>
-                                    <SelectItem value="B">Type B</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid gap-2">
                             <Label htmlFor="rate">Rate (¥/hr)</Label>
                             <Input
                                 id="rate"
                                 type="number"
                                 value={rateValue}
+                                enableEmoji={false}
                                 onChange={(e) => setRateValue(e.target.value)}
-                                placeholder="Enter hourly rate"
-                                autoFocus
                             />
                         </div>
                     </div>
@@ -429,7 +500,6 @@ export const ProjectMembersTab: React.FC<ProjectMembersTabProps> = ({
                             onClick={() => {
                                 setShowRateDialog(false);
                                 setRateValue('');
-                                setRateType('A');
                                 setSelectedEmployeeId(null);
                             }}
                         >

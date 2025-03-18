@@ -87,23 +87,12 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                 labour_cost: Number(expendituresForm.labourCost),
                 transport_cost: Number(expendituresForm.transportCost),
                 costume_cost: Number(expendituresForm.costumeCost),
-                manager_fee: Number(expendituresForm.managerFee),
-                other_cost: Number(expendituresForm.otherCost)
+                manager_fee: expendituresForm.managerFee,
+                other_cost: expendituresForm.otherCost
             };
 
-            // Format the update data to match the API structure
             const updateData = {
-                projectid: projectId,
-                name: currentProject.name,
-                startdate: currentProject.startdate,
-                enddate: currentProject.enddate,
-                workspaceid: currentProject.workspaceid,
-                companyid: currentProject.companyid,
-                status: currentProject.status,
-                managerid: currentProject.managerid,
-                description: currentProject.description,
-                requiredstaffnumber: currentProject.requiredstaffnumber,
-                categoryid: currentProject.categoryid,
+                ...currentProject,
                 costs: updatedCosts
             };
 
@@ -112,7 +101,6 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                 data: updateData
             });
 
-            await plData.refreshProjectData();
             setIsExpendituresEditable(false);
         } catch (error) {
             console.error('Failed to update expenditures:', error);
@@ -142,36 +130,36 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
     return (
         <TabsContent className="m-0" value="P/L">
             <TitleWrapper>
-                <h1>Profit & Loss</h1>
+                <h1>収益情報</h1>
             </TitleWrapper>
 
             <div className="flex w-full h-full">
                 {/* Left Side */}
                 <div className="w-1/3 h-full border-r">
                     <div className="flex items-center justify-center w-full px-4 py-2 bg-gray-100">
-                        <h2>Profit</h2>
+                        <h2>総利益</h2>
                     </div>
                     <div className="flex w-full h-[250px] justify-center items-center border-t border-b p-4">
-                        <h2 className="text-2xl">{plData.profit.total.toLocaleString()} USD</h2>
+                        <h2 className="text-2xl">{plData.profit.total.toLocaleString()} ¥</h2>
                     </div>
                     <div className="flex items-center justify-center w-full p-4 bg-gray-100">
-                        <h2>Profitability</h2>
+                        <h2>利益率</h2>
                     </div>
                     <div className="flex w-full justify-center h-[250px] items-center border-t p-4">
-                        <h2 className="text-2xl">{plData.profit.profitability} %</h2>
+                        <h2 className="text-2xl">{Number(plData.profit.profitability).toFixed(2)} %</h2>
                     </div>
                     <div className="min-h-[600px]">
                         <div className="flex items-center justify-center w-full p-4 bg-gray-100 border-t border-b">
-                            <h2>Cost Breakdown</h2>
+                            <h2>費用内訳</h2>
                         </div>
-                        <GraphicChart title="Cost Breakdown" description='Project Expenses' data={plData.costBreakdown} />
+                        <GraphicChart title="費用内訳" description='費用内訳' data={plData.costBreakdown} />
                     </div>
                 </div>
 
                 {/* Right Side */}
                 <div className="w-2/3">
                     <div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
-                        <h2>Sales Revenue</h2>
+                        <h2>売り上げ</h2>
                         {isRevenueEditable ? (
                             <div className="flex gap-2">
                                 <Button
@@ -200,7 +188,7 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                         )}
                     </div>
                     <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Revenue Cost</h2>
+                        <h2>他収益</h2>
                         {isRevenueEditable ? (
                             <Input
                                 type="number"
@@ -212,11 +200,11 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                                 className="w-40"
                             />
                         ) : (
-                            <h2>{plData.revenue.revenueCost.toLocaleString()} USD</h2>
+                            <h2>{plData.revenue.revenueCost.toLocaleString()} ¥</h2>
                         )}
                     </div>
                     <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Other Cost</h2>
+                        <h2>その他収益</h2>
                         {isRevenueEditable ? (
                             <Input
                                 type="number"
@@ -228,11 +216,11 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                                 className="w-40"
                             />
                         ) : (
-                            <h2>{plData.revenue.otherCost.toLocaleString()} USD</h2>
+                            <h2>{plData.revenue.otherCost.toLocaleString()} ¥</h2>
                         )}
                     </div>
                     <div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
-                        <h2>Expenditures</h2>
+                        <h2>費用</h2>
                         {isExpendituresEditable ? (
                             <div className="flex gap-2">
                                 <Button
@@ -261,11 +249,11 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                         )}
                     </div>
                     {Object.entries({
-                        'Labour Cost': 'labourCost',
-                        'Transport Cost': 'transportCost',
-                        'Costume Cost': 'costumeCost',
-                        'Manager Fee': 'managerFee',
-                        'Other Cost': 'otherCost'
+                        '総賃金': 'labourCost',
+                        '総交通費': 'transportCost',
+                        '総衣装費': 'costumeCost',
+                        '管理費': 'managerFee',
+                        '他経費': 'otherCost'
                     }).map(([label, key]) => (
                         <div key={key} className="flex w-full gap-2 p-4 border-b border-r">
                             <h2>{label}</h2>
@@ -280,16 +268,16 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                                     className="w-40"
                                 />
                             ) : (
-                                <h2>{plData.expenditures[key as keyof typeof plData.expenditures].toLocaleString()} USD</h2>
+                                <h2>{plData.expenditures[key as keyof typeof plData.expenditures].toLocaleString()} ¥</h2>
                             )}
                         </div>
                     ))}
                     <div className="flex items-center justify-start w-full p-4 bg-gray-100 border-b border-r">
-                        <h2>Profit</h2>
+                        <h2>利益</h2>
                     </div>
                     <div className="flex w-full gap-2 p-4 border-b border-r">
-                        <h2>Sales Profit</h2>
-                        <h2>{plData.profit.salesProfit.toLocaleString()} USD</h2>
+                        <h2>売上益</h2>
+                        <h2>{plData.profit.salesProfit.toLocaleString()} ¥</h2>
                     </div>
                 </div>
             </div>

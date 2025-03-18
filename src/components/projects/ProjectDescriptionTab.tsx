@@ -354,7 +354,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                 {/* Header */}
                 <div className="flex justify-between border-r">
                     <div className="flex items-center h-10 px-8">
-                        <h1 className="text-sm">Description</h1>
+                        <h1 className="text-sm">案件情報</h1>
                     </div>
                     <Button className="w-20 h-10 text-black bg-transparent link">
                         PRINT
@@ -364,7 +364,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                 {/* General Information Section */}
                 <div className="flex items-center justify-between bg-gray-100 border-t border-b border-r">
                     <div className="px-8">
-                        <h1 className="text-base">General Information</h1>
+                        <h1 className="text-base">基本情報</h1>
                     </div>
                     <div className="flex">
                         <Button
@@ -389,7 +389,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                 <div className="flex flex-col text-xs border-r">
                     {/* Project Name */}
                     <InfoField
-                        label="Project Name"
+                        label="案件名"
                         isEditing={isEditingGeneral}
                         value={currentProject?.name}
                         editComponent={
@@ -408,7 +408,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
 
                     {/* Client/Company */}
                     <InfoField
-                        label="Client"
+                        label="指名者"
                         isEditing={isEditingGeneral}
                         value={currentProject?.company?.name}
                         editComponent={
@@ -445,7 +445,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                     {currentProject?.personnel &&
                         currentProject.personnel.length > 0 && (
                             <InfoField
-                                label="Personnel"
+                                label="ご担当者"
                                 isEditing={false}
                                 value={currentProject.personnel[0].name}
                             />
@@ -453,7 +453,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
 
                     {/* Category */}
                     <InfoField
-                        label="Category"
+                        label="カテゴリー"
                         isEditing={isEditingGeneral}
                         value={
                             currentProject?.category?.categoryname ||
@@ -495,17 +495,8 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                         }
                     />
 
-                    {/* Manager */}
-                    {console.log('Manager Debug:', {
-                        currentProject,
-                        editedGeneralInfo,
-                        currentManagerId: currentProject?.manager?.id,
-                        users,
-                        selectedManagerValue: editedGeneralInfo.managerId || currentProject?.manager?.userid || '',
-                        foundManager: users?.find(u => u.id === (editedGeneralInfo.managerId || currentProject?.manager?.userid))
-                    })}
                     <InfoField
-                        label="Manager"
+                        label="スタッフ"
                         isEditing={isEditingGeneral}
                         value={currentProject?.manager?.name}
                         editComponent={
@@ -540,7 +531,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
 
                     {/* Required Staff Number */}
                     <InfoField
-                        label="Required Staff"
+                        label="人数"
                         isEditing={isEditingGeneral}
                         value={currentProject?.requiredStaffNumber?.toString()}
                         editComponent={
@@ -563,7 +554,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                     {/* Description Section */}
                     <div className="flex items-center justify-between bg-gray-100 border-t border-b">
                         <div className="px-8">
-                            <h1 className="text-base">Description</h1>
+                            <h1 className="text-base">案件説明</h1>
                         </div>
                         <div className="flex">
                             <Button
@@ -597,7 +588,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                             />
                         :   <p>
                                 {currentProject?.description ||
-                                    "No description available"}
+                                    "説明なし"}
                             </p>
                         }
                     </div>
@@ -605,7 +596,7 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                     {/* Assigned Staff Section */}
                     <div className="flex items-center justify-between bg-gray-100 border-t">
                         <div className="px-8">
-                            <h1>Assigned staffs</h1>
+                            <h1>スタッフ</h1>
                         </div>
                         <div className="flex">
                             <Link to="/payroll">

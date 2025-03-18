@@ -1,148 +1,15 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ColumnDef, useReactTable, getCoreRowModel } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { DataTable } from '@/components/ui/data-table';
-
-// Mock data for Profit & Loss
-type ProfitLossTypes = {
-	projectName: string;
-	manager: string;
-	startingDate: string;
-	endDate: string;
-	clientName: string;
-	category: string;
-	staff: number;
-	revenue: number;
-	profit: number;
-	profitability: string;
-};
-
-const mockProfitLossData: ProfitLossTypes[] = [
-	{
-		projectName: 'Project Alpha',
-		manager: 'John Doe',
-		startingDate: '2023-01-01',
-		endDate: '2023-12-31',
-		clientName: 'Client A',
-		category: 'Software Development',
-		staff: 5,
-		revenue: 100000,
-		profit: 25000,
-		profitability: '25%',
-	},
-	{
-		projectName: 'Project Beta',
-		manager: 'Jane Smith',
-		startingDate: '2023-02-15',
-		endDate: '2023-11-30',
-		clientName: 'Client B',
-		category: 'Consulting',
-		staff: 3,
-		revenue: 75000,
-		profit: 15000,
-		profitability: '20%',
-	},
-];
-
-const field = [
-	{
-		key: 'status',
-		label: 'Status',
-		type: 'toogle',
-
-		options: ['All', 'Active', 'Inactive'],
-	},
-	{
-		key: 'employeeid',
-		label: 'Employee Id',
-		type: 'number',
-	},
-	{
-		key: 'email',
-		label: 'Email',
-		type: 'email',
-	},
-	{
-		key: 'name',
-		label: 'Name',
-		type: 'text',
-	},
-	{
-		key: 'depertment',
-		label: 'Department',
-		type: 'text',
-	},
-];
-
-// Columns definition
-const columns: ColumnDef<ProfitLossTypes>[] = [
-	{
-		accessorKey: 'projectName',
-		header: () => <h1 className="pl-8">Project Name</h1>,
-		cell: ({ row }) => <h1 className="pl-8 py-2">{row.original.projectName}</h1>,
-	},
-	{
-		accessorKey: 'manager',
-		header: 'Manager',
-	},
-	{
-		accessorKey: 'startingDate',
-		header: 'Starting',
-	},
-	{
-		accessorKey: 'endDate',
-		header: 'End',
-	},
-	{
-		accessorKey: 'clientName',
-		header: 'Client Name',
-	},
-	{
-		accessorKey: 'category',
-		header: 'Category',
-	},
-	{
-		accessorKey: 'staff',
-		header: 'Staff',
-	},
-	{
-		accessorKey: 'revenue',
-		header: 'Revenue',
-		cell: ({ row }) => `$${row.original.revenue.toLocaleString()}`,
-	},
-	{
-		accessorKey: 'profit',
-		header: 'Profit',
-		cell: ({ row }) => `$${row.original.profit.toLocaleString()}`,
-	},
-	{
-		accessorKey: 'profitability',
-		header: 'Profitability',
-	},
-	{
-		accessorKey: 'action',
-		header: 'EDIT',
-
-		cell: ({ row }) => (
-			<div className="w-full flex justify-end">
-				<Link
-					to={'/features/ProfitLoss/$projectName'}
-					params={{ projectName: row.original.projectName }}>
-					<Button
-						className="w-20 border-t-0 border-r-0 border-b-0"
-						variant="outline">
-						VIEW
-					</Button>
-				</Link>
-			</div>
-		),
-	},
-];
+import { useProjects } from '@/hooks/useProject';
+import { usePayments } from '@/hooks/usePayroll';
+import { formatCurrency } from '@/lib/utils';
+import { useColumnSettings } from '@/hooks/useColumnSettings';
+import { defaultProfitLossColumnSettings } from '@/config/columnSettings';
+import type { ProjectPLData } from '@/types/profitLoss';
 
 export const Route = createFileRoute('/features/ProfitLoss/')({
 	component: RouteComponent,
@@ -150,16 +17,88 @@ export const Route = createFileRoute('/features/ProfitLoss/')({
 
 function RouteComponent() {
 	const [searchKeyword, setSearchKeyword] = useState('');
-	const [advancedSearchFilter, setAdvancedSearchFilter] = useState('');
+	const { projects, loading: projectsLoading } = useProjects();
+	const { payments } = usePayments();
+	const [plData, setPLData] = useState<ProjectPLData[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+
+	const { settings } = useColumnSettings<ProjectPLData>({
+		storageKey: 'ProfitLossColumnSettings',
+		defaultSettings: defaultProfitLossColumnSettings,
+	});
+
+	useEffect(() => {
+		if (!projects) return;
+
+		const processedData: ProjectPLData[] = projects.map((project) => {
+			// Calculate total costs
+			const costs = project.costs || {};
+			const totalCosts = (
+				(costs.labour_cost || 0) +
+				(costs.transport_cost || 0) +
+				(costs.costume_cost || 0) +
+				(costs.manager_fee || 0) +
+				(costs.other_cost || 0)
+			);
+
+			// Calculate revenue and profit
+			const revenue = costs.revenue || 0;
+			const profit = revenue - totalCosts;
+
+			// Calculate profitability
+			const profitability = totalCosts > 0 ? (profit / totalCosts) * 100 : 0;
+
+			return {
+				id: project.projectId,
+				projectName: project.name || 'N/A',
+				manager: project.manager?.name || 'N/A',
+				startDate: project.startDate || 'N/A',
+				endDate: project.endDate || 'N/A',
+				clientName: project.company?.name || 'N/A',
+				category: project.category?.name || 'N/A',
+				requiredStaffNumber: project.requiredStaffNumber || 0,
+				revenue: revenue,
+				costs: totalCosts,
+				profit: profit,
+				profitability: profitability
+			};
+		});
+
+		setPLData(processedData);
+		setIsLoading(false);
+	}, [projects]);
+
+	const columns = React.useMemo<ColumnDef<ProjectPLData, any>[]>(() => {
+		return settings
+			.filter((setting) => setting.status === 'Active')
+			.sort((a, b) => a.order - b.order)
+			.map((setting) => {
+				const defaultSetting = defaultProfitLossColumnSettings.find(
+					(def) => def.accessorKey === setting.accessorKey
+				);
+
+				return {
+					id: String(setting.accessorKey),
+					accessorKey: setting.accessorKey as string,
+					header: defaultSetting?.header || setting.header,
+					cell: defaultSetting?.cell || setting.cell,
+				};
+			});
+	}, [settings]);
 
 	const filteredData = React.useMemo(() => {
-		return mockProfitLossData.filter((item) => {
+		return plData.filter((item) => {
 			const searchLower = searchKeyword.toLowerCase();
 			if (!searchKeyword) return true;
 
-			return item.projectName.toLowerCase().includes(searchLower) || item.manager.toLowerCase().includes(searchLower) || item.clientName.toLowerCase().includes(searchLower) || item.category.toLowerCase().includes(searchLower);
+			return (
+				item.projectName.toLowerCase().includes(searchLower) ||
+				item.manager.toLowerCase().includes(searchLower) ||
+				item.clientName.toLowerCase().includes(searchLower) ||
+				item.category.toLowerCase().includes(searchLower)
+			);
 		});
-	}, [searchKeyword, advancedSearchFilter]);
+	}, [plData, searchKeyword]);
 
 	const table = useReactTable({
 		data: filteredData,
@@ -167,95 +106,34 @@ function RouteComponent() {
 		getCoreRowModel: getCoreRowModel(),
 	});
 
+	if (isLoading || projectsLoading) {
+		return <div>Loading...</div>;
+	}
+
 	return (
 		<div className="flex flex-col flex-1 h-full">
 			<div className="px-8 py-4">
 				<h1 className="text-gray-500">Project List</h1>
 			</div>
-			{/* Tabs Section */}
 			<Tabs defaultValue="list">
 				<TabsList className="justify-start w-full gap-8 bg-white border-t border-r border-b [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
-					<TabsTrigger
-						value="table"
-						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none">
-						Table View
-					</TabsTrigger>
-
 					<TabsTrigger
 						value="list"
 						className="text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none">
 						List View
 					</TabsTrigger>
+			
 				</TabsList>
 
 				<div className="flex justify-end flex-none w-full bg-white">
-					<Button className="text-black bg-transparent border-l md:w-20 link h-10">ADD+</Button>
-					<Button className="text-black bg-transparent border-r border-l md:w-20 link h-10">EDIT</Button>
+					<Button className="h-10 text-black bg-transparent border-l md:w-20 link">ADD+</Button>
+					<Button className="h-10 text-black bg-transparent border-l border-r md:w-20 link">EDIT</Button>
 				</div>
 
-				{/* List View Tab */}
-				<TabsContent
-					className="m-0"
-					value="table">
-					<div className="flex flex-row justify-between w-full pt-4 bg-white border-t border-r md:flex-row p-8 flex-wrap items-center">
-						<div className="flex flex-col space-y-2 bg-white md:w-auto">
-							<Label htmlFor="keyword">Keyword</Label>
-							<Input
-								type="keyword"
-								id="keyword"
-								placeholder="Search projects..."
-								className="border rounded-none w-[250px]"
-								value={searchKeyword}
-								onChange={(e) => setSearchKeyword(e.target.value)}
-							/>
-						</div>
-
-						<div className="flex flex-col space-y-2">
-							<Label>Duration</Label>
-							<div className="flex items-center gap-2">
-								<Input
-									type="date"
-									className="w-[150px] border rounded-none"
-									enableEmoji={false}
-								/>
-								<span className="text-gray-500">-</span>
-								<Input
-									type="date"
-									className="w-[150px] border rounded-none"
-									enableEmoji={false}
-								/>
-							</div>
-						</div>
-
-						<div className="flex flex-col space-y-2">
-							<Label>Status</Label>
-							<div className="flex">
-								<Button
-									size="default"
-									className="w-full bg-black rounded-none md:w-20">
-									Active
-								</Button>
-								<Button
-									size="default"
-									variant="outline"
-									className="w-full rounded-none md:w-20">
-									All
-								</Button>
-							</div>
-						</div>
-
-						<div className="flex flex-col space-y-2">
-							<Label>‎</Label>
-							<AdvancedFilterPopover fields={field} />
-						</div>
+				<TabsContent value="list" className="m-0">
+					<div className="border">
+						<DataTable columns={columns} data={filteredData} />
 					</div>
-
-					{/* Table */}
-					<DataTable
-						columns={columns}
-						data={mockProfitLossData}
-						loading={false}
-					/>
 				</TabsContent>
 			</Tabs>
 		</div>

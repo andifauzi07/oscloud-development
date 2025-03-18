@@ -44,7 +44,7 @@ export const useProjectPL = (projectId: number) => {
         // Calculate total costs
         const totalCosts = labourCost + transportCost + costumeCost + managerFee + otherCosts;
 
-        // Calculate profit
+        // Calculate profit (same as sales profit)
         const totalProfit = revenueCost - totalCosts;
 
         // Calculate profitability (as a percentage)
@@ -52,11 +52,11 @@ export const useProjectPL = (projectId: number) => {
 
         // Cost breakdown for the pie chart
         const costBreakdown = [
-            { name: 'Labour', label: 'Labour', value: labourCost },
-            { name: 'Transport', label: 'Transport', value: transportCost },
-            { name: 'Costume', label: 'Costume', value: costumeCost },
-            { name: 'Manager Fee', label: 'Manager Fee', value: managerFee },
-            { name: 'Other', label: 'Other', value: otherCosts }
+            { name: '総賃金', label: '総賃金', value: labourCost },
+            { name: '総交通費', label: '総交通費', value: transportCost },
+            { name: '総衣装費', label: '総衣装費', value: costumeCost },
+            { name: '管理費', label: '管理費', value: managerFee },
+            { name: '他経費', label: '他経費', value: otherCosts }
         ].filter(item => item.value > 0);
 
         return {
@@ -74,7 +74,7 @@ export const useProjectPL = (projectId: number) => {
             profit: {
                 total: totalProfit,
                 profitability: Math.round(profitability * 100) / 100,
-                salesProfit: costs.sales_profit || 0
+                salesProfit: totalProfit  // Set sales profit to be the same as total profit
             },
             costBreakdown
         };
@@ -85,6 +85,7 @@ export const useProjectPL = (projectId: number) => {
         refreshProjectData
     };
 };
+
 
 
 

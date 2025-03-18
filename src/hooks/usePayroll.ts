@@ -22,12 +22,30 @@ export const usePayrollEmployees = () => {
     );
 
     useEffect(() => {
-        if (workspaceid) {
-            dispatch(fetchPayrollEmployees(Number(workspaceid)));
-        }
+        if (!workspaceid) return;
+        
+        const fetchEmployees = async () => {
+            try {
+                await dispatch(fetchPayrollEmployees(Number(workspaceid))).unwrap();
+            } catch (error) {
+                console.error('Error fetching payroll employees:', error);
+            }
+        };
+
+        fetchEmployees();
     }, [dispatch, workspaceid]);
 
-    return { employees, loading, error };
+    // Filter employees by workspace ID
+    const workspaceEmployees = useMemo(() => {
+        if (!workspaceid || !employees) return [];
+        return employees.filter(employee => employee.workspaceid === Number(workspaceid));
+    }, [employees, workspaceid]);
+
+    return { 
+        employees: workspaceEmployees, 
+        loading, 
+        error 
+    };
 };
 
 export const usePayments = (filters?: Record<string, any>) => {
