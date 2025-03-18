@@ -239,7 +239,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 6,
-		cell: ({ row }) => <span>{row.original.category?.name || "-"}</span>,
+		cell: ({ row }) => <span>{row.original.category?.name || '-'}</span>,
 	},
 	{
 		accessorKey: 'assignedStaff',
@@ -377,7 +377,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		label: '作成日',
 		type: 'date',
 		status: 'Active',
-		order: 10,
+		order: 7,
 		category: '基本情報',
 		cell: ({ row }: any) => row.original.createdAt || '-',
 	},
@@ -388,7 +388,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: '基本情報',
-		order: 11,
+		order: 8,
 		cell: ({ row }: any) => row.original.statuss || '-',
 	},
 	{
@@ -398,7 +398,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '単価',
-		order: 12,
+		order: 9,
 		cell: ({ row }: any) => row.original.caterUnitPrice || '-',
 	},
 	{
@@ -408,7 +408,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '単価',
-		order: 13,
+		order: 10,
 		cell: ({ row }: any) => row.original.foodWeddingUnitPrice || '-',
 	},
 	{
@@ -418,7 +418,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '単価',
-		order: 14,
+		order: 11,
 		cell: ({ row }: any) => row.original.oldCaterUnitPrice || '-',
 	},
 	{
@@ -428,7 +428,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '単価',
-		order: 15,
+		order: 12,
 		cell: ({ row }: any) => row.original.oldFoodWeddingUnitPrice || '-',
 	},
 	{
@@ -438,7 +438,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 16,
+		order: 13,
 		cell: ({ row }: any) => row.original.interview || '-',
 	},
 	{
@@ -448,7 +448,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 17,
+		order: 14,
 		cell: ({ row }: any) => row.original.cloudSign || '-',
 	},
 	{
@@ -458,7 +458,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'file',
 		status: 'Active',
 		category: '契約関連',
-		order: 18,
+		order: 15,
 		cell: ({ row }: any) => row.original.cloudSignPDF || '-',
 	},
 	{
@@ -468,7 +468,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 19,
+		order: 16,
 		cell: ({ row }: any) => row.original.mizuhoAccount || '-',
 	},
 	{
@@ -478,7 +478,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 20,
+		order: 17,
 		cell: ({ row }: any) => row.original.netBanking || '-',
 	},
 	{
@@ -488,7 +488,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 21,
+		order: 18,
 		cell: ({ row }: any) => row.original.idCard || '-',
 	},
 	{
@@ -498,7 +498,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 22,
+		order: 19,
 		cell: ({ row }: any) => row.original.publicFee || '-',
 	},
 	{
@@ -508,7 +508,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 23,
+		order: 20,
 		cell: ({ row }: any) => row.original.otherCompanyWork || '-',
 	},
 	{
@@ -518,7 +518,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'boolean',
 		status: 'Active',
 		category: '契約関連',
-		order: 24,
+		order: 21,
 		cell: ({ row }: any) => row.original.emergencyContact || '-',
 	},
 	{
@@ -528,8 +528,64 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '契約関連',
-		order: 25,
+		order: 22,
 		cell: ({ row }: any) => row.original.restaurantVisits || '-',
+	},
+	{
+		accessorKey: 'StudySess1',
+		header: 'テスト①',
+		label: 'テスト①',
+		type: 'text',
+		status: 'Active',
+		category: '講習会',
+		order: 23,
+		cell: ({ row }: any) => row.original.StudySess1 || '-',
+	},
+	{
+		accessorKey: 'StudySess2',
+		header: '復習①',
+		label: '復習①',
+		type: 'text',
+		status: 'Active',
+		category: '講習会',
+		order: 24,
+		cell: ({ row }: any) => row.original.StudySess2 || '-',
+	},
+	{
+		accessorKey: 'StudySess3',
+		header: 'テスト②',
+		label: 'テスト②',
+		type: 'text',
+		status: 'Active',
+		category: '講習会',
+		order: 25,
+	},
+	{
+		accessorKey: 'StudySess4',
+		header: '復習②',
+		label: '復習②',
+		type: 'text',
+		status: 'Active',
+		category: '講習会',
+		order: 26,
+	},
+	{
+		accessorKey: 'StudySess5',
+		header: 'テスト③',
+		label: 'テスト③',
+		type: 'text',
+		status: 'Active',
+		category: '講習会',
+		order: 27,
+	},
+	{
+		accessorKey: 'StudySess6',
+		header: '復習③',
+		label: '復習③',
+		type: 'text',
+		status: 'Active',
+		category: '講習会',
+		order: 28,
 	},
 	{
 		accessorKey: 'date',
@@ -538,7 +594,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'date',
 		status: 'Active',
 		category: '面談結果',
-		order: 26,
+		order: 29,
 		cell: ({ row }: any) => row.original.date || '-',
 	},
 	{
@@ -548,7 +604,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 27,
+		order: 30,
 		cell: ({ row }: any) => row.original.visual || '-',
 	},
 	{
@@ -558,7 +614,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 28,
+		order: 31,
 		cell: ({ row }: any) => row.original.communication || '-',
 	},
 	{
@@ -568,7 +624,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 29,
+		order: 32,
 		cell: ({ row }: any) => row.original.sense || '-',
 	},
 	{
@@ -578,7 +634,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 30,
+		order: 33,
 		cell: ({ row }: any) => row.original.height || '-',
 	},
 	{
@@ -588,7 +644,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 31,
+		order: 34,
 		cell: ({ row }: any) => row.original.age || '-',
 	},
 	{
@@ -598,7 +654,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 32,
+		order: 35,
 		cell: ({ row }: any) => row.original.personality || '-',
 	},
 	{
@@ -608,7 +664,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 33,
+		order: 36,
 		cell: ({ row }: any) => row.original.intelligence || '-',
 	},
 	{
@@ -618,7 +674,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 34,
+		order: 37,
 		cell: ({ row }: any) => row.original.hairStyle || '-',
 	},
 	{
@@ -628,7 +684,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 35,
+		order: 38,
 		cell: ({ row }: any) => row.original.totalScoreByStaff || '-',
 	},
 	{
@@ -638,7 +694,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'number',
 		status: 'Active',
 		category: '面談結果',
-		order: 36,
+		order: 39,
 		cell: ({ row }: any) => row.original.totalScoreByOthers || '-',
 	},
 	{
@@ -648,7 +704,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: '面談結果',
-		order: 37,
+		order: 40,
 		cell: ({ row }: any) => row.original.feelingScoreStaff || '-',
 	},
 	{
@@ -658,7 +714,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: '面談結果',
-		order: 38,
+		order: 41,
 		cell: ({ row }: any) => row.original.feelingScoreOta || '-',
 	},
 	{
@@ -668,7 +724,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: '面談結果',
-		order: 39,
+		order: 42,
 		cell: ({ row }: any) => row.original.feelingScoreTomita || '-',
 	},
 	{
@@ -678,7 +734,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: '面談結果',
-		order: 40,
+		order: 43,
 		cell: ({ row }: any) => row.original.feelingScoreFukuyama || '-',
 	},
 	{
@@ -688,7 +744,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: '面談結果',
-		order: 41,
+		order: 44,
 		cell: ({ row }: any) => row.original.remarks || '-',
 	},
 	{
@@ -698,7 +754,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: 'SNS',
-		order: 42,
+		order: 45,
 		cell: ({ row }: any) => row.original.instagram || '-',
 	},
 	{
@@ -708,7 +764,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: 'SNS',
-		order: 43,
+		order: 46,
 		cell: ({ row }: any) => row.original.tiktok || '-',
 	},
 	{
@@ -718,7 +774,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: 'SNS',
-		order: 44,
+		order: 47,
 		cell: ({ row }: any) => row.original.facebook || '-',
 	},
 	{
@@ -728,7 +784,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		type: 'text',
 		status: 'Active',
 		category: 'SNS',
-		order: 45,
+		order: 48,
 		cell: ({ row }: any) => row.original.x || '-',
 	},
 	{
@@ -737,7 +793,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		label: '',
 		type: 'text',
 		status: 'Active',
-		order: 46,
+		order: 49,
 		cell: ({ row }) => (
 			<div className="flex justify-end w-full">
 				<Link

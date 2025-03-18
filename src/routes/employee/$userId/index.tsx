@@ -148,6 +148,14 @@ function RouteComponent() {
 			key: setting.accessorKey,
 		}));
 
+	const studySession = settings
+		.filter((setting) => setting.category === '講習会')
+		.map((setting) => ({
+			label: setting.header,
+			value: setting.category === '講習会' ? employee?.studySession?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
+			key: setting.accessorKey,
+		}));
+
 	const interviewResult = settings
 		.filter((setting) => setting.category === '面談結果')
 		.map((setting) => ({
@@ -261,6 +269,14 @@ function RouteComponent() {
 									className="border-l-0"
 									items={contractRelated}
 									title="契約関連"
+									isEditing={isEditing}
+									onValueChange={handleValueChange}
+									nonEditableFields={['employeeId']} // Add nonEditableFields prop
+								/>
+								<InfoSection
+									className="border-l-0"
+									items={studySession}
+									title="講習会"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
 									nonEditableFields={['employeeId']} // Add nonEditableFields prop
