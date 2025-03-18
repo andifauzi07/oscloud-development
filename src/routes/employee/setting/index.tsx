@@ -23,7 +23,50 @@ const categoryColumns = [
 	{ accessorKey: 'parentCategory', header: 'Parent Category' },
 ];
 
-const categoryData = [{ id: 1, categoryName: 'Basic information', type: 'Category', parentCategory: 'Basic information', action: 'VIEW' }];
+const categoryData = [
+	{
+		id: 1,
+		categoryName: '基本情報',
+		type: 'Category',
+		parentCategory: '-',
+		action: 'VIEW',
+	},
+	{
+		id: 2,
+		categoryName: '単価',
+		type: 'Category',
+		parentCategory: '-',
+		action: 'VIEW',
+	},
+	{
+		id: 3,
+		categoryName: '契約関連',
+		type: 'Category',
+		parentCategory: '-',
+		action: 'VIEW',
+	},
+	{
+		id: 4,
+		categoryName: '講習会',
+		type: 'Category',
+		parentCategory: '-',
+		action: 'VIEW',
+	},
+	{
+		id: 5,
+		categoryName: '面談結果',
+		type: 'Category',
+		parentCategory: '-',
+		action: 'VIEW',
+	},
+	{
+		id: 5,
+		categoryName: 'SNS',
+		type: 'Category',
+		parentCategory: '-',
+		action: 'VIEW',
+	},
+];
 
 const employeeCategory = [
 	{

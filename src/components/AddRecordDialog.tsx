@@ -45,13 +45,13 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		
+
 		// Ensure dates are properly formatted before saving
 		const processedData = {
 			...formData,
-			startdate: formData.startdate || new Date().toISOString().split('T')[0], // Default to today if not set
-			enddate: formData.enddate || new Date().toISOString().split('T')[0],  // Default to today if not set
-			costs: costs,
+			...(formData.startdate ? { startdate: formData.startdate } : {}),
+			...(formData.enddate ? { enddate: formData.enddate } : {}),
+			costs: enableCosts ? costs : 0,
 		};
 
 		onSave(processedData);

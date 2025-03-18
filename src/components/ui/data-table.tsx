@@ -68,61 +68,57 @@ interface EditableCellProps<TData> {
 }
 
 const EditableCell = memo(
-	({
-		value: initialValue,
-		row: { index },
-		column: { id },
-		updateData,
-		isEditable,
-		selectOptions,
-		customField,
-	}: EditableCellProps<any>) => {
-		const [localValue, setLocalValue] = useState(initialValue?.toString() || "");
+	({ value: initialValue, row: { index }, column: { id }, updateData, isEditable, selectOptions, customField }: EditableCellProps<any>) => {
+		const [localValue, setLocalValue] = useState(initialValue?.toString() || '');
 
 		// Update localValue when initialValue changes
 		useEffect(() => {
-			setLocalValue(initialValue?.toString() || "");
+			setLocalValue(initialValue?.toString() || '');
 		}, [initialValue]);
+
+		// Debounced update function
+		const debouncedUpdate = useCallback(
+			debounce((value: string) => {
+				if (selectOptions) {
+					const option = selectOptions.find((opt) => opt.value.toString() === value);
+					const finalValue = typeof option?.value === 'number' ? Number(value) : value;
+					updateData(index, id, finalValue);
+				} else {
+					updateData(index, id, value);
+				}
+			}, 1000),
+			[index, id, updateData, selectOptions]
+		);
 
 		const handleChange = useCallback(
 			(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 				const newValue = e.target.value;
 				setLocalValue(newValue);
-				
-				// For select fields, convert to number if the options contain number values
-				if (selectOptions) {
-					const option = selectOptions.find(opt => opt.value.toString() === newValue);
-					const finalValue = typeof option?.value === 'number' ? Number(newValue) : newValue;
-					updateData(index, id, finalValue);
-				} else {
-					updateData(index, id, newValue);
-				}
+				debouncedUpdate(newValue);
 			},
-			[index, id, updateData, selectOptions]
+			[debouncedUpdate]
 		);
 
 		if (!isEditable) {
 			if (selectOptions) {
-				const option = selectOptions.find(opt => opt.value.toString() === initialValue?.toString());
+				const option = selectOptions.find((opt) => opt.value.toString() === initialValue?.toString());
 				return <span className="text-xs">{option?.label || initialValue}</span>;
 			}
 			return <span className="text-xs">{initialValue}</span>;
 		}
 
 		if (selectOptions) {
-			const currentValue = initialValue?.toString() || "";
-			const option = selectOptions.find(opt => opt.value.toString() === initialValue?.toString());
+			const currentValue = initialValue?.toString() || '';
+			const option = selectOptions.find((opt) => opt.value.toString() === initialValue?.toString());
 			return (
 				<select
 					value={currentValue}
 					onChange={handleChange}
-					className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
-				>
+					className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0">
 					{selectOptions.map((option) => (
-						<option 
-							key={option.value} 
-							value={option.value.toString()}
-						>
+						<option
+							key={option.value}
+							value={option.value.toString()}>
 							{option.label}
 						</option>
 					))}
@@ -143,7 +139,7 @@ const EditableCell = memo(
 
 		return (
 			<input
-				value={localValue || ""}
+				value={localValue || ''}
 				onChange={handleChange}
 				className="w-full h-8 p-0 text-xs bg-transparent border-0 focus:ring-0"
 			/>
@@ -177,8 +173,8 @@ export function DataTable<TData, TValue>({
 	enableRowDragAndDrop = false,
 	enableColumnDragAndDrop = false,
 	isEditable = false,
-	nonEditableColumns = [], // Provide empty array as default
-	onSave, // Make sure onSave is included in props
+	nonEditableColumns = [],
+	onSave,
 	onRowDragEnd,
 	total = 0,
 	currentPage = 1,
@@ -187,33 +183,17 @@ export function DataTable<TData, TValue>({
 	selectFields,
 	setTableData,
 }: DataTableProps<TData, TValue>) {
-	// Add a local state to track changes
 	const [localData, setLocalData] = useState(data);
-	
-	// Add state for tableColumns
-	const [tableColumns, setTableColumns] = useState(() => 
-		columns.map(column => ({
+	const [tableColumns, setTableColumns] = useState<ColumnDefWithAccessor<TData, TValue>[]>(() =>
+		columns.map((column) => ({
 			...column,
-			id: column.id || column.accessorKey || String(Math.random())
+			id: column.id || column.accessorKey || String(Math.random()),
 		}))
 	);
-
-	// Update tableColumns when columns prop changes
-	useEffect(() => {
-		setTableColumns(columns.map(column => ({
-			...column,
-			id: column.id || column.accessorKey || String(Math.random())
-		})));
-	}, [columns]);
 
 	// Update local data when prop data changes
 	useEffect(() => {
 		setLocalData(data);
-	}, [data]);
-
-	// Update tableData when data prop changes
-	useEffect(() => {
-		setTableData?.(data);
 	}, [data]);
 
 	// Update columns when isEditable, columns or nonEditableColumns change
@@ -241,12 +221,10 @@ export function DataTable<TData, TValue>({
 							row={{ index: props.row.index, original: props.row.original }}
 							column={{ id: columnId }}
 							updateData={(index: number, id: string, value: any) => {
-								const newData = localData.map((row: any, rowIndex: number) => {
-									if (rowIndex === index) {
-										return { ...row, [id]: value };
-									}
-									return row;
-								});
+								const newData = [...localData];
+								const row = { ...newData[index] };
+								row[id as keyof TData] = value;
+								newData[index] = row;
 								setLocalData(newData);
 								setTableData?.(newData);
 							}}
@@ -259,7 +237,7 @@ export function DataTable<TData, TValue>({
 			return col;
 		});
 		setTableColumns(editableColumns);
-	}, [isEditable, columns, selectFields, localData]);
+	}, [isEditable, columns, selectFields, localData, setTableData]);
 
 	const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 

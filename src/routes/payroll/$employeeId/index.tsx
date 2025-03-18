@@ -196,6 +196,8 @@ function RouteComponent() {
 
 	const { projects, loading: projectsLoading, error: projectsError } = useEmployeeProjects(Number(employeeId));
 	const { payments, loading: paymentsLoading, error: paymentsError } = useEmployeePayments(Number(employeeId));
+	console.log('INI PROFILE Employee =', profile);
+	console.log('INI ERROR PROFILE Employee =', profileError);
 
 	const { updatePaymentStatus } = useUpdatePaymentStatus();
 	const [editable, setEditable] = useState(false);

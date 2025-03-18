@@ -78,7 +78,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		order: 6,
 	},
 	{
-		accessorKey: 'createdAt', // Type assertion
+		accessorKey: 'created_at', // Type assertion
 		header: 'Created at',
 		label: 'Created at',
 		type: 'date',
@@ -130,17 +130,19 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		status: 'Active',
 		order: 12,
 		cell: ({ row }: CellContext<Company, any>) => (
-			<Link
-				to={`/company/$companyId`}
-				params={{
-					companyId: row.original.companyid.toString(),
-				}}>
-				<Button
-					variant="outline"
-					className="w-20 h-full border">
-					DETAIL
-				</Button>
-			</Link>
+			<div className="w-full flex justify-end">
+				<Link
+					to={`/company/$companyId`}
+					params={{
+						companyId: row.original.companyid.toString(),
+					}}>
+					<Button
+						variant="outline"
+						className="w-20 h-full border">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
 		),
 	},
 ];
@@ -294,7 +296,10 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		cell: ({ row }: any) => (
 			<img
 				className="object-cover w-10 h-10"
-				src={row.original.profileimage || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+				src={
+					row.original.profileimage ||
+					'https://www.google.com/imgres?q=japanese%20face%20profile%20picture%20front&imgurl=https%3A%2F%2Fimg.freepik.com%2Ffree-photo%2Fkorean-young-woman-s-close-up-portrait-female-model-white-shirt-smiling-looking-happy-concept-human-emotions-facial-expression-front-view_155003-18251.jpg&imgrefurl=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Fjapanese-face%2F4&docid=rKwtNPLSsXTDPM&tbnid=bsTG6-a_ygqFmM&vet=12ahUKEwjvzJXB_JKMAxX2zDgGHTg5CM8QM3oECE0QAA..i&w=626&h=417&hcb=2&itg=1&ved=2ahUKEwjvzJXB_JKMAxX2zDgGHTg5CM8QM3oECE0QAA'
+				}
 				alt={`${row.original.name}'s profile`}
 			/>
 		),
@@ -302,7 +307,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	{
 		accessorKey: 'employeeid',
 		header: 'ID',
-		label: 'Employee ID',
+		label: 'ID',
 		type: 'number',
 		status: 'Active',
 		order: 2,
@@ -310,8 +315,8 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'name',
-		header: 'Name',
-		label: 'Name',
+		header: 'フルネーム',
+		label: 'フルネーム',
 		type: 'text',
 		status: 'Active',
 		order: 3,
@@ -326,8 +331,8 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'employeecategoryid',
-		header: 'Employee Category',
-		label: 'Employee Category',
+		header: 'カテゴリー',
+		label: 'カテゴリー',
 		type: 'number',
 		status: 'Active',
 		order: 4,
@@ -335,8 +340,8 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'email',
-		header: 'Email',
-		label: 'Email',
+		header: 'メアド',
+		label: 'メアド',
 		type: 'email',
 		status: 'Active',
 		order: 5,
@@ -353,12 +358,354 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 	},
 	{
 		accessorKey: 'departmentid',
-		header: 'Department',
-		label: 'Department',
+		header: '部署',
+		label: '部署',
 		type: 'text',
 		status: 'Active',
 		order: 6,
 		cell: ({ row }: any) => row.original.department?.departmentname || '-',
+	},
+	{
+		accessorKey: 'status',
+		header: 'ステータス',
+		label: 'ステータス',
+		type: 'text',
+		status: 'Active',
+		order: 7,
+		cell: ({ row }: any) => row.original.status || '-',
+	},
+	{
+		accessorKey: 'personIntroduce',
+		header: '自己紹介',
+		label: '自己紹介',
+		type: 'text',
+		status: 'Active',
+		order: 8,
+		cell: ({ row }: any) => row.original.personIntroduce || '-',
+	},
+	{
+		accessorKey: 'newUrl',
+		header: '新規URL',
+		label: '新規URL',
+		type: 'text',
+		status: 'Active',
+		order: 9,
+		cell: ({ row }: any) => row.original.newUrl || '-',
+	},
+	{
+		accessorKey: 'created at',
+		header: '作成日',
+		label: '作成日',
+		type: 'date',
+		status: 'Active',
+		order: 10,
+		cell: ({ row }: any) => row.original.createdAt || '-',
+	},
+	{
+		accessorKey: 'caterUnitPrice',
+		header: 'ケーター単価',
+		label: 'ケーター単価',
+		type: 'number',
+		status: 'Active',
+		order: 11,
+		cell: ({ row }: any) => row.original.caterUnitPrice || '-',
+	},
+	{
+		accessorKey: 'foodWeddingUnitPrice',
+		header: '飲食婚礼単価',
+		label: '飲食婚礼単価',
+		type: 'number',
+		status: 'Active',
+		order: 12,
+		cell: ({ row }: any) => row.original.foodWeddingUnitPrice || '-',
+	},
+	{
+		accessorKey: 'oldCaterUnitPrice',
+		header: '旧）ケーター単価',
+		label: '旧）ケーター単価',
+		type: 'number',
+		status: 'Active',
+		order: 13,
+		cell: ({ row }: any) => row.original.oldCaterUnitPrice || '-',
+	},
+	{
+		accessorKey: 'oldFoodWeddingUnitPrice',
+		header: '旧）飲食婚礼単価',
+		label: '旧）飲食婚礼単価',
+		type: 'number',
+		status: 'Active',
+		order: 14,
+		cell: ({ row }: any) => row.original.oldFoodWeddingUnitPrice || '-',
+	},
+	{
+		accessorKey: 'interview',
+		header: '面接',
+		label: '面接',
+		type: 'boolean',
+		status: 'Active',
+		order: 15,
+		cell: ({ row }: any) => row.original.interview || '-',
+	},
+	{
+		accessorKey: 'cloudSign',
+		header: 'クラウドサイン',
+		label: 'クラウドサイン',
+		type: 'boolean',
+		status: 'Active',
+		order: 16,
+		cell: ({ row }: any) => row.original.cloudSign || '-',
+	},
+	{
+		accessorKey: 'cloudSignPDF',
+		header: 'クラウドサインPDF',
+		label: 'クラウドサインPDF',
+		type: 'file',
+		status: 'Active',
+		order: 17,
+		cell: ({ row }: any) => row.original.cloudSignPDF || '-',
+	},
+	{
+		accessorKey: 'mizuhoAccount',
+		header: 'みずほ口座',
+		label: 'みずほ口座',
+		type: 'boolean',
+		status: 'Active',
+		order: 18,
+		cell: ({ row }: any) => row.original.mizuhoAccount || '-',
+	},
+	{
+		accessorKey: 'netBanking',
+		header: 'ネットバンキング',
+		label: 'ネットバンキング',
+		type: 'boolean',
+		status: 'Active',
+		order: 19,
+		cell: ({ row }: any) => row.original.netBanking || '-',
+	},
+	{
+		accessorKey: 'idCard',
+		header: '身分証',
+		label: '身分証',
+		type: 'boolean',
+		status: 'Active',
+		order: 20,
+		cell: ({ row }: any) => row.original.idCard || '-',
+	},
+	{
+		accessorKey: 'publicFee',
+		header: '公料',
+		label: '公料',
+		type: 'boolean',
+		status: 'Active',
+		order: 21,
+		cell: ({ row }: any) => row.original.publicFee || '-',
+	},
+	{
+		accessorKey: 'otherCompanyWork',
+		header: '他社勤労',
+		label: '他社勤労',
+		type: 'boolean',
+		status: 'Active',
+		order: 22,
+		cell: ({ row }: any) => row.original.otherCompanyWork || '-',
+	},
+	{
+		accessorKey: 'emergencyContact',
+		header: '緊急連絡',
+		label: '緊急連絡',
+		type: 'boolean',
+		status: 'Active',
+		order: 23,
+		cell: ({ row }: any) => row.original.emergencyContact || '-',
+	},
+	{
+		accessorKey: 'restaurantVisits',
+		header: '飲食店回数',
+		label: '飲食店回数',
+		type: 'number',
+		status: 'Active',
+		order: 24,
+		cell: ({ row }: any) => row.original.restaurantVisits || '-',
+	},
+	{
+		accessorKey: 'date',
+		header: '日付',
+		label: '日付',
+		type: 'date',
+		status: 'Active',
+		order: 26,
+		cell: ({ row }: any) => row.original.date || '-',
+	},
+	{
+		accessorKey: 'visual',
+		header: 'ビジュアル',
+		label: 'ビジュアル',
+		type: 'number',
+		status: 'Active',
+		order: 30,
+		cell: ({ row }: any) => row.original.visual || '-',
+	},
+	{
+		accessorKey: 'communication',
+		header: 'コミュ力',
+		label: 'コミュ力',
+		type: 'number',
+		status: 'Active',
+		order: 31,
+		cell: ({ row }: any) => row.original.communication || '-',
+	},
+	{
+		accessorKey: 'sense',
+		header: 'センス',
+		label: 'センス',
+		type: 'number',
+		status: 'Active',
+		order: 32,
+		cell: ({ row }: any) => row.original.sense || '-',
+	},
+	{
+		accessorKey: 'height',
+		header: '身長',
+		label: '身長',
+		type: 'number',
+		status: 'Active',
+		order: 33,
+		cell: ({ row }: any) => row.original.height || '-',
+	},
+	{
+		accessorKey: 'age',
+		header: '年齢',
+		label: '年齢',
+		type: 'number',
+		status: 'Active',
+		order: 35,
+		cell: ({ row }: any) => row.original.age || '-',
+	},
+	{
+		accessorKey: 'personality',
+		header: '性格',
+		label: '性格',
+		type: 'number',
+		status: 'Active',
+		order: 41,
+		cell: ({ row }: any) => row.original.personality || '-',
+	},
+	{
+		accessorKey: 'intelligence',
+		header: '賢さ',
+		label: '賢さ',
+		type: 'number',
+		status: 'Active',
+		order: 42,
+		cell: ({ row }: any) => row.original.intelligence || '-',
+	},
+	{
+		accessorKey: 'hairStyle',
+		header: '髪型',
+		label: '髪型',
+		type: 'number',
+		status: 'Active',
+		order: 43,
+		cell: ({ row }: any) => row.original.hairStyle || '-',
+	},
+	{
+		accessorKey: 'totalScoreByStaff',
+		header: '総合評価（事務員）',
+		label: '総合評価（事務員）',
+		type: 'number',
+		status: 'Active',
+		order: 45,
+		cell: ({ row }: any) => row.original.totalScoreByStaff || '-',
+	},
+	{
+		accessorKey: 'totalScoreByOthers',
+		header: '総合評価（その他）',
+		label: '総合評価（その他）',
+		type: 'number',
+		status: 'Active',
+		order: 46,
+		cell: ({ row }: any) => row.original.totalScoreByOthers || '-',
+	},
+	{
+		accessorKey: 'feelingScoreStaff',
+		header: '印象（事務員）',
+		label: '印象（事務員）',
+		type: 'text',
+		status: 'Active',
+		order: 47,
+		cell: ({ row }: any) => row.original.feelingScoreStaff || '-',
+	},
+	{
+		accessorKey: 'feelingScoreOta',
+		header: '印象（太田）',
+		label: '印象（太田）',
+		type: 'text',
+		status: 'Active',
+		order: 48,
+		cell: ({ row }: any) => row.original.feelingScoreOta || '-',
+	},
+	{
+		accessorKey: 'feelingScoreTomita',
+		header: '印象（冨田）',
+		label: '印象（冨田）',
+		type: 'text',
+		status: 'Active',
+		order: 49,
+		cell: ({ row }: any) => row.original.feelingScoreTomita || '-',
+	},
+	{
+		accessorKey: 'feelingScoreFukuyama',
+		header: '印象（福山）',
+		label: '印象（福山）',
+		type: 'text',
+		status: 'Active',
+		order: 50,
+		cell: ({ row }: any) => row.original.feelingScoreFukuyama || '-',
+	},
+	{
+		accessorKey: 'remarks',
+		header: '備考',
+		label: '備考',
+		type: 'text',
+		status: 'Active',
+		order: 51,
+		cell: ({ row }: any) => row.original.remarks || '-',
+	},
+	{
+		accessorKey: 'instagram',
+		header: 'IG',
+		label: 'IG',
+		type: 'text',
+		status: 'Active',
+		order: 52,
+		cell: ({ row }: any) => row.original.instagram || '-',
+	},
+	{
+		accessorKey: 'tiktok',
+		header: 'Tiktok',
+		label: 'Tiktok',
+		type: 'text',
+		status: 'Active',
+		order: 53,
+		cell: ({ row }: any) => row.original.tiktok || '-',
+	},
+	{
+		accessorKey: 'facebook',
+		header: 'Facebook',
+		label: 'Facebook',
+		type: 'text',
+		status: 'Active',
+		order: 54,
+		cell: ({ row }: any) => row.original.facebook || '-',
+	},
+	{
+		accessorKey: 'x',
+		header: 'X',
+		label: 'X',
+		type: 'text',
+		status: 'Active',
+		order: 55,
+		cell: ({ row }: any) => row.original.x || '-',
 	},
 	{
 		accessorKey: 'actions',
@@ -366,7 +713,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		label: '',
 		type: 'text',
 		status: 'Active',
-		order: 7,
+		order: 56,
 		cell: ({ row }) => (
 			<div className="flex justify-end w-full">
 				<Link
