@@ -77,45 +77,52 @@ function RouteComponent() {
 		}
 	};
 
-	const excludedColumns = ['面談結果', 'SNS'];
-
 	const basicInfo = settings
-		.filter((setting) => {
-			if (!setting.header || !setting.label) {
-				return false;
-			}
+		.filter((setting) => setting.category === '基本情報')
+		.map((setting) => {
+			// Helper function untuk mendapatkan value berdasarkan accessorKey
+			const getValue = () => {
+				switch (setting.accessorKey) {
+					case 'employeecategoryid':
+						return employee?.employeeCategory?.categoryname || '-';
+					case 'departmentid':
+						return employee?.department?.departmentname || '-';
+					default:
+						return editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-';
+				}
+			};
 
-			if (setting.category && excludedColumns.includes(setting.category)) {
-				return false;
-			}
+			const baseObject = {
+				label: setting.header,
+				value: getValue(),
+				key: setting.accessorKey,
+			};
 
-			return true;
-		})
-		.map((setting) => ({
-			label: setting.header,
-			value:
-				setting.accessorKey === 'employeeid'
-					? employee?.employeeid?.toString() || '-'
-					: setting.accessorKey === 'employeecategoryid'
-						? employee?.employeeCategory?.categoryname?.toString() || '-'
-						: setting.accessorKey === 'departmentid'
-							? employee?.department?.departmentname?.toString() || '-'
-							: editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
-			key: setting.accessorKey,
-			nonEditable: setting.accessorKey === 'employeeid',
-			options:
-				setting.accessorKey === 'employeecategoryid'
-					? categories?.map((c: any) => ({
+			// Tambahkan options untuk field yang memerlukan
+			if (setting.accessorKey === 'employeecategoryid') {
+				return {
+					...baseObject,
+					options:
+						categories?.map((c) => ({
 							value: c.categoryid.toString(),
 							label: c.categoryname,
-						})) || []
-					: setting.accessorKey === 'departmentid'
-						? departments?.map((d: any) => ({
-								value: d.departmentid.toString(),
-								label: d.departmentname,
-							})) || []
-						: undefined,
-		}));
+						})) || [],
+				};
+			}
+
+			if (setting.accessorKey === 'departmentid') {
+				return {
+					...baseObject,
+					options:
+						departments?.map((d) => ({
+							value: d.departmentid.toString(),
+							label: d.departmentname,
+						})) || [],
+				};
+			}
+
+			return baseObject;
+		});
 
 	const unitPrice = settings
 		.filter((setting) => setting.category === '単価')
@@ -124,6 +131,7 @@ function RouteComponent() {
 			value: setting.category === '単価' ? employee?.unitprice?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
 		}));
+
 	const sns = settings
 		.filter((setting) => setting.category === 'SNS')
 		.map((setting) => ({
@@ -131,6 +139,23 @@ function RouteComponent() {
 			value: setting.category === 'SNS' ? employee?.sns?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
 		}));
+
+	const contractRelated = settings
+		.filter((setting) => setting.category === '契約関連')
+		.map((setting) => ({
+			label: setting.header,
+			value: setting.category === '契約関連' ? employee?.contractrelated?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
+			key: setting.accessorKey,
+		}));
+
+	const interviewResult = settings
+		.filter((setting) => setting.category === '面談結果')
+		.map((setting) => ({
+			label: setting.header,
+			value: setting.category === '面談結果' ? employee?.interviewresult?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
+			key: setting.accessorKey,
+		}));
+
 	return (
 		<div className="flex-1 h-full">
 			<div className="items-center flex-none min-h-0 border-b border-r">
@@ -228,6 +253,22 @@ function RouteComponent() {
 									className="border-l-0"
 									items={unitPrice}
 									title="単価"
+									isEditing={isEditing}
+									onValueChange={handleValueChange}
+									nonEditableFields={['employeeId']} // Add nonEditableFields prop
+								/>
+								<InfoSection
+									className="border-l-0"
+									items={contractRelated}
+									title="契約関連"
+									isEditing={isEditing}
+									onValueChange={handleValueChange}
+									nonEditableFields={['employeeId']} // Add nonEditableFields prop
+								/>
+								<InfoSection
+									className="border-l-0"
+									items={interviewResult}
+									title="面談結果"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
 									nonEditableFields={['employeeId']} // Add nonEditableFields prop
