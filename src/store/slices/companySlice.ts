@@ -155,13 +155,19 @@ interface CompanyListItem {
         companyid: number;
         name: string;
         status: string;
-        email: string;
+        email: string | null;
         description: string | null;
         leadid: number | null;
         managerid: string | null;
     }[];
     activeLeads: number;
     totalContractValue: number;
+}
+interface CompaniesResponse {
+    companies: CompanyListItem[];
+    total: number;
+    page: number;
+    limit: number;
 }
 interface CompanyDetail {
     companyId: number;
@@ -438,7 +444,7 @@ export const deletePersonnel = createAsyncThunk(
 );
 
 const companySlice = createSlice({
-    name: "company",
+    name: 'company',
     initialState,
     reducers: {
         clearSelectedCompany: (state) => {
@@ -450,7 +456,6 @@ const companySlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Fetch Companies
             .addCase(fetchCompanies.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -461,15 +466,13 @@ const companySlice = createSlice({
                 state.pagination = {
                     total: action.payload.total,
                     page: action.payload.page,
-                    limit: action.payload.limit,
+                    limit: action.payload.limit
                 };
             })
             .addCase(fetchCompanies.rejected, (state, action) => {
                 state.loading = false;
-                state.error =
-                    action.error.message || "Failed to fetch companies";
+                state.error = action.error.message || null;
             })
-
             // Fetch Single Company
             .addCase(fetchCompanyById.pending, (state) => {
                 state.loading = true;

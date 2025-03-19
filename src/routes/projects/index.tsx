@@ -52,7 +52,7 @@ function ProjectsRouteComponent() {
     const [statusFilter, setStatusFilter] = useState<string>("");
     const [isEditable, setIsEditable] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const pageSize = 10;
     const [categoryOptions, setCategoryOptions] = useState<
         Array<{ value: number; label: string }>
     >([]);
@@ -72,7 +72,7 @@ function ProjectsRouteComponent() {
         [statusFilter, debouncedKeyword, currentPage, pageSize]
     );
 
-    const { projects, loading, error, total, page, limit } = useProjects(filters);
+    const { projects, loading, error, total } = useProjects(filters);
     const { addProject, editProject, getProjectCategories, getProjects } = useProject();
     const { settings, saveSettings, reorderColumns } = useColumnSettings({
         storageKey: "projectColumnSettings",

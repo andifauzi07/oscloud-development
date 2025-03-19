@@ -74,21 +74,36 @@ function RouteComponent() {
 	const debounceSearchTerms = useDebounce(searchQuery, 500);
 
 	const columns = useMemo<ColumnDef<Employee, any>[]>(() => {
-		return settings
-			.filter((setting) => setting.status === 'Active')
+		// If settings is empty, use defaultEmployeeColumnSettings
+		const activeSettings = settings.length > 0 
+			? settings 
+			: defaultEmployeeColumnSettings;
+
+		return activeSettings
+			.filter((setting) => setting.status === "Active" || setting.status === "shown")
 			.sort((a, b) => a.order - b.order)
 			.map((setting) => {
-				// Find the matching default setting to get the original cell renderer
-				const defaultSetting = defaultEmployeeColumnSettings.find((def) => def.accessorKey === setting.accessorKey);
+				// Find the matching default setting
+				const defaultSetting = defaultEmployeeColumnSettings.find(
+					(def) => def.accessorKey === setting.accessorKey
+				);
 
 				return {
 					id: String(setting.accessorKey),
 					accessorKey: setting.accessorKey as string,
-					header: setting.label,
-					// Use the cell from defaultSettings if available, otherwise use the current setting's cell or defaultCellRenderer
-					cell: defaultSetting?.cell || setting.cell,
+					header: defaultSetting?.header || setting.header || setting.label,
+					cell: defaultSetting?.cell || setting.cell || (({ row }) => {
+						const value = row.getValue(setting.accessorKey as string);
+						return value != null ? String(value) : '-';
+					})
 				};
 			});
+	}, [settings]);
+
+	// Add this debug log to help track the column generation
+	useEffect(() => {
+		console.log('Employee Settings after status filter:', 
+			settings.filter(setting => setting.status === "Active" || setting.status === "shown"));
 	}, [settings]);
 
 	const handleSaveEdits = useSaveEdits<Employee>();

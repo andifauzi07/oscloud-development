@@ -42,28 +42,30 @@ export interface LeadFilters {
     maxValue?: number;
 }
 
-export const useCompanies = (filters?: CompanyFilters) => {
+interface UseCompaniesParams {
+    page?: number;
+    limit?: number;
+}
+
+export function useCompanies(filters: CompanyFilters = {}) {
     const dispatch = useDispatch<AppDispatch>();
     const { currentUser } = useUserData();
     const workspaceid = currentUser?.workspaceid;
-    const { companies, selectedCompany, loading, error, pagination } =
-        useSelector((state: RootState) => state.company);
-
-    const memoizedFilters = useMemo(() => filters, [filters]);
+    const { companies, loading, error, pagination } = useSelector((state: RootState) => state.company);
 
     useEffect(() => {
-        if (!workspaceid) return; // Early return if no workspace ID
+        if (!workspaceid) return;
 
         dispatch(
             fetchCompanies({
                 workspaceId: Number(workspaceid),
-                search: filters?.search,
-                category: filters?.category,
-                page: filters?.page,
-                limit: filters?.limit
+                search: filters.search,
+                status: filters.status,
+                page: filters.page || 1,
+                limit: filters.limit || 10
             })
         );
-    }, [dispatch, workspaceid, memoizedFilters]);
+    }, [dispatch, workspaceid, filters]);
 
     const fetchCompany = useCallback(
         async (companyId: number) => {
@@ -132,12 +134,10 @@ export const useCompanies = (filters?: CompanyFilters) => {
     }, [dispatch]);
 
     return {
-        companies,
-        selectedCompany,
+        companies, // This should be the array from the API response
         loading,
         error,
-        pagination,
-        fetchCompany,
+        total: pagination?.total || 0,
         addCompany,
         updateCompany: updateCompanyDetails,
         deleteCompany: removeCompany,

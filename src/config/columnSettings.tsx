@@ -44,6 +44,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
         date_created: new Date().toISOString(),
         status: "Active",
         order: 2,
+        cell: ({ row }) => row.getValue("companyid"), // Explicit cell renderer
     },
     {
         accessorKey: "name",
