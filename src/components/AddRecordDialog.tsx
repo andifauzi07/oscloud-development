@@ -8,12 +8,12 @@ import { SelectField } from './select-field';
 import { CostsDialog } from './CostsDialog';
 
 interface AddRecordDialogProps {
-	columns: any[];
+	columns: ColumnDef<any, any>[];
 	onSave: (data: any) => void;
 	nonEditableColumns?: string[];
 	selectFields?: {
 		[key: string]: {
-			options: { value: string | number; label: string }[];
+			options: Array<{ value: string; label: string }>;
 		};
 	};
 	customFields?: {
@@ -25,9 +25,18 @@ interface AddRecordDialogProps {
 		};
 	};
 	enableCosts?: boolean;
+	enablePassword?: boolean; // Add this prop
 }
 
-export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], selectFields, customFields, enableCosts = false }: AddRecordDialogProps) {
+export function AddRecordDialog({ 
+	columns, 
+	onSave, 
+	nonEditableColumns = [], 
+	selectFields, 
+	customFields, 
+	enableCosts = false,
+	enablePassword = false // Add default value
+}: AddRecordDialogProps) {
 	const [formData, setFormData] = React.useState<Record<string, any>>({});
 	const [costs, setCosts] = React.useState<Record<string, number>>({
 		food: 0,
@@ -162,6 +171,28 @@ export function AddRecordDialog({ columns, onSave, nonEditableColumns = [], sele
 									</div>
 								);
 							})}
+
+							{/* Add password field if enabled */}
+							{enablePassword && (
+								<div className="grid gap-2">
+									<Label htmlFor="password" className="text-sm font-medium">
+										Password
+									</Label>
+									<Input
+										id="password"
+										type="password"
+										className="w-full h-8 rounded-none"
+										value={formData.password || ''}
+										onChange={(e) =>
+											setFormData((prev) => ({
+												...prev,
+												password: e.target.value,
+											}))
+										}
+										placeholder="Enter password"
+									/>
+								</div>
+							)}
 
 							{/* Custom Date Range Fields */}
 							{Object.entries(customFields || {}).map(([key, field]) => (

@@ -46,7 +46,12 @@ function SignInComponent() {
 
             if (session) {
                 dispatch(setSession(session));
-                navigate({ to: "/" });
+                // Redirect based on user type
+                if (session.user.user_metadata?.isEmployee) {
+                    navigate({ to: "/guest/dashboard" }); // or wherever employees should go
+                } else {
+                    navigate({ to: "/" });
+                }
             }
         } catch (err) {
             console.error(err);

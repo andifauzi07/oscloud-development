@@ -10,6 +10,7 @@ import {
 	deleteUser,
 	clearSelectedUser,
 	clearUsers,
+	setCurrentUser,
 	// Selectors
 	selectUsers,
 	selectCurrentUser,
@@ -19,6 +20,7 @@ import {
 	selectUsersByRole,
 	selectUsersByStatus,
 } from '@/store/slices/userSlice';
+import { supabase } from '@/backend/supabase/supabaseClient';
 
 export const useUserData = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -31,6 +33,11 @@ export const useUserData = () => {
 	const error = useSelector((state: RootState) => selectUserError(state));
 	const session = useSelector((state: RootState) => state.auth.session);
 
+	// Determine if user is an employee based on session metadata
+	const isEmployee = useMemo(() => {
+		return session?.user?.user_metadata?.isEmployee === true;
+	}, [session]);
+
 	const adminUsers = useSelector((state: RootState) => selectUsersByRole(state, 'Admin'));
 	const activeUsers = useSelector((state: RootState) => selectUsersByStatus(state, 'Active'));
 
@@ -39,7 +46,23 @@ export const useUserData = () => {
 		const initializeUser = async () => {
 			if (session?.user && !currentUser && !loading) {
 				try {
-					await dispatch(fetchCurrentUser()).unwrap();
+					if (isEmployee) {
+						// Handle employee data fetching
+						const { data: employeeData, error } = await supabase
+							.from('employee')
+							.select('*')
+							.eq('employeeid', session.user.user_metadata.employeeid)
+							.single();
+
+						if (error) throw error;
+						
+						// Dispatch employee data to your store
+						// You might need to create a separate action for employee data
+						dispatch(setCurrentUser(employeeData));
+					} else {
+						// Regular user fetch
+						await dispatch(fetchCurrentUser()).unwrap();
+					}
 					setIsWorkspaceReady(true);
 				} catch (error) {
 					console.error('Failed to fetch current user:', error);
@@ -49,7 +72,7 @@ export const useUserData = () => {
 		};
 
 		initializeUser();
-	}, [dispatch, session?.user, currentUser, loading]);
+	}, [dispatch, session?.user, currentUser, loading, isEmployee]);
 
 	// Memoized action creators
 	const getUsers = useCallback(
@@ -97,6 +120,7 @@ export const useUserData = () => {
 		adminUsers,
 		loading,
 		error,
+		isEmployee,
 		isAuthenticated: !!session?.user,
 		isWorkspaceReady,
 

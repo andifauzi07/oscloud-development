@@ -56,10 +56,41 @@ export const signUp = async (email: string, password: string, name: string) => {
 	return "Sign-up successful!";
 };
 
-// Sign In Function
+// Regular user authentication
 export const signInWithEmail = async (email: string, password: string) => {
-	const data = await supabase.auth.signInWithPassword({ email, password });
-	return data;
+	// First try employee login
+	const { data: employee, error: employeeError } = await supabase
+		.from('employee')
+		.select('*')
+		.eq('email', email)
+		.eq('password', password) // Note: In production, use proper password hashing
+		.single();
+
+	if (employee) {
+		// If employee login successful, create a custom session
+		return {
+			data: {
+				session: {
+					access_token: 'employee_token', // You might want to generate a proper token
+					user: {
+						id: `emp_${employee.employeeid}`, // Prefix to distinguish from UUID
+						email: employee.email,
+						user_metadata: {
+							isEmployee: true,
+							name: employee.name,
+							employeeid: employee.employeeid,
+							departmentid: employee.departmentid,
+							workspaceid: employee.workspaceid
+						}
+					}
+				}
+			},
+			error: null
+		};
+	}
+
+	// If not an employee, try regular auth
+	return await supabase.auth.signInWithPassword({ email, password });
 };
 
 export const signInWithOAuth = async (provider: "google" | "github") => {

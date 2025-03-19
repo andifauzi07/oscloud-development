@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useUserData } from '@/hooks/useUserData';
 import { createFileRoute } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/guest/dashboard/')({
 	component: RouteComponent,
@@ -40,6 +42,11 @@ export const guestProjects: GuestProjects[] = [
 ];
 
 function RouteComponent() {
+    const { currentUser } = useUserData();
+    useEffect(() => {
+        console.log(currentUser);
+    }, [currentUser]);
+
 	return (
 		<div className="">
 			{/* Header Section */}
@@ -64,10 +71,11 @@ function RouteComponent() {
 					<div className="flex flex-row items-center justify-between px-8 py-4 bg-gray-100 border-b border-r">
 						<h1 className="py-3">{''}</h1>
 					</div>
-					<div className="flex flex-row items-center justify-between px-8 py-4 border-r border-b">
+					<div className="flex flex-row items-center justify-between px-8 py-4 border-b border-r">
 						<h1>Shifts</h1>
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2">
+                        {/* Projects under current user */}
 						<div className="flex flex-col ">
 							<div className="px-8 py-4 border-b">
 								<h1>Upcoming</h1>
@@ -75,7 +83,7 @@ function RouteComponent() {
 							{guestProjects.map((item) => (
 								<div className="flex justify-between py-4 pl-8 border-b">
 									<h1>{item.name}</h1>
-									<div className="flex px-4 justify-center items-center flex-row gap-4 flex-nowrap">
+									<div className="flex flex-row items-center justify-center gap-4 px-4 flex-nowrap">
 										<h1>{item.date}</h1>
 										<h1 className="w-full">{item.time}</h1>
 										<Button
@@ -94,13 +102,13 @@ function RouteComponent() {
 						</div>
 
 						<div className="flex flex-col bg-gray-100 ">
-							<div className="px-8 py-4 border-r border-l border-b">
+							<div className="px-8 py-4 border-b border-l border-r">
 								<h1>Joined</h1>
 							</div>
 							{['Project 1', 'Project 2', 'Project 3', 'Project 4'].map((item) => (
 								<div className="flex justify-between py-4 pl-8 border-b border-l bort">
 									<h1>{item}</h1>
-									<div className="flex px-4 justify-center items-center flex-row gap-4 flex-nowrap">
+									<div className="flex flex-row items-center justify-center gap-4 px-4 flex-nowrap">
 										<h1>2024.11.01</h1>
 										<h1 className="w-full">9:00 ~ 18:00</h1>
 										<Button
@@ -121,10 +129,10 @@ function RouteComponent() {
 				<TabsContent
 					className="m-0"
 					value="timeline">
-					<div className="flex flex-row items-center justify-between px-8 py-4 bg-gray-100 border-r border-b">
+					<div className="flex flex-row items-center justify-between px-8 py-4 bg-gray-100 border-b border-r">
 						<h1 className="py-3">{''}</h1>
 					</div>
-					<div className="flex flex-row items-center justify-between py-4 px-8 border-r">
+					<div className="flex flex-row items-center justify-between px-8 py-4 border-r">
 						<h1>Available Date</h1>
 						<Button
 							variant="outline"
@@ -137,7 +145,7 @@ function RouteComponent() {
 							<div className="px-8 py-4 border-t border-r">
 								<h1>Upcoming</h1>
 							</div>
-							<div className="flex justify-between items-center py-4 px-8 border-r border-t">
+							<div className="flex items-center justify-between px-8 py-4 border-t border-r">
 								<h1>2024.01.23</h1>
 								<h1>ALL DAY</h1>
 								<div className="flex flex-row gap-4 flex-nowrap">
@@ -163,7 +171,7 @@ function RouteComponent() {
 									</Link>
 								</div>
 							</div>
-							<div className="flex justify-between items-center py-4 px-8 border-r border-t border-b">
+							<div className="flex items-center justify-between px-8 py-4 border-t border-b border-r">
 								<h1>2024.01.23</h1>
 								<h1>9:00 -18:00</h1>
 								<div className="flex flex-row gap-4 flex-nowrap">

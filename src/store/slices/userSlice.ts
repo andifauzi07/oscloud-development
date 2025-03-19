@@ -129,6 +129,9 @@ const userSlice = createSlice({
         clearUsers: (state) => {
             state.users = [];
         },
+        setCurrentUser: (state, action: PayloadAction<AppUser>) => {
+            state.currentUser = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -195,5 +198,5 @@ const userSlice = createSlice({
     },
 });
 
-export const { clearSelectedUser, clearUsers } = userSlice.actions;
+export const { clearSelectedUser, clearUsers, setCurrentUser } = userSlice.actions;
 export default userSlice.reducer;

@@ -146,12 +146,14 @@ function RouteComponent() {
 
 	const handleAddRecord = async (data: any) => {
 		try {
-			// Use snake_case/lowercase field names as expected by the API
 			const processedData = {
 				name: data.name,
 				email: data.email,
-				employeecategoryid: Number(data.employeecategoryid), // Changed from employeeCategoryId
-				departmentid: Number(data.departmentid), // Changed from departmentId
+				password: data.password,
+				employeecategoryid: Number(data.employeecategoryid),
+				departmentid: Number(data.departmentid),
+				status: 'Active'
+				// No need for role field since we're using metadata
 			};
 
 			await addEmployee(processedData);
@@ -225,7 +227,7 @@ function RouteComponent() {
 						onSave={handleAddRecord}
 						nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
 						selectFields={selectFields}
-						// enableCosts={true}
+						enablePassword={true} // Add this prop
 					/>
 				)}
 
