@@ -88,7 +88,7 @@ const featuresMap: Record<string, FeatureItem[]> = {
 	],
 	payroll: [
 		{ icon: Logo, label: 'Employee List', to: '/payroll' },
-		{ icon: Logo, label: 'Payment List', to: '/payroll' },
+		{ icon: Logo, label: 'Payment List', to: '/payment' },
 	],
 	default: [
 		{ icon: Logo, label: 'Employee List', to: '/features/personnel-list' },

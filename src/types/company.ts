@@ -210,6 +210,7 @@ export interface Company {
 	email: string | null;
 	category_group: string | null;
 	managerid: string | null;
+	fullAddress?: string | null;
 	personnel: CompanyPersonnel[];
 	activeLeads: number;
 	totalContractValue: number;

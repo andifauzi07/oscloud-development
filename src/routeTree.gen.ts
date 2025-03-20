@@ -17,6 +17,7 @@ import { Route as SettingIndexImport } from './routes/setting/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
 import { Route as PerformanceIndexImport } from './routes/performance/index'
 import { Route as PayrollIndexImport } from './routes/payroll/index'
+import { Route as PaymentIndexImport } from './routes/payment/index'
 import { Route as EmployeeIndexImport } from './routes/employee/index'
 import { Route as CompanyIndexImport } from './routes/company/index'
 import { Route as AuthIndexImport } from './routes/auth/index'
@@ -91,6 +92,12 @@ const PerformanceIndexRoute = PerformanceIndexImport.update({
 const PayrollIndexRoute = PayrollIndexImport.update({
   id: '/payroll/',
   path: '/payroll/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PaymentIndexRoute = PaymentIndexImport.update({
+  id: '/payment/',
+  path: '/payment/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -378,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/employee'
       fullPath: '/employee'
       preLoaderRoute: typeof EmployeeIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/payment/': {
+      id: '/payment/'
+      path: '/payment'
+      fullPath: '/payment'
+      preLoaderRoute: typeof PaymentIndexImport
       parentRoute: typeof rootRoute
     }
     '/payroll/': {
@@ -670,6 +684,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthIndexRoute
   '/company': typeof CompanyIndexRoute
   '/employee': typeof EmployeeIndexRoute
+  '/payment': typeof PaymentIndexRoute
   '/payroll': typeof PayrollIndexRoute
   '/performance': typeof PerformanceIndexRoute
   '/projects': typeof ProjectsIndexRoute
@@ -717,6 +732,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthIndexRoute
   '/company': typeof CompanyIndexRoute
   '/employee': typeof EmployeeIndexRoute
+  '/payment': typeof PaymentIndexRoute
   '/payroll': typeof PayrollIndexRoute
   '/performance': typeof PerformanceIndexRoute
   '/projects': typeof ProjectsIndexRoute
@@ -765,6 +781,7 @@ export interface FileRoutesById {
   '/auth/': typeof AuthIndexRoute
   '/company/': typeof CompanyIndexRoute
   '/employee/': typeof EmployeeIndexRoute
+  '/payment/': typeof PaymentIndexRoute
   '/payroll/': typeof PayrollIndexRoute
   '/performance/': typeof PerformanceIndexRoute
   '/projects/': typeof ProjectsIndexRoute
@@ -814,6 +831,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/company'
     | '/employee'
+    | '/payment'
     | '/payroll'
     | '/performance'
     | '/projects'
@@ -860,6 +878,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/company'
     | '/employee'
+    | '/payment'
     | '/payroll'
     | '/performance'
     | '/projects'
@@ -906,6 +925,7 @@ export interface FileRouteTypes {
     | '/auth/'
     | '/company/'
     | '/employee/'
+    | '/payment/'
     | '/payroll/'
     | '/performance/'
     | '/projects/'
@@ -954,6 +974,7 @@ export interface RootRouteChildren {
   AuthIndexRoute: typeof AuthIndexRoute
   CompanyIndexRoute: typeof CompanyIndexRoute
   EmployeeIndexRoute: typeof EmployeeIndexRoute
+  PaymentIndexRoute: typeof PaymentIndexRoute
   PayrollIndexRoute: typeof PayrollIndexRoute
   PerformanceIndexRoute: typeof PerformanceIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
@@ -1001,6 +1022,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthIndexRoute: AuthIndexRoute,
   CompanyIndexRoute: CompanyIndexRoute,
   EmployeeIndexRoute: EmployeeIndexRoute,
+  PaymentIndexRoute: PaymentIndexRoute,
   PayrollIndexRoute: PayrollIndexRoute,
   PerformanceIndexRoute: PerformanceIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
@@ -1067,6 +1089,7 @@ export const routeTree = rootRoute
         "/auth/",
         "/company/",
         "/employee/",
+        "/payment/",
         "/payroll/",
         "/performance/",
         "/projects/",
@@ -1120,6 +1143,9 @@ export const routeTree = rootRoute
     },
     "/employee/": {
       "filePath": "employee/index.tsx"
+    },
+    "/payment/": {
+      "filePath": "payment/index.tsx"
     },
     "/payroll/": {
       "filePath": "payroll/index.tsx"

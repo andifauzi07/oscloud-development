@@ -249,9 +249,7 @@ function RouteComponent() {
 
 	// Enhanced filtering with type safety
 	const filteredEmployees =
-		employees?.filter(
-			(employee) => employee.name?.toLowerCase().includes(searchKeyword.toLowerCase()) || employee.employeeId?.toString().includes(searchKeyword) || employee.employeecategory?.categoryname?.toLowerCase().includes(searchKeyword)
-		) || [];
+		localData?.filter((employee) => employee.name?.toLowerCase().includes(searchKeyword.toLowerCase()) || employee.id?.toString().includes(searchKeyword) || employee.employeeCategory?.toLowerCase().includes(searchKeyword)) || [];
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -400,7 +398,7 @@ function RouteComponent() {
 					</div>
 					<DataTable
 						columns={columns}
-						data={localData}
+						data={filteredEmployees}
 						loading={employeesLoading || creatingPayment || updatingStatus || isLoading}
 						isEditable={editable}
 						nonEditableColumns={['image', 'joinedOn', 'numberOfPayment', 'id', 'action']}

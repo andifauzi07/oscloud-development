@@ -277,10 +277,10 @@ function RouteComponent() {
 		setCurrentPage(page);
 	}, []);
 
-	useEffect(() => {
-		console.log('Company Data:', filteredCompanies);
-		console.log('Company Columns:', columns);
-	}, [filteredCompanies, columns]);
+	// useEffect(() => {
+	// console.log('Company Data:', filteredCompanies);
+	// console.log('Company Columns:', columns);
+	// }, [filteredCompanies, columns]);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
