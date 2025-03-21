@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { TitleWrapper } from "@/components/wrapperElement";
 import { AddRecordDialog } from "@/components/AddRecordDialog";
 import { DataTable } from "@/components/ui/data-table";
-import AdvancedFilterPopover from "@/components/search/advanced-search";
 import { useProject, useProjects } from "@/hooks/useProject";
 import useDebounce from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
@@ -34,31 +33,16 @@ const defaultCellRenderer = ({ getValue }: any) => {
     return <span className="text-xs whitespace-nowrap">{value ?? "-"}</span>;
 };
 
-const advancedFilterFields = [
-    {
-        key: "status",
-        label: "Status",
-        type: "toggle",
-        options: ["All", "Active", "Inactive"],
-    },
-    { key: "employeeid", label: "Employee Id", type: "number" },
-    { key: "email", label: "Email", type: "email" },
-    { key: "name", label: "Name", type: "text" },
-    { key: "department", label: "Department", type: "text" },
-];
-
 function ProjectsRouteComponent() {
     const [searchKeyword, setSearchKeyword] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("");
-    const [isEditable, setIsEditable] = useState(false);
+    const [editable, setEditable] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
-    const [categoryOptions, setCategoryOptions] = useState<
-        Array<{ value: number; label: string }>
-    >([]);
-    const [updateDataFromChild, setUpdateDataFromChild] = useState<
-        ProjectDisplay[]
-    >([]);
+    const [categoryOptions, setCategoryOptions] = useState<Array<{ value: number; label: string }>>([]);
+    const [updateDataFromChild, setUpdateDataFromChild] = useState<ProjectDisplay[]>([]);
+    const [companyListOptions, setCompanyListOptions] = useState<Array<{ value: string; label: string }>>([]);
+    const [managerOptions, setManagerOptions] = useState<Array<{ value: string; label: string }>>([]);
 
     const debouncedKeyword = useDebounce(searchKeyword, 500);
 
@@ -78,29 +62,50 @@ function ProjectsRouteComponent() {
         storageKey: "projectColumnSettings",
         defaultSettings: defaultProjectColumnSettings,
     });
+    const { currentUser, isWorkspaceReady } = useUserData();
 
     const { companies } = useCompanies();
-    const { currentUser, isWorkspaceReady } = useUserData();
     const workspaceid = currentUser?.workspaceid;
-    const { users } = useUsers(Number(workspaceid)); // Add this hook to get users data
+    const { users } = useUsers(Number(workspaceid));
 
-    const companyOptions = useMemo(
-        () =>
-            companies.map((company) => ({
-                value: company.companyid.toString(),
-                label: company.name,
-            })),
-        [companies]
-    );
+    useEffect(() => {
+        if (companies) {
+            setCompanyListOptions(
+                companies.map((company) => ({
+                    value: company.companyid.toString(),
+                    label: company.name,
+                }))
+            );
+        }
+    }, [companies]);
 
-    const managerOptions = useMemo(
-        () =>
-            users?.map((user: any) => ({
-                value: user.id.toString(),
-                label: user.email,
-            })) || [],
-        [users]
-    );
+    useEffect(() => {
+        if (users) {
+            setManagerOptions(
+                users.map((user) => ({
+                    value: user.id.toString(),
+                    label: user.email,
+                }))
+            );
+        }
+    }, [users]);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+                const categories = await getProjectCategories();
+                if (categories) {
+                    setCategoryOptions(
+                        categories.map((category: ProjectCategory) => ({
+                            value: category.categoryid,
+                            label: category.categoryname,
+                        }))
+                    );
+
+                }
+        };
+
+        loadCategories();
+    }, [workspaceid, getProjectCategories]);
 
     const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
         return settings
@@ -178,6 +183,8 @@ function ProjectsRouteComponent() {
                 updateDataFromChild.map(async (project) => {
                     if (!project.projectId) return;
 
+                    console.log('project', project);
+
                     const updatePayload: UpdateProjectRequest = {
                         name: project.name,
                         startdate: project.startDate,
@@ -198,7 +205,7 @@ function ProjectsRouteComponent() {
             // Refresh projects after saving
             await getProjects(filters);
 
-            setIsEditable(false);
+            setEditable(false);
             setUpdateDataFromChild([]);
             alert("Projects updated successfully");
         } catch (error) {
@@ -207,36 +214,17 @@ function ProjectsRouteComponent() {
         }
     }, [editProject, updateDataFromChild, getProjects, filters]);
 
-    const toggleEditMode = useCallback(() => {
-        setIsEditable((prev) => !prev);
-    }, []);
-
-    useEffect(() => {
-        const loadCategories = async () => {
-            try {
-                if (!isWorkspaceReady || !workspaceid) {
-                    return;
-                }
-                const categories = await getProjectCategories();
-                setCategoryOptions(
-                    categories.map((category: ProjectCategory) => ({
-                        value: category.categoryid,
-                        label: category.categoryname,
-                    }))
-                );
-            } catch (error) {
-                console.error("Failed to load categories:", error);
-            }
-        };
-
-        loadCategories();
-    }, [workspaceid, getProjectCategories, isWorkspaceReady]);
-
     useEffect(() => {
         if (error) {
             toast.error("Failed to load projects");
         }
     }, [error]);
+
+    const selectFields = {
+        companyid: { options: companyListOptions },
+        managerid: { options: managerOptions },
+        categoryid: { options: categoryOptions },
+    }
 
     if (loading) {
         return (
@@ -254,7 +242,6 @@ function ProjectsRouteComponent() {
                     Settings
                 </Link>
             </TitleWrapper>
-
             <div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
                 <div className="flex gap-8">
                     <div className="flex flex-col space-y-2 bg-white md:w-auto">
@@ -297,79 +284,55 @@ function ProjectsRouteComponent() {
                         </div>
                     </div>
                 </div>
-
-                <div className="flex flex-col items-end space-y-2">
-                    <Label>‎</Label>
-                    <div className="flex items-center gap-4">
-                        <AdvancedFilterPopover fields={advancedFilterFields} />
-                    </div>
-                </div>
             </div>
 
             <div className="flex justify-end flex-none w-full bg-white">
-                {isEditable ?
-                    <>
-                        <Button
-                            onClick={() => {
-                                setIsEditable(false);
-                                setUpdateDataFromChild([]);
-                            }}
-                            className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10"
-                        >
-                            CANCEL
-                        </Button>
-                        <Button
-                            onClick={handleSave}
-                            className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10"
-                        >
-                            SAVE
-                        </Button>
-                    </>
-                :   <>
-                        <AddRecordDialog
-                            columns={columns}
-                            onSave={handleAddRecord}
-                            nonEditableColumns={[
-                                "projectid",
-                                "created_at",
-                                "updated_at",
-                                "assignedStaff",
-                                "connectedPersonnel",
-                                "detail",
-                                "Members",
-                                "costs.*",
-                                "startDate",
-                                "endDate",
-                            ]}
-                            selectFields={{
-                                companyid: { options: companyOptions },
-                                managerid: {
-                                    options: users.map((manager) => ({
-                                        value: manager.id,
-                                        label: manager.email,
-                                    })),
-                                },
-                                categoryid: { options: categoryOptions },
-                            }}
-                            customFields={{
-                                duration: {
-                                    type: "dateRange",
-                                    startKey: "startdate",
-                                    endKey: "enddate",
-                                    label: "Duration",
-                                },
-                            }}
-                            enableCosts={true}
-                        />
-                        <Button
-                            onClick={() => setIsEditable(true)}
-                            className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10"
-                        >
-                            EDIT
-                        </Button>
-                    </>
-                }
-            </div>
+				{editable ? (
+					<Button
+						onClick={() => setEditable((prev) => !prev)}
+						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+						CANCEL
+					</Button>
+				) : (
+					<AddRecordDialog
+						columns={columns}
+						onSave={handleAddRecord}
+						nonEditableColumns={[
+                            "projectid",
+                            "created_at",
+                            "updated_at",
+                            "assignedStaff",
+                            "connectedPersonnel",
+                            "costs*",
+                            "manager*"
+                        ]}
+                        selectFields={selectFields}
+                        customFields={{
+                            duration: {
+                                type: "dateRange",
+                                startKey: "startdate",
+                                endKey: "enddate",
+                                label: "Start Date",
+                            }
+                        }}
+						enablePassword={true}
+					/>
+				)}
+
+				{editable ? (
+					<Button
+						onClick={handleSave}
+						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
+						SAVE
+					</Button>
+				) : (
+					<Button
+						onClick={() => setEditable((prev) => !prev)}
+						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+						EDIT
+					</Button>
+				)}
+			</div>
 
             <Tabs defaultValue="list">
                 <TabsList className="border-b justify-start w-full gap-8 bg-white border-t border-r [&>*]:rounded-none [&>*]:bg-transparent rounded-none h-12 pl-5">
@@ -393,7 +356,7 @@ function ProjectsRouteComponent() {
                             columns={columns}
                             data={projects}
                             loading={loading}
-                            isEditable={isEditable}
+                            isEditable={editable}
                             setTableData={setUpdateDataFromChild}
                             nonEditableColumns={[
                                 "projectid",
@@ -401,18 +364,10 @@ function ProjectsRouteComponent() {
                                 "updated_at",
                                 "assignedStaff",
                                 "connectedPersonnel",
-                                "costs",
+                                "costs*",
+                                "manager*"
                             ]}
-                            selectFields={{
-                                companyid: { options: companyOptions },
-                                managerid: {
-                                    options: users.map((manager) => ({
-                                        value: manager.id,
-                                        label: manager.email,
-                                    })),
-                                },
-                                categoryid: { options: categoryOptions },
-                            }}
+                            selectFields={selectFields}
                             total={total}
                             currentPage={currentPage}
                             onPageChange={setCurrentPage}
