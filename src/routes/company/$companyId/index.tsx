@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MenuList from '@/components/menuList';
 import { useEffect, useState } from 'react';
-import { CompanyUpdate } from '@/types/company';
+import { Company, CompanyUpdate } from '@/types/company';
 import { useCompanies } from '@/hooks/useCompany';
 import Loading from '@/components/Loading';
 import { cn } from '@/lib/utils';
@@ -21,8 +21,12 @@ function CompanyDetail() {
 	const [editedCompany, setEditedCompany] = useState<CompanyUpdate>({});
 	const location = useLocation();
 	const isCurrentPath = location.pathname === `/company/${companyId}`;
+	const [selectedCompany, setSelectedCompany] = useState<Company | undefined>(undefined);
 
-	const { selectedCompany, loading, error, fetchCompany, updateCompany } = useCompanies();
+	const { loading, fetchCompany, updateCompany } = useCompanies();
+	// console.log('INI LOADING: ', loading);
+	// console.log('INI ERROR: ', error);
+
 	const { uploadImage, isUploading } = useImageUpload({
 		bucketName: 'company_logos',
 		folderPath: 'logos',
@@ -30,14 +34,28 @@ function CompanyDetail() {
 		allowedFileTypes: ['image/jpeg', 'image/png', 'image/svg+xml'],
 	});
 
-	useEffect(() => {
-		if (companyId) {
-			fetchCompany(Number(companyId));
-			console.log('Edited Logo URL:', selectedCompany?.logo);
-		}
-	}, [companyId, fetchCompany]);
+	console.log('INI SELECTED COMPANY: ', selectedCompany);
 
-	useEffect(() => {}, [selectedCompany?.logo, editedCompany.logo]);
+	useEffect(() => {
+		if (companyId && !loading) {
+			fetchCompany(Number(companyId))
+				.then((result) => {
+					if (result) {
+						const isDataDifferent = JSON.stringify(result) !== JSON.stringify(selectedCompany);
+						if (isDataDifferent) {
+							setSelectedCompany(result);
+						}
+					}
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+		}
+	}, [companyId]);
+
+	console.log('INI SELECTED COMPANY: ', selectedCompany);
+
+	// useEffect(() => {}, [selectedCompany?.logo, editedCompany.logo]);
 
 	const handleValueChange = (key: string, value: string) => {
 		setEditedCompany((prev) => ({
@@ -118,7 +136,7 @@ function CompanyDetail() {
 	];
 
 	if (loading) return <Loading />;
-	if (error) return <div>Error loading company</div>;
+	// if (error) return <div>Error loading company</div>;
 	if (!selectedCompany) return <div>Company not found</div>;
 
 	const basicInfo = [
