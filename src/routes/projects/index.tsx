@@ -315,7 +315,6 @@ function ProjectsRouteComponent() {
                                 label: "Start Date",
                             }
                         }}
-						enablePassword={true}
 					/>
 				)}
 
