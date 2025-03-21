@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MenuList from '@/components/menuList';
 import { useEffect, useState } from 'react';
-import { CompanyUpdate } from '@/types/company';
+import { Company, CompanyUpdate } from '@/types/company';
 import { useCompanies } from '@/hooks/useCompany';
 import Loading from '@/components/Loading';
 import { cn } from '@/lib/utils';
@@ -21,8 +21,10 @@ function CompanyDetail() {
 	const [editedCompany, setEditedCompany] = useState<CompanyUpdate>({});
 	const location = useLocation();
 	const isCurrentPath = location.pathname === `/company/${companyId}`;
+	const [selectedCompany, setSelectedCompany] = useState<Company | undefined>(undefined);
 
-	const { selectedCompany, loading, error, fetchCompany, updateCompany } = useCompanies();
+	const { loading, fetchCompany, updateCompany } = useCompanies();
+
 	const { uploadImage, isUploading } = useImageUpload({
 		bucketName: 'company_logos',
 		folderPath: 'logos',
@@ -31,13 +33,21 @@ function CompanyDetail() {
 	});
 
 	useEffect(() => {
-		if (companyId) {
-			fetchCompany(Number(companyId));
-			console.log('Edited Logo URL:', selectedCompany?.logo);
+		if (companyId && !loading) {
+			fetchCompany(Number(companyId))
+				.then((result) => {
+					if (result) {
+						const isDataDifferent = JSON.stringify(result) !== JSON.stringify(selectedCompany);
+						if (isDataDifferent) {
+							setSelectedCompany(result);
+						}
+					}
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
 		}
-	}, [companyId, fetchCompany]);
-
-	useEffect(() => {}, [selectedCompany?.logo, editedCompany.logo]);
+	}, [companyId]);
 
 	const handleValueChange = (key: string, value: string) => {
 		setEditedCompany((prev) => ({
@@ -73,13 +83,15 @@ function CompanyDetail() {
 	};
 
 	const handleSave = async () => {
+		console.log('ini edited company: ', editedCompany);
+
 		try {
 			if (!Object.keys(editedCompany).length) {
 				alert('No changes to save');
 				return;
 			}
 
-			if (!selectedCompany?.companyid) {
+			if (!selectedCompany?.companyId) {
 				alert('Company ID is missing');
 				return;
 			}
@@ -101,7 +113,7 @@ function CompanyDetail() {
 				}
 			});
 
-			await updateCompany(selectedCompany.companyid, updatePayload);
+			await updateCompany(selectedCompany.companyId, updatePayload);
 
 			setIsEditing(false);
 			setEditedCompany({});
@@ -117,8 +129,9 @@ function CompanyDetail() {
 		{ label: 'Personnel', path: `/company/${companyId}/companyPersonnel` },
 	];
 
+	console.log('ini selected company: ', selectedCompany);
+
 	if (loading) return <Loading />;
-	if (error) return <div>Error loading company</div>;
 	if (!selectedCompany) return <div>Company not found</div>;
 
 	const basicInfo = [
@@ -167,10 +180,38 @@ function CompanyDetail() {
 
 	const managerInfo = [
 		{
-			label: 'Manager',
-			value: selectedCompany.managerid || selectedCompany.manager?.userId || 'Unassigned', // Keep as string for now
-			nonEditable: true,
+			label: selectedCompany.manager?.userId || 'No assigned',
+			value: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName! || '-',
+			key: 'managerid',
+			options: [
+				{ value: '1', label: 'Rian' },
+				{ value: '2', label: 'John' },
+			],
 		},
+		// {
+		// 	label: 'Role',
+		// 	value: selectedCompany.manager?.role || '-',
+		// 	nonEditable: true,
+		// },
+		// {
+		// 	label: 'Name',
+		// 	value: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName || 'Unassigned', // Keep as string for now
+		// 	options: [
+		// 		{ value: '1', label: 'Rian' },
+		// 		{ value: '2', label: 'John' },
+		// 	],
+		// 	key: 'name',
+		// },
+		// {
+		// 	label: 'Email',
+		// 	value: selectedCompany.manager?.email || '-',
+		// 	nonEditable: true,
+		// },
+		// {
+		// 	label: 'Phone Number',
+		// 	value: selectedCompany.manager?.phoneNumber || '-',
+		// 	nonEditable: true,
+		// },
 	];
 
 	return (
@@ -278,9 +319,10 @@ function CompanyDetail() {
 							/>
 							<InfoSection
 								items={managerInfo}
-								title="Management Information"
-								isEditing={false}
+								title="Manager"
+								isEditing={isEditing}
 								className="border-l-0"
+								onValueChange={handleValueChange}
 							/>
 						</div>
 					</div>
