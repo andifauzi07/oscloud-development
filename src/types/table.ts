@@ -1,6 +1,6 @@
 import { ColumnDef, CellContext } from '@tanstack/react-table';
 
-export type TableColumnType = 'text' | 'number' | 'boolean' | 'email' | 'date' | 'file' | 'image' | 'actions' | 'dropdown' | 'url' | 'multiLineText';
+export type TableColumnType = 'text' | 'number' | 'boolean' | 'email' | 'date' | 'file' | 'image' | 'actions' | 'dropdown' | 'url' | 'multiLineText' | 'dropdown';
 
 export type CategoryDataField = '基本情報' | '単価' | '契約関連' | '講習会' | '面談結果' | 'SNS';
 

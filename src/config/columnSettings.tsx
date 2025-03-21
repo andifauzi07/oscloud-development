@@ -76,7 +76,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		accessorKey: 'category_group',
 		header: 'カテゴリー',
 		label: 'カテゴリー',
-		type: 'text',
+		type: 'dropdown',
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 6,

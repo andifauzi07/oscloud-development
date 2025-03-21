@@ -85,7 +85,7 @@ function RouteComponent() {
 	const [updateDataFromChild, setUpdateDataFromChild] = useState(companies);
 	const handleSaveEdits = useSaveEdits<Company>();
 
-	const { settings, saveSettings, reorderColumns } = useColumnSettings<Company>({
+	const { settings } = useColumnSettings<Company>({
 		storageKey: 'companyColumnSettings',
 		defaultSettings: defaultCompanyColumnSettings,
 	});
@@ -96,7 +96,7 @@ function RouteComponent() {
 		const activeSettings = settings.length > 0 ? settings : defaultCompanyColumnSettings;
 
 		return activeSettings
-			.filter((setting) => setting.status === 'Active' || setting.status === 'shown') // Accept both status types
+			.filter((setting) => setting.status === 'Active' || setting.status !== 'Hidden') // Accept both status types
 			.sort((a, b) => a.order - b.order)
 			.map((setting) => {
 				// Find the matching default setting
@@ -118,19 +118,19 @@ function RouteComponent() {
 	}, [settings]);
 
 	// Add this debug log to see what's being filtered
-	useEffect(() => {
-		console.log(
-			'Settings after status filter:',
-			settings.filter((setting) => setting.status === 'Active' || setting.status === 'shown')
-		);
-	}, [settings]);
+	// useEffect(() => {
+	// 	console.log(
+	// 		'Settings after status filter:',
+	// 		settings.filter((setting) => setting.status === 'Active' || setting.status === 'shown')
+	// 	);
+	// }, [settings]);
 
 	// Add this debug log
-	useEffect(() => {
-		console.log('Active Settings:', settings);
-		console.log('Default Settings:', defaultCompanyColumnSettings);
-		console.log('Generated Columns:', columns);
-	}, [settings, columns]);
+	// useEffect(() => {
+	// 	console.log('Active Settings:', settings);
+	// 	console.log('Default Settings:', defaultCompanyColumnSettings);
+	// 	console.log('Generated Columns:', columns);
+	// }, [settings, columns]);
 
 	const transformedCompanies = useMemo(() => {
 		if (!companies || !Array.isArray(companies)) return [];
@@ -276,11 +276,6 @@ function RouteComponent() {
 	const handlePageChange = useCallback((page: number) => {
 		setCurrentPage(page);
 	}, []);
-
-	// useEffect(() => {
-	// console.log('Company Data:', filteredCompanies);
-	// console.log('Company Columns:', columns);
-	// }, [filteredCompanies, columns]);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">

@@ -24,8 +24,6 @@ function CompanyDetail() {
 	const [selectedCompany, setSelectedCompany] = useState<Company | undefined>(undefined);
 
 	const { loading, fetchCompany, updateCompany } = useCompanies();
-	// console.log('INI LOADING: ', loading);
-	// console.log('INI ERROR: ', error);
 
 	const { uploadImage, isUploading } = useImageUpload({
 		bucketName: 'company_logos',
@@ -33,8 +31,6 @@ function CompanyDetail() {
 		maxSizeInMB: 3,
 		allowedFileTypes: ['image/jpeg', 'image/png', 'image/svg+xml'],
 	});
-
-	console.log('INI SELECTED COMPANY: ', selectedCompany);
 
 	useEffect(() => {
 		if (companyId && !loading) {
@@ -52,10 +48,6 @@ function CompanyDetail() {
 				});
 		}
 	}, [companyId]);
-
-	console.log('INI SELECTED COMPANY: ', selectedCompany);
-
-	// useEffect(() => {}, [selectedCompany?.logo, editedCompany.logo]);
 
 	const handleValueChange = (key: string, value: string) => {
 		setEditedCompany((prev) => ({
@@ -91,13 +83,15 @@ function CompanyDetail() {
 	};
 
 	const handleSave = async () => {
+		console.log('ini edited company: ', editedCompany);
+
 		try {
 			if (!Object.keys(editedCompany).length) {
 				alert('No changes to save');
 				return;
 			}
 
-			if (!selectedCompany?.companyid) {
+			if (!selectedCompany?.companyId) {
 				alert('Company ID is missing');
 				return;
 			}
@@ -119,7 +113,7 @@ function CompanyDetail() {
 				}
 			});
 
-			await updateCompany(selectedCompany.companyid, updatePayload);
+			await updateCompany(selectedCompany.companyId, updatePayload);
 
 			setIsEditing(false);
 			setEditedCompany({});
@@ -135,8 +129,9 @@ function CompanyDetail() {
 		{ label: 'Personnel', path: `/company/${companyId}/companyPersonnel` },
 	];
 
+	console.log('ini selected company: ', selectedCompany);
+
 	if (loading) return <Loading />;
-	// if (error) return <div>Error loading company</div>;
 	if (!selectedCompany) return <div>Company not found</div>;
 
 	const basicInfo = [
@@ -185,10 +180,38 @@ function CompanyDetail() {
 
 	const managerInfo = [
 		{
-			label: 'Manager',
-			value: selectedCompany.managerid || selectedCompany.manager?.userId || 'Unassigned', // Keep as string for now
-			nonEditable: true,
+			label: selectedCompany.manager?.userId || 'No assigned',
+			value: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName! || '-',
+			key: 'managerid',
+			options: [
+				{ value: '1', label: 'Rian' },
+				{ value: '2', label: 'John' },
+			],
 		},
+		// {
+		// 	label: 'Role',
+		// 	value: selectedCompany.manager?.role || '-',
+		// 	nonEditable: true,
+		// },
+		// {
+		// 	label: 'Name',
+		// 	value: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName || 'Unassigned', // Keep as string for now
+		// 	options: [
+		// 		{ value: '1', label: 'Rian' },
+		// 		{ value: '2', label: 'John' },
+		// 	],
+		// 	key: 'name',
+		// },
+		// {
+		// 	label: 'Email',
+		// 	value: selectedCompany.manager?.email || '-',
+		// 	nonEditable: true,
+		// },
+		// {
+		// 	label: 'Phone Number',
+		// 	value: selectedCompany.manager?.phoneNumber || '-',
+		// 	nonEditable: true,
+		// },
 	];
 
 	return (
@@ -296,9 +319,10 @@ function CompanyDetail() {
 							/>
 							<InfoSection
 								items={managerInfo}
-								title="Management Information"
-								isEditing={false}
+								title="Manager"
+								isEditing={isEditing}
 								className="border-l-0"
+								onValueChange={handleValueChange}
 							/>
 						</div>
 					</div>
