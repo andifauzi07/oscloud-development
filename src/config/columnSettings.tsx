@@ -196,13 +196,13 @@ const costColumns = Object.entries({
 export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] = [
 	{
 		accessorKey: 'name',
-		header: () => <h1 className="pl-8">案件名</h1>,
+		header: () => <h1>案件名</h1>,
 		label: '案件名',
 		type: 'text',
 		date_created: new Date().toISOString(),
 		status: 'shown',
 		order: 1,
-		cell: ({ row }) => <h1 className="pl-8">{row.original.name}</h1>,
+		cell: ({ row }) => <h1>{row.original.name}</h1>,
 	},
 	{
 		accessorKey: 'managerid', // Changed from "manager.name" to match Project type

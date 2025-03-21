@@ -12,10 +12,9 @@ interface Project {
     enddate: string | null;
     manager: {
         userId: number;
-        email: string;  // Changed from name to email
+        email: string;  
     };
     status: string | null;
-    // ... other properties
 }
 
 interface Manager {
