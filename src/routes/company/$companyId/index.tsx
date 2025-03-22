@@ -129,8 +129,6 @@ function CompanyDetail() {
 		{ label: 'Personnel', path: `/company/${companyId}/companyPersonnel` },
 	];
 
-	console.log('ini selected company: ', selectedCompany);
-
 	if (loading) return <Loading />;
 	if (!selectedCompany) return <div>Company not found</div>;
 
@@ -139,6 +137,15 @@ function CompanyDetail() {
 			label: 'Company Name',
 			value: editedCompany.name || selectedCompany.name || '',
 			key: 'name',
+		},
+		{
+			label: 'Status',
+			value: editedCompany.status || 'Inactive',
+			key: 'status',
+			options: [
+				{ value: 'active', label: 'Active' },
+				{ value: 'inactive', label: 'Inactive' },
+			],
 		},
 		{
 			label: 'Category',
@@ -180,8 +187,8 @@ function CompanyDetail() {
 
 	const managerInfo = [
 		{
-			label: selectedCompany.manager?.userId || 'No assigned',
-			value: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName! || '-',
+			value: selectedCompany.manager?.userId || 'No assigned',
+			label: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName! || '-',
 			key: 'managerid',
 			options: [
 				{ value: '1', label: 'Rian' },

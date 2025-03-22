@@ -17,6 +17,7 @@ import { Company, CreateCompanyRequest, UpdateCompanyRequest, CompanyUpdate } fr
 import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { defaultCompanyColumnSettings } from '@/config/columnSettings';
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
+import { useUserData } from '@/hooks/useUserData';
 
 export const Route = createFileRoute('/company/')({
 	component: RouteComponent,
@@ -196,7 +197,7 @@ function RouteComponent() {
 					city: data.city || '',
 					product: data.product || '',
 					email: data.email || '',
-					category_group: data.category_group || '',
+					categoryGroup: data.category_group || '',
 					managerid: data.managerid || '',
 					personnel: [],
 				};
@@ -247,7 +248,8 @@ function RouteComponent() {
 									email: data.email || undefined,
 									city: data.city || undefined,
 									product: data.product || undefined,
-									category_group: data.category_group || undefined,
+									categoryGroup: data.category_group || undefined,
+									managerid: data.managerid || undefined,
 									logo: data.logo || undefined,
 								};
 								await updateCompany(id, transformedData);
@@ -349,6 +351,20 @@ function RouteComponent() {
 							} else {
 								setUpdateDataFromChild(updateFunctionOrData);
 							}
+						}}
+						selectFields={{
+							managerid: {
+								options: [
+									{ value: '1', label: 'Rian' },
+									{ value: '2', label: 'John' },
+								],
+							},
+							category_group: {
+								options: [
+									{ value: 'tech', label: 'Technology' },
+									{ value: 'finance', label: 'Finance' },
+								],
+							},
 						}}
 					/>
 				</div>

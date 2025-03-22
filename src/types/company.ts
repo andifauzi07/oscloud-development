@@ -205,6 +205,7 @@ export interface Company {
 	logo: string | null;
 	workspaceid: number;
 	created_at: string;
+	status?: string;
 	city: string | null;
 	product: string | null;
 	email: string | null;
@@ -248,7 +249,7 @@ export interface CreateCompanyRequest {
 	city: string;
 	product: string;
 	email: string;
-	category_group: string;
+	categoryGroup: string;
 	managerid: string; // Keep as required string
 	personnel: never[];
 }

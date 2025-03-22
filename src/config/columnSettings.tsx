@@ -73,7 +73,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		order: 5,
 	},
 	{
-		accessorKey: 'category_group',
+		accessorKey: 'categoryGroup',
 		header: 'カテゴリー',
 		label: 'カテゴリー',
 		type: 'dropdown',
@@ -134,6 +134,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 12,
+		cell: ({ row }: CellContext<Company, any>) => row.original.created_at.split('T')[0],
 	},
 	{
 		accessorKey: 'detail',
