@@ -586,10 +586,9 @@ export const ProjectDescriptionTab: React.FC<ProjectDescriptionTabProps> = ({
                                 }
                                 className="w-full h-32 p-2 border rounded"
                             />
-                        :   <p>
-                                {currentProject?.description ||
-                                    "説明なし"}
-                            </p>
+                        :      <div>
+                                <p dangerouslySetInnerHTML={{ __html: (currentProject?.description || '説明なし').replace(/\n/g, '<br />') }} />
+                            </div>
                         }
                     </div>
 
