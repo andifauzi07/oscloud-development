@@ -109,7 +109,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		order: 9,
 	},
 	{
-		accessorKey: 'managerid',
+		accessorKey: 'manager',
 		header: '担当マネージャ',
 		label: '担当マネージャ',
 		type: 'number',
