@@ -22,7 +22,7 @@ import { ProjectCategory } from "@/store/slices/projectSlice";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TabsContent } from "@radix-ui/react-tabs";
-import ScheduleTable from "@/components/EmployeTimeLine";
+import ScheduleTable from "@/components/ScheduleTimeLine";
 
 export const Route = createFileRoute("/projects/")({
     component: ProjectsRouteComponent,
@@ -377,7 +377,7 @@ function ProjectsRouteComponent() {
                 <TabsContent value="timeline">
                 <div className="flex-1 overflow-x-auto">
                         <ScheduleTable
-                            projects={projects}
+                            data={projects}
                             currentDate={new Date()}
                         />
                     </div>
