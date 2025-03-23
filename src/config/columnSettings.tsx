@@ -181,7 +181,7 @@ const costColumns = Object.entries({
 	label: label,
 	type: 'number' as const,
 	date_created: new Date().toISOString(),
-	status: 'shown' as const,
+	status: 'Active' as const,
 	order: 8 + index,
 	cell: ({ row }: any) => {
 		// Get the costs object safely
@@ -201,7 +201,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: '案件名',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 1,
 		cell: ({ row }) => <h1>{row.original.name}</h1>,
 	},
@@ -211,7 +211,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: 'スタッフ',
 		type: 'number',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 2,
 		cell: ({ row }) => <span>{row.original.manager?.name}</span>, // Access nested property in cell renderer
 	},
@@ -221,7 +221,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: '開始',
 		type: 'date',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 3,
 		cell: ({ row }) => (row.original.startDate ? new Date(row.original.startDate).toLocaleDateString() : 'N/A'),
 	},
@@ -231,7 +231,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: '終了',
 		type: 'date',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 4,
 		cell: ({ row }) => (row.original.endDate ? new Date(row.original.endDate).toLocaleDateString() : 'N/A'),
 	},
@@ -241,7 +241,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: '指名者',
 		type: 'number',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 5,
 		cell: ({ row }) => <span>{row.original.company?.name}</span>, // Access nested property in cell renderer
 	},
@@ -251,7 +251,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: 'カテゴリー',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 6,
 		cell: ({ row }) => {
 			const category = row.original.category;
@@ -264,7 +264,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: 'Members',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 7,
 		cell: ({ row }) => {
 			const personnelCount = Array.isArray(row.original.assignedStaff) ? row.original.assignedStaff.length : 0;
@@ -280,7 +280,7 @@ export const defaultProjectColumnSettings: BaseColumnSetting<ProjectDisplay>[] =
 		label: '',
 		type: 'text',
 		date_created: new Date().toISOString(),
-		status: 'shown',
+		status: 'Active',
 		order: 99,
 		cell: ({ row }) => (
 			<div className="flex justify-end w-full">

@@ -250,6 +250,7 @@ function RouteComponent() {
 			console.error('Failed to save updates:', error);
 		}
 	}, []);
+	
 	return (
 		<div className="flex-1 h-full">
 			<Tabs defaultValue="data-field">
