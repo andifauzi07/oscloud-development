@@ -62,7 +62,7 @@ const columns: ColumnDef<PayrollRow>[] = [
 	},
 	{
 		accessorKey: 'id',
-		header: 'ID',
+		header: 'Employee ID',
 	},
 	{
 		accessorKey: 'name',
@@ -231,20 +231,23 @@ function RouteComponent() {
 		}
 	}, [employees]);
 
-	const handleAddRecord = async (data: Partial<Employee>) => {
+	const handleAddRecord = async (data: Partial<any>) => {
 		try {
-			if (!data.employeeId) throw new Error('Invalid employee data');
+			if (!data.id) throw new Error('Invalid employee data');
 
 			await createPayment({
-				employeeId: Number(data.employeeId),
+				createdby: currentUser?.userid,
+				employeeid: Number(data.id),
 				details: [
 					{
-						projectid: 1, // Should be replaced with actual project selection
+						projectid: 1, 
 						hoursworked: 0,
 						transportfee: 0,
 					},
 				],
 			});
+
+			alert('Record added successfully');
 		} catch (error) {
 			console.error('Failed to add record:', error);
 		}
@@ -346,7 +349,7 @@ function RouteComponent() {
 							<AddRecordDialog
 								columns={columns}
 								onSave={handleAddRecord}
-								nonEditableColumns={['image', 'id', 'joinedOn', 'numberOfPayment', 'action']}
+								nonEditableColumns={['image', 'name', 'joinedOn', 'numberOfPayment', 'action']}
 								selectFields={{
 									employeeCategory: {
 										options: employeeCategoryOptions,

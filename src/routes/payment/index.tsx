@@ -5,6 +5,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TitleWrapper } from '@/components/wrapperElement';
+import { usePayrollEmployees } from '@/hooks/usePayroll';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 import { useState } from 'react';
@@ -50,13 +51,90 @@ export interface Payment {
 	employee: string;
 	totalPayment: number;
 	totalHours: string;
-	HourlyRateA: string;
-	HourlyRateB: string;
 	TransportFee: string;
 	TotalPayment: string;
+	rates: { type: string; rate: number }[];
 }
 
+const columns: ColumnDef<Payment>[] = [
+	{
+		id: 'employeeId',
+		header: 'Employee Id',
+		accessorKey: 'employeeId',
+	},
+	{
+		id: 'name',
+		header: 'Name',
+		accessorKey: 'name',
+	},
+	// {
+	// 	id: 'status',
+	// 	header: 'Status',
+	// 	accessorKey: 'status',
+	// },
+	// {
+	// 	id: 'employee',
+	// 	header: 'Employee',
+	// 	accessorKey: 'employee',
+	// },
+	{
+		id: 'category',
+		header: 'Category',
+		accessorKey: 'category',
+	},
+	{
+		id: 'totalPayment',
+		header: 'Total Payment',
+		accessorKey: 'totalPayment',
+	},
+	{
+		id: 'totalHours',
+		header: 'Total Hours',
+		accessorKey: 'numberOfPayments',
+	},
+	{
+		id: 'HourlyRateA',
+		header: 'Hourly Rate A',
+		accessorKey: 'HourlyRateA',
+		cell: ({ row }: any) => {
+			const rateA = row.original.rates.find((rate: any) => rate.type === 'A');
+			return rateA?.ratevalue || 'N/A';
+		}
+	},
+	{
+		id: 'HourlyRateB',
+		header: 'Hourly Rate B',
+		accessorKey: 'HourlyRateB',
+		cell: ({ row }: any) => {
+			const rateB = row.original.rates.find((rate: any) => rate.type === 'B');
+			return rateB?.ratevalue || 'N/A';
+		}
+	},
+	// {
+	// 	id: 'TransportFee',
+	// 	header: 'Transport Fee',
+	// 	accessorKey: 'TransportFee',
+	// },
+	{
+		id: 'actions',
+		header: '',
+		accessorKey: '',
+		cell: ({ row }) => (
+			<div className="flex justify-end w-full">
+				<Link to={'/payment'}>
+					<Button
+						variant="outline"
+						className="w-20 h-full border-t-0 border-b-0 border-r-0">
+						DETAIL
+					</Button>
+				</Link>
+			</div>
+		),
+	},
+];
+
 function RouteComponent() {
+	const { employees, loading, error } = usePayrollEmployees();
 	const [searchKeyword, setSearchKeyword] = useState('');
 	const [editable, setEditable] = useState(false);
 
@@ -120,70 +198,6 @@ function RouteComponent() {
 			HourlyRateB: '3600',
 			TransportFee: '5200',
 			TotalPayment: '130000',
-		},
-	];
-
-	const columns: ColumnDef<Payment>[] = [
-		{
-			id: 'employeeid',
-			header: 'Employee Id',
-			accessorKey: 'id',
-		},
-		{
-			id: 'name',
-			header: 'Name',
-			accessorKey: 'name',
-		},
-		{
-			id: 'status',
-			header: 'Status',
-			accessorKey: 'status',
-		},
-		{
-			id: 'employee',
-			header: 'Employee',
-			accessorKey: 'employee',
-		},
-		{
-			id: 'totalPayment',
-			header: 'Total Payment',
-			accessorKey: 'totalPayment',
-		},
-		{
-			id: 'totalHours',
-			header: 'Total Hours',
-			accessorKey: 'totalHours',
-		},
-		{
-			id: 'HourlyRateA',
-			header: 'Hourly Rate A',
-			accessorKey: 'HourlyRateA',
-		},
-		{
-			id: 'HourlyRateB',
-			header: 'Hourly Rate B',
-			accessorKey: 'HourlyRateB',
-		},
-		{
-			id: 'TransportFee',
-			header: 'Transport Fee',
-			accessorKey: 'TransportFee',
-		},
-		{
-			id: 'actions',
-			header: '',
-			accessorKey: '',
-			cell: ({ row }) => (
-				<div className="flex justify-end w-full">
-					<Link to={'/payment'}>
-						<Button
-							variant="outline"
-							className="w-20 h-full border-t-0 border-b-0 border-r-0">
-							DETAIL
-						</Button>
-					</Link>
-				</div>
-			),
 		},
 	];
 
@@ -341,8 +355,8 @@ function RouteComponent() {
 			</div>
 			<DataTable
 				columns={columns}
-				data={payments}
-				loading={false}
+				data={employees}
+				loading={loading}
 				isEditable={editable}
 				nonEditableColumns={['image', 'joinedOn', 'numberOfPayment', 'id', 'action']}
 				// setTableData={(updateFunctionOrData) => {
