@@ -59,7 +59,7 @@ function ProjectsRouteComponent() {
     const { projects, loading, error, total } = useProjects(filters);
     const { addProject, editProject, getProjectCategories, getProjects } = useProject();
     const { settings, saveSettings, reorderColumns } = useColumnSettings({
-        storageKey: "projectColumnSettings",
+        storageKey: "ProjectsColumnSettings",
         defaultSettings: defaultProjectColumnSettings,
     });
     const { currentUser, isWorkspaceReady } = useUserData();
@@ -109,7 +109,7 @@ function ProjectsRouteComponent() {
 
     const columns = useMemo<ColumnDef<ProjectDisplay, any>[]>(() => {
         return settings
-            .filter((setting) => setting.status === "shown")
+            .filter((setting) => setting.status === "Active" || setting.status === "shown")
             .sort((a, b) => a.order - b.order)
             .map((setting) => {
                 const defaultSetting = defaultProjectColumnSettings.find(

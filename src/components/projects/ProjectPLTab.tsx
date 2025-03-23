@@ -136,29 +136,30 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
             <div className="flex w-full h-full">
                 {/* Left Side */}
                 <div className="w-1/3 h-full border-r">
-                    <div className="flex items-center justify-center w-full px-4 py-2 bg-gray-100">
+                    <div className="flex items-center justify-center w-full bg-gray-100 h-10">
                         <h2>総利益</h2>
                     </div>
-                    <div className="flex w-full h-[250px] justify-center items-center border-t border-b p-4">
+                    <div className="flex w-full h-[200px] justify-center items-center border-t border-b p-4">
                         <h2 className="text-2xl">{plData.profit.total.toLocaleString()} ¥</h2>
                     </div>
-                    <div className="flex items-center justify-center w-full p-4 bg-gray-100">
+                    <div className="flex items-center justify-center w-full bg-gray-100 h-10">
                         <h2>利益率</h2>
                     </div>
-                    <div className="flex w-full justify-center h-[250px] items-center border-t p-4">
+                    <div className="flex w-full justify-center h-[200px] items-center border-t p-4">
                         <h2 className="text-2xl">{Number(plData.profit.profitability).toFixed(2)} %</h2>
                     </div>
-                    <div className="min-h-[600px]">
-                        <div className="flex items-center justify-center w-full p-4 bg-gray-100 border-t border-b">
+                    <div className="flex items-center justify-center w-full border-b border-t bg-gray-100 h-10">
                             <h2>費用内訳</h2>
                         </div>
+                    <div className="min-h-[500px]">
                         <GraphicChart title="費用内訳" description='費用内訳' data={plData.costBreakdown} />
                     </div>
                 </div>
 
                 {/* Right Side */}
                 <div className="w-2/3">
-                    <div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
+                    <div className="w-full bg-gray-100 border-b border-r">
+                        <div className="flex items-center justify-between h-10 p-4">
                         <h2>売り上げ</h2>
                         {isRevenueEditable ? (
                             <div className="flex gap-2">
@@ -181,13 +182,16 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                             <Button
                                 variant="link"
                                 className="hover:cursor-pointer"
+                                
                                 onClick={handleRevenueEdit}
-                            >
+                                >
                                 EDIT
                             </Button>
                         )}
+                        </div>
                     </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
+                    <div className="w-full border-b border-r">
+                        <div className="flex items-center  h-10 p-4">
                         <h2>他収益</h2>
                         {isRevenueEditable ? (
                             <Input
@@ -202,8 +206,10 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                         ) : (
                             <h2>{plData.revenue.revenueCost.toLocaleString()} ¥</h2>
                         )}
+                        </div>
                     </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
+                    <div className="w-full border-b border-r">
+                        <div className="flex items-center  h-10 p-4">
                         <h2>その他収益</h2>
                         {isRevenueEditable ? (
                             <Input
@@ -218,8 +224,10 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                         ) : (
                             <h2>{plData.revenue.otherCost.toLocaleString()} ¥</h2>
                         )}
+                        </div>
                     </div>
-                    <div className="flex items-center justify-between w-full p-4 bg-gray-100 border-b border-r">
+                    <div className="w-full bg-gray-100 border-b border-r">
+                        <div className="flex items-center justify-between h-10 p-4">
                         <h2>費用</h2>
                         {isExpendituresEditable ? (
                             <div className="flex gap-2">
@@ -247,6 +255,7 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                                 EDIT
                             </Button>
                         )}
+                        </div>
                     </div>
                     {Object.entries({
                         '総賃金': 'labourCost',
@@ -255,7 +264,8 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                         '管理費': 'managerFee',
                         '他経費': 'otherCost'
                     }).map(([label, key]) => (
-                        <div key={key} className="flex w-full gap-2 p-4 border-b border-r">
+                    <div className="w-full border-b border-r">
+                        <div className="flex items-center  h-10 p-4">
                             <h2>{label}</h2>
                             {isExpendituresEditable ? (
                                 <Input
@@ -270,14 +280,17 @@ export const ProjectPLTab: React.FC<ProjectPLTabProps> = ({ projectId }) => {
                             ) : (
                                 <h2>{plData.expenditures[key as keyof typeof plData.expenditures].toLocaleString()} ¥</h2>
                             )}
+                            </div>
                         </div>
                     ))}
-                    <div className="flex items-center justify-start w-full p-4 bg-gray-100 border-b border-r">
+                    <div className="flex items-center justify-start p-4 w-full bg-gray-100 border-b border-r h-10">
                         <h2>利益</h2>
                     </div>
-                    <div className="flex w-full gap-2 p-4 border-b border-r">
+                    <div className="w-full border-b border-r">
+                        <div className="flex items-center  h-10 p-4">
                         <h2>売上益</h2>
                         <h2>{plData.profit.salesProfit.toLocaleString()} ¥</h2>
+                    </div> 
                     </div>
                 </div>
             </div>
