@@ -100,13 +100,23 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		order: 8,
 	},
 	{
+		accessorKey: 'status',
+		header: 'Status',
+		label: 'Status',
+		type: 'text',
+		date_created: new Date().toISOString(),
+		status: 'Active',
+		order: 9,
+		cell: ({ row }: CellContext<Company, any>) => row.original.status || 'Inactive',
+	},
+	{
 		accessorKey: 'fullAddress',
 		header: '住所',
 		label: '住所',
 		type: 'text',
 		date_created: new Date().toISOString(),
 		status: 'Active',
-		order: 9,
+		order: 10,
 	},
 	{
 		accessorKey: 'manager',
@@ -115,7 +125,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		type: 'number',
 		date_created: new Date().toISOString(),
 		status: 'Active',
-		order: 10,
+		order: 11,
 	},
 	{
 		accessorKey: 'activeLeads',
@@ -124,7 +134,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		type: 'number',
 		date_created: new Date().toISOString(),
 		status: 'Active',
-		order: 11,
+		order: 12,
 	},
 	{
 		accessorKey: 'created_at', // Type assertion
@@ -133,7 +143,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		type: 'date',
 		date_created: new Date().toISOString(),
 		status: 'Active',
-		order: 12,
+		order: 13,
 		cell: ({ row }: CellContext<Company, any>) => row.original.created_at.split('T')[0],
 	},
 	{
@@ -143,7 +153,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		label: '',
 		date_created: new Date().toISOString(),
 		status: 'Active',
-		order: 13,
+		order: 14,
 		cell: ({ row }: CellContext<Company, any>) => (
 			<div className="flex justify-end w-full">
 				<Link

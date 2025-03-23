@@ -347,13 +347,11 @@ function CompanyPersonnelDetailsPage() {
 			label: 'Manager',
 			value: personnel?.manager?.email || '-',
 			key: 'manager',
-			nonEditable: true,
 		},
 		{
 			label: 'Company',
 			value: personnel?.company?.name || '-',
 			key: 'company',
-			nonEditable: true,
 		},
 	];
 
@@ -471,8 +469,9 @@ function CompanyPersonnelDetailsPage() {
 						<InfoSection
 							items={managerInfo}
 							title="Management Information"
-							isEditing={false}
+							isEditing={isEditing}
 							className="border-l-0"
+							onValueChange={handleValueChange}
 						/>
 					</div>
 				</TabsContent>

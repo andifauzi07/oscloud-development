@@ -5,9 +5,12 @@ import { Link } from '@tanstack/react-router';
 import MenuList from '@/components/menuList';
 import { DataTable } from '@/components/ui/data-table';
 import { useCompanyPersonnel } from '@/hooks/useCompany';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { toast } from '@/hooks/use-toast';
+import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
+import { CompanyPersonnel } from '@/types/company';
+import { UpdatePersonnelRequest } from '@/types/personnel';
 
 type PersonnelStatus = 'Active' | 'Inactive' | 'Blocked';
 
@@ -15,10 +18,33 @@ export const Route = createFileRoute('/company/$companyId/companyPersonnel/')({
 	component: RouteComponent,
 });
 
+const transformToCompanyPersonnel = (data: any[]): CompanyPersonnel[] => {
+	return data.map((item) => ({
+		personnelid: item.personnelId || item.personnelid,
+		companyid: item.companyId || item.companyid,
+		name: item.name,
+		email: item.email,
+		status: item.status,
+		description: item.description,
+		managerid: item.managerId || item.managerid || '',
+	}));
+};
+
 function RouteComponent() {
 	const { companyId } = useParams({ strict: false });
 	const { personnel, loading, error, addPersonnel, updatePersonnel, refetchPersonnel } = useCompanyPersonnel(Number(companyId));
 	const [isEditable, setIsEditable] = useState(false);
+	const [tableData, setTableData] = useState<CompanyPersonnel[]>([]);
+	const [editedData, setEditedData] = useState<CompanyPersonnel[]>([]);
+
+	// Initialize tableData when personnel changes and not in edit mode
+	useEffect(() => {
+		if (!isEditable) {
+			const transformedData = transformToCompanyPersonnel(personnel || []);
+			setTableData(transformedData);
+			setEditedData(transformedData);
+		}
+	}, [personnel, isEditable]);
 
 	const handleAddRecord = async (data: any) => {
 		try {
@@ -30,74 +56,65 @@ function RouteComponent() {
 				managerId: data.managerId,
 			});
 
-			// Refresh the data after successful addition
 			await refetchPersonnel();
-			alert('Personnel added successfully');
+			toast({
+				title: 'Success',
+				description: 'Successfully added personnel',
+			});
 		} catch (error) {
 			console.error('Failed to add record:', error);
-			alert('Failed to add personnel');
+			toast({
+				title: 'Error',
+				description: 'Failed to add personnel',
+			});
 		}
 	};
 
-	const handleSaveEdits = useCallback(
-		async (updatedData: any[]) => {
-			try {
-				const updatePromises = updatedData.map(async (person) => {
-					const updatePayload: any = {};
+	const handleSaveEdits = useSaveEdits<CompanyPersonnel>();
 
-					// Preserve the ID and other essential fields
-					const originalPerson = personnel?.find((p) => p.personnelid === person.personnelId);
-					if (!originalPerson) return Promise.resolve();
+	const handleTableSave = async (updatedData: CompanyPersonnel[]) => {
+		try {
+			const result = await handleSaveEdits(tableData, editedData, 'personnelid', ['name', 'email', 'status', 'description'], async (id: number, data: Partial<CompanyPersonnel>) => {
+				console.log('Updating personnel with ID:', id, 'Data:', data);
+				const updateData: UpdatePersonnelRequest = {
+					name: data.name,
+					email: data.email,
+					status: data.status,
+					description: data.description,
+				};
+				await updatePersonnel(id, updateData);
+			});
 
-					// Only include changed fields
-					if (person.name !== undefined && person.name !== originalPerson.name) {
-						updatePayload.name = person.name;
-					}
-					if (person.email !== undefined && person.email !== originalPerson.email) {
-						updatePayload.email = person.email;
-					}
-					if (person.status !== undefined && person.status !== originalPerson.status) {
-						updatePayload.status = person.status;
-					}
-					if (person.description !== undefined && person.description !== originalPerson.description) {
-						updatePayload.description = person.description;
-					}
-
-					if (Object.keys(updatePayload).length === 0) {
-						return Promise.resolve();
-					}
-
-					// Keep the original ID in the payload
-					updatePayload.personnelId = person.personnelId;
-
-					return updatePersonnel(person.personnelId, updatePayload);
+			// Jika tidak ada perubahan, result akan undefined
+			if (result === undefined) {
+				toast({
+					title: 'Info',
+					description: 'Tidak ada perubahan data yang perlu disimpan',
 				});
-
-				await Promise.all(updatePromises);
-				setIsEditable(false);
-
-				// Refresh the data
-				if (companyId) {
-					await refetchPersonnel();
-				}
-
-				alert('Personnel updated successfully');
-			} catch (error) {
-				alert('Failed to save updates');
+				return false;
 			}
-		},
-		[updatePersonnel, refetchPersonnel, personnel, companyId]
-	);
+
+			return result;
+		} catch (error) {
+			console.error('Error in handleTableSave:', error);
+			toast({
+				title: 'Error',
+				description: 'Gagal menyimpan perubahan',
+				variant: 'destructive',
+			});
+			return false;
+		}
+	};
 
 	const columns = useMemo(
 		() => [
 			{
-				id: 'personnelId',
+				id: 'personnelid',
 				header: () => <h1 className="pl-8">Personel ID</h1>,
-				accessorKey: 'personnelId',
+				accessorKey: 'personnelid',
 				cell: ({ row }: any) => (
 					<div className="pl-8">
-						<h1>{row.original.personnelId}</h1>
+						<h1>{row.original.personnelid}</h1>
 					</div>
 				),
 			},
@@ -130,8 +147,8 @@ function RouteComponent() {
 				header: '',
 				accessorKey: 'detail',
 				cell: ({ row }: any) => {
-					const personnelId = row.original?.personnelId;
-					if (!personnelId) return null;
+					const personnelid = row.original?.personnelid;
+					if (!personnelid) return null;
 
 					return (
 						<div className="flex items-center justify-end w-full ">
@@ -141,7 +158,7 @@ function RouteComponent() {
 								<Link
 									params={{
 										companyId: companyId!,
-										companyPersonnelId: personnelId.toString(),
+										companyPersonnelId: personnelid.toString(),
 									}}
 									to="/company/$companyId/companyPersonnel/$companyPersonnelId">
 									VIEW
@@ -197,7 +214,10 @@ function RouteComponent() {
 				{isEditable ? (
 					<Button
 						onClick={() => {
-							setIsEditable((prev) => !prev);
+							setIsEditable(false);
+							const transformedData = transformToCompanyPersonnel(personnel || []);
+							setTableData(transformedData);
+							setEditedData(transformedData);
 						}}
 						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
 						CANCEL
@@ -209,7 +229,7 @@ function RouteComponent() {
 							accessorKey: col.accessorKey,
 						}))}
 						onSave={handleAddRecord}
-						nonEditableColumns={['personnelId', 'detail']}
+						nonEditableColumns={['personnelid', 'detail']}
 						selectFields={{
 							status: {
 								options: statusOptions,
@@ -217,33 +237,53 @@ function RouteComponent() {
 						}}
 					/>
 				)}
+
 				{isEditable ? (
-						<Button
-							className="w-20 h-10 text-black bg-transparent border-l border-r link"
-							onClick={() => {
-								setIsEditable(false);
-							}}>
-							SAVE
-						</Button>
-					) : (
-						<Button
-							className="w-20 h-10 text-black bg-transparent border-l border-r link"
-							onClick={() => setIsEditable(true)}>
-							EDIT
-						</Button>
-					)}
+					<Button
+						onClick={async () => {
+							try {
+								const isSuccess = await handleTableSave(editedData);
+								if (isSuccess) {
+									await refetchPersonnel();
+									setIsEditable(false);
+									toast({
+										title: 'Success',
+										description: 'Successfully updated data',
+									});
+								}
+							} catch (error) {
+								console.error('Error saving changes:', error);
+								toast({
+									title: 'Error',
+									description: 'Failed to save changes',
+									variant: 'destructive',
+								});
+							}
+						}}
+						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
+						SAVE
+					</Button>
+				) : (
+					<Button
+						onClick={() => setIsEditable(true)}
+						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+						EDIT
+					</Button>
+				)}
 			</div>
 			<DataTable
 				columns={columns}
-				data={personnel || []}
+				data={tableData}
 				loading={loading}
 				isEditable={isEditable}
-				nonEditableColumns={['personnelId', 'detail']}
+				nonEditableColumns={['personnelid', 'detail']}
+				onSave={handleTableSave}
 				selectFields={{
 					status: {
 						options: statusOptions,
 					},
 				}}
+				setTableData={setEditedData}
 			/>
 		</div>
 	);

@@ -9,7 +9,7 @@ import Header from '@/components/Header';
 import { Breadcrumb } from '@/components/breadcrumb/breadcrumb';
 import { setLoading, setSession } from '@/store/slices/authSlice';
 import Navbar from '@/components/Navbar';
-
+import { Toaster } from '@/components/ui/toaster';
 export const Route = createRootRoute({
 	head: () => ({
 		meta: [{ charSet: 'utf-8' }, { name: 'viewport', content: 'width=device-width, initial-scale=1' }, { title: 'oscloud' }],
@@ -78,6 +78,7 @@ export default function RootComponent() {
 					<Breadcrumb />
 					<Outlet />
 				</main>
+				<Toaster />
 			</section>
 		</div>
 	);
