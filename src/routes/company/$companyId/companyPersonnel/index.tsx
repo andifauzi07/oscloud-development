@@ -194,24 +194,44 @@ function RouteComponent() {
 				<h2 className="text-base">Company Personnel</h2>
 			</div>
 			<div className="flex justify-end flex-none w-full bg-white">
-				<AddRecordDialog
-					columns={columns.map((col) => ({
-						header: col.header,
-						accessorKey: col.accessorKey,
-					}))}
-					onSave={handleAddRecord}
-					nonEditableColumns={['personnelId', 'detail']}
-					selectFields={{
-						status: {
-							options: statusOptions,
-						},
-					}}
-				/>
-				<Button
-					onClick={() => setIsEditable((prev) => !prev)}
-					className="w-20 h-10 text-black bg-transparent border-t-0 border-b-0 border-r md:w-20 link">
-					{isEditable ? 'CANCEL' : 'EDIT'}
-				</Button>
+				{isEditable ? (
+					<Button
+						onClick={() => {
+							setIsEditable((prev) => !prev);
+						}}
+						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+						CANCEL
+					</Button>
+				) : (
+					<AddRecordDialog
+						columns={columns.map((col) => ({
+							header: col.header,
+							accessorKey: col.accessorKey,
+						}))}
+						onSave={handleAddRecord}
+						nonEditableColumns={['personnelId', 'detail']}
+						selectFields={{
+							status: {
+								options: statusOptions,
+							},
+						}}
+					/>
+				)}
+				{isEditable ? (
+						<Button
+							className="w-20 h-10 text-black bg-transparent border-l border-r link"
+							onClick={() => {
+								setIsEditable(false);
+							}}>
+							SAVE
+						</Button>
+					) : (
+						<Button
+							className="w-20 h-10 text-black bg-transparent border-l border-r link"
+							onClick={() => setIsEditable(true)}>
+							EDIT
+						</Button>
+					)}
 			</div>
 			<DataTable
 				columns={columns}
@@ -219,7 +239,6 @@ function RouteComponent() {
 				loading={loading}
 				isEditable={isEditable}
 				nonEditableColumns={['personnelId', 'detail']}
-				onSave={handleSaveEdits}
 				selectFields={{
 					status: {
 						options: statusOptions,

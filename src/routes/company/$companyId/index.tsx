@@ -23,7 +23,7 @@ function CompanyDetail() {
 	const isCurrentPath = location.pathname === `/company/${companyId}`;
 	const [selectedCompany, setSelectedCompany] = useState<Company | undefined>(undefined);
 
-	const { loading, fetchCompany, updateCompany } = useCompanies();
+	const { loading, fetchCompany, updateCompany, workspaceid } = useCompanies();
 
 	const { uploadImage, isUploading } = useImageUpload({
 		bucketName: 'company_logos',
@@ -32,8 +32,8 @@ function CompanyDetail() {
 		allowedFileTypes: ['image/jpeg', 'image/png', 'image/svg+xml'],
 	});
 
-	useEffect(() => {
-		if (companyId && !loading) {
+	useEffect(()  => {
+		if (companyId && !loading && workspaceid) {
 			fetchCompany(Number(companyId))
 				.then((result) => {
 					if (result) {
@@ -47,7 +47,7 @@ function CompanyDetail() {
 					console.error('Error:', error);
 				});
 		}
-	}, [companyId]);
+	}, [companyId, workspaceid]);
 
 	const handleValueChange = (key: string, value: string) => {
 		setEditedCompany((prev) => ({

@@ -127,11 +127,12 @@ function RouteComponent() {
 	// }, [settings]);
 
 	// Add this debug log
-	// useEffect(() => {
-	// 	console.log('Active Settings:', settings);
-	// 	console.log('Default Settings:', defaultCompanyColumnSettings);
-	// 	console.log('Generated Columns:', columns);
-	// }, [settings, columns]);
+	useEffect(() => {
+		console.log("companies", companies);
+		console.log('Active Settings:', settings);
+		console.log('Default Settings:', defaultCompanyColumnSettings);
+		console.log('Generated Columns:', columns);
+	}, [settings, columns, companies]);
 
 	const transformedCompanies = useMemo(() => {
 		if (!companies || !Array.isArray(companies)) return [];
@@ -145,7 +146,7 @@ function RouteComponent() {
 			product: company.product,
 			category_group: company.category_group,
 			created_at: company.created_at,
-			managerid: company.managerid,
+			managerid: company.manager?.name,
 			workspaceid: company.workspaceid,
 			personnel: company.personnel || [],
 			activeLeads: company.activeLeads || 0,
