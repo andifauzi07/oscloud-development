@@ -228,7 +228,6 @@ function RouteComponent() {
 					</div>
 				</div>
 			</div>
-
 			<div className="flex justify-end flex-none w-full bg-white">
 				{editable ? (
 					<Button

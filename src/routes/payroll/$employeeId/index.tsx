@@ -189,15 +189,10 @@ const field = [
 
 function RouteComponent() {
 	const { employeeId } = useParams({ strict: false });
-
-	const { profile, loading: profileLoading, error: profileError } = useEmployeeProfile(Number(employeeId));
-
-	const [newProfile, setNewProfile] = useState<EmployeeProfile | null>(profile);
-
 	const { projects, loading: projectsLoading, error: projectsError } = useEmployeeProjects(Number(employeeId));
 	const { payments, loading: paymentsLoading, error: paymentsError } = useEmployeePayments(Number(employeeId));
-	console.log('INI PROFILE Employee =', profile);
-	console.log('INI ERROR PROFILE Employee =', profileError);
+	const { profile, loading: profileLoading, error: profileError } = useEmployeeProfile(Number(employeeId));
+	const [newProfile, setNewProfile] = useState<EmployeeProfile | null>(profile);
 
 	const { updatePaymentStatus } = useUpdatePaymentStatus();
 	const [editable, setEditable] = useState(false);
@@ -813,7 +808,6 @@ function RouteComponent() {
 									EDIT
 								</Button>
 							)}
-							plocalP
 						</div>
 					</div>
 
