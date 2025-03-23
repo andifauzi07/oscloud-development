@@ -113,10 +113,11 @@ function CompanyDetail() {
 				}
 			});
 
-			await updateCompany(selectedCompany.companyId, updatePayload);
+			const result = await updateCompany(selectedCompany.companyId, updatePayload);
 
 			setIsEditing(false);
 			setEditedCompany({});
+			setSelectedCompany((prev) => (prev ? { ...prev, ...result } : undefined));
 			alert('Company updated successfully');
 		} catch (error) {
 			console.error('Error updating company:', error);
