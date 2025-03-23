@@ -7,13 +7,15 @@ import { ColumnDef, RowData, TableMeta } from '@tanstack/react-table';
 import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { Label } from '@/components/ui/label';
 import { useUserData } from '@/hooks/useUserData';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { Employee } from '@/types/payroll';
 import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
 import { useCreatePayment, usePayrollEmployees, useUpdatePaymentStatus } from '@/hooks/usePayroll';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEmployeeCategories } from '@/hooks/useEmployee';
+import { useFilter } from '@/hooks/useFilter';
+import useDebounce from '@/hooks/useDebounce';
 
 // Deklarasi tipe untuk TableMeta
 declare module '@tanstack/react-table' {
@@ -151,39 +153,40 @@ const columns: ColumnDef<PayrollRow>[] = [
 ];
 
 const field = [
-	{
-		key: 'status',
-		label: 'Status',
-		type: 'toogle',
+	// {
+	// 	key: 'status',
+	// 	label: 'Status',
+	// 	type: 'toogle',
 
-		options: ['All', 'Active', 'Inactive'],
-	},
+	// 	options: ['All', 'Active', 'Inactive'],
+	// },
 	{
 		key: 'employeeid',
 		label: 'Employee Id',
 		type: 'number',
 	},
-	{
-		key: 'email',
-		label: 'Email',
-		type: 'email',
-	},
+	// {
+	// 	key: 'email',
+	// 	label: 'Email',
+	// 	type: 'email',
+	// },
 	{
 		key: 'name',
 		label: 'Name',
 		type: 'text',
 	},
-	{
-		key: 'depertment',
-		label: 'Department',
-		type: 'text',
-	},
+	// {
+	// 	key: 'depertment',
+	// 	label: 'Department',
+	// 	type: 'text',
+	// },
 ];
 
 function RouteComponent() {
 	const { currentUser } = useUserData();
 	const workspaceid = currentUser?.workspaceid;
 	const [searchKeyword, setSearchKeyword] = useState('');
+	const debounceSearchTerms = useDebounce(searchKeyword, 500);
 	const [editable, setEditable] = useState(false);
 	const [localData, setLocalData] = useState<PayrollRow[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -247,9 +250,33 @@ function RouteComponent() {
 		}
 	};
 
+	const { filter: storeFilter } = useFilter();
+
 	// Enhanced filtering with type safety
-	const filteredEmployees =
-		localData?.filter((employee) => employee.name?.toLowerCase().includes(searchKeyword.toLowerCase()) || employee.id?.toString().includes(searchKeyword) || employee.employeeCategory?.toLowerCase().includes(searchKeyword)) || [];
+	const filteredEmployees = useMemo(() => {
+		return localData?.filter((employee) => {
+			const matchSearchTerm = employee.name.toLowerCase().includes(debounceSearchTerms.toLowerCase());
+
+			const matchedAdvancedSearch = Object.entries(storeFilter).every(([key, value]) => {
+				const lowerValue = String(value).toLowerCase();
+
+				const lookup: Record<string, boolean> = {
+					employeeid: employee.id === lowerValue,
+					name: employee.name.toLowerCase().includes(lowerValue),
+				};
+
+				return (
+					lookup[key] ??
+					(key in employee &&
+						String(employee[key as keyof PayrollRow])
+							?.toLowerCase()
+							.includes(lowerValue))
+				);
+			});
+			
+			return matchSearchTerm && matchedAdvancedSearch;
+		});
+	}, [localData, debounceSearchTerms, storeFilter]);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -274,8 +301,8 @@ function RouteComponent() {
 					className="m-0"
 					value="employeeList">
 					<div className="flex flex-row flex-wrap items-center justify-between w-full px-8 py-4 bg-white border-b border-r md:flex-row">
-						<div className="flex gap-8">
-							<div className="flex flex-col space-y-2 bg-white md:w-auto">
+						<div className="flex flex-row flex-wrap gap-4">
+							<div className="flex flex-col space-y-2 md:w-auto">			
 								<Label htmlFor="keyword">Keyword</Label>
 								<Input
 									type="keyword"
@@ -302,11 +329,10 @@ function RouteComponent() {
 									</Button>
 								</div>
 							</div>
-						</div>
-
-						<div className="flex flex-col space-y-2">
-							<Label>‎</Label>
-							<AdvancedFilterPopover fields={field} />
+							<div className="flex flex-col space-y-2">
+								<Label>‎</Label>
+								<AdvancedFilterPopover fields={field} />
+							</div>
 						</div>
 					</div>
 					<div className="flex justify-end flex-none w-full bg-white">
