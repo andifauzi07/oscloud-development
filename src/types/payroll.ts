@@ -14,8 +14,15 @@ export interface Employee {
 }
 
 export interface User {
-	userId: number;
+	id: string;
 	name: string;
+	email: string;
+	workspaceid: number;
+	image: string | null;
+	phone_number: string | null;
+	backup_email: string | null;
+	role?: string;
+	status?: string;
 }
 
 // Define types

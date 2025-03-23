@@ -10,21 +10,24 @@ import Loading from '@/components/Loading';
 import { cn } from '@/lib/utils';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { InfoSection } from '@/components/wrapperElement';
-
+import { useUserData } from '@/hooks/useUserData';
+import { toast } from '@/hooks/use-toast';
 export const Route = createFileRoute('/company/$companyId/')({
 	component: CompanyDetail,
 });
 
 function CompanyDetail() {
 	const { companyId } = useParams({ strict: false });
+	const { users } = useUserData();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedCompany, setEditedCompany] = useState<CompanyUpdate>({});
 	const location = useLocation();
 	const isCurrentPath = location.pathname === `/company/${companyId}`;
 	const [selectedCompany, setSelectedCompany] = useState<Company | undefined>(undefined);
-
+	const filteredManager = users?.find((user) => user?.id === selectedCompany?.manager?.userId);
 	const { loading, fetchCompany, updateCompany, workspaceid } = useCompanies();
-
+	console.log('ini filtered manager: ', filteredManager);
+	console.log('ini selected company: ', selectedCompany);
 	const { uploadImage, isUploading } = useImageUpload({
 		bucketName: 'company_logos',
 		folderPath: 'logos',
@@ -32,7 +35,7 @@ function CompanyDetail() {
 		allowedFileTypes: ['image/jpeg', 'image/png', 'image/svg+xml'],
 	});
 
-	useEffect(()  => {
+	useEffect(() => {
 		if (companyId && !loading && workspaceid) {
 			fetchCompany(Number(companyId))
 				.then((result) => {
@@ -64,7 +67,7 @@ function CompanyDetail() {
 			const imgUrl = await uploadImage(file);
 
 			if (!selectedCompany?.companyid) {
-				alert('Company ID not found');
+				alert('Company ID is missing');
 				return;
 			}
 
@@ -102,8 +105,9 @@ function CompanyDetail() {
 				city: editedCompany.city,
 				product: editedCompany.product,
 				email: editedCompany.email,
-				categoryGroup: editedCompany.category_group, // Keep as category_group
-				managerId: editedCompany.managerid, // Keep as string for now
+				status: editedCompany.status,
+				categoryGroup: editedCompany.category_group,
+				managerId: editedCompany.managerId,
 			};
 
 			// Remove undefined properties
@@ -118,10 +122,17 @@ function CompanyDetail() {
 			setIsEditing(false);
 			setEditedCompany({});
 			setSelectedCompany((prev) => (prev ? { ...prev, ...result } : undefined));
-			alert('Company updated successfully');
+			toast({
+				title: 'Success',
+				description: 'Company updated successfully',
+			});
 		} catch (error) {
 			console.error('Error updating company:', error);
-			alert('Failed to update company');
+			toast({
+				title: 'Error',
+				description: 'Failed to update company',
+				variant: 'destructive',
+			});
 		}
 	};
 
@@ -146,6 +157,7 @@ function CompanyDetail() {
 			options: [
 				{ value: 'active', label: 'Active' },
 				{ value: 'inactive', label: 'Inactive' },
+				{ value: 'blocked', label: 'Blocked' },
 			],
 		},
 		{
@@ -189,12 +201,9 @@ function CompanyDetail() {
 	const managerInfo = [
 		{
 			value: selectedCompany.manager?.userId || 'No assigned',
-			label: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName! || '-',
+			label: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName || filteredManager?.name! || '-',
 			key: 'managerid',
-			options: [
-				{ value: '1', label: 'Rian' },
-				{ value: '2', label: 'John' },
-			],
+			options: users?.map((m) => ({ value: m.id, label: m.name })),
 		},
 		// {
 		// 	label: 'Role',

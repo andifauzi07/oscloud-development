@@ -227,6 +227,7 @@ export interface CompanyUpdate {
 	email?: string;
 	categoryGroup?: string;
 	managerId?: string | null;
+	status?: string | null;
 }
 
 // API Response interfaces

@@ -1,11 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
 import { CellContext, ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Users } from 'lucide-react';
 import { TitleWrapper } from '@/components/wrapperElement';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { DataTable } from '@/components/ui/data-table';
@@ -18,6 +17,8 @@ import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { defaultCompanyColumnSettings } from '@/config/columnSettings';
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 import { useUserData } from '@/hooks/useUserData';
+import { User } from '@/types/payroll';
+import { AppUser } from '@/types/user';
 
 export const Route = createFileRoute('/company/')({
 	component: RouteComponent,
@@ -64,6 +65,7 @@ const field = [
 function RouteComponent() {
 	const [searchKeyword, setSearchKeyword] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string>('');
+	const [manager, setManager] = useState<AppUser[]>([]);
 	const [isEditable, setIsEditable] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const pageSize = 10;
@@ -84,6 +86,10 @@ function RouteComponent() {
 	// Use filters after it's defined
 	const { companies, loading, addCompany, updateCompany, total } = useCompanies(filters);
 	const [updateDataFromChild, setUpdateDataFromChild] = useState(companies);
+	const { users, getUsers, currentUser } = useUserData();
+	const workspaceId = currentUser?.workspaceid!;
+	console.log(users);
+
 	const handleSaveEdits = useSaveEdits<Company>();
 
 	const { settings } = useColumnSettings<Company>({
@@ -118,22 +124,6 @@ function RouteComponent() {
 			});
 	}, [settings]);
 
-	// Add this debug log to see what's being filtered
-	// useEffect(() => {
-	// 	console.log(
-	// 		'Settings after status filter:',
-	// 		settings.filter((setting) => setting.status === 'Active' || setting.status === 'shown')
-	// 	);
-	// }, [settings]);
-
-	// Add this debug log
-	useEffect(() => {
-		console.log("companies", companies);
-		console.log('Active Settings:', settings);
-		console.log('Default Settings:', defaultCompanyColumnSettings);
-		console.log('Generated Columns:', columns);
-	}, [settings, columns, companies]);
-
 	const transformedCompanies = useMemo(() => {
 		if (!companies || !Array.isArray(companies)) return [];
 
@@ -154,6 +144,18 @@ function RouteComponent() {
 			detail: company.detail || {},
 		}));
 	}, [companies]);
+
+	useEffect(() => {
+		const getManager = async () => {
+			try {
+				const manager = await getUsers(workspaceId!);
+				setManager(manager!);
+			} catch (error) {
+				console.error('Failed to fetch manager:', error);
+			}
+		};
+		getManager();
+	}, [getUsers, workspaceId]);
 
 	// Local filtering if needed
 	const filteredCompanies = useMemo(() => {
@@ -228,13 +230,16 @@ function RouteComponent() {
 					<AddRecordDialog
 						columns={columns}
 						onSave={handleAddRecord}
-						nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'created_at*', 'managerid', 'detail', 'activeLeads', 'totalContractValue']}
+						nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'created_at*', 'detail', 'activeLeads', 'totalContractValue']}
 						selectFields={{
 							category_group: {
 								options: [
 									{ value: 'tech', label: 'Technology' },
 									{ value: 'finance', label: 'Finance' },
 								],
+							},
+							managerid: {
+								options: manager?.map((m) => ({ value: m.id, label: m.name })),
 							},
 						}}
 					/>
@@ -355,10 +360,7 @@ function RouteComponent() {
 						}}
 						selectFields={{
 							managerid: {
-								options: [
-									{ value: '1', label: 'Rian' },
-									{ value: '2', label: 'John' },
-								],
+								options: manager?.map((m) => ({ value: m.id.toString(), label: m.name })),
 							},
 							category_group: {
 								options: [
