@@ -28,14 +28,14 @@ interface AddRecordDialogProps {
 	enablePassword?: boolean; // Add this prop
 }
 
-export function AddRecordDialog({ 
-	columns, 
-	onSave, 
-	nonEditableColumns = [], 
-	selectFields, 
-	customFields, 
+export function AddRecordDialog({
+	columns,
+	onSave,
+	nonEditableColumns = [],
+	selectFields,
+	customFields,
 	enableCosts = false,
-	enablePassword = false // Add default value
+	enablePassword = false, // Add default value
 }: AddRecordDialogProps) {
 	const [formData, setFormData] = React.useState<Record<string, any>>({});
 	const [costs, setCosts] = React.useState<Record<string, number>>({
@@ -165,6 +165,7 @@ export function AddRecordDialog({
 														}))
 													}
 													placeholder={`...`}
+													enableEmoji={!(column.type === 'number' || column.type === 'email' || column.type === 'boolean')}
 												/>
 											</>
 										)}
@@ -175,7 +176,9 @@ export function AddRecordDialog({
 							{/* Add password field if enabled */}
 							{enablePassword && (
 								<div className="grid gap-2">
-									<Label htmlFor="password" className="text-sm font-medium">
+									<Label
+										htmlFor="password"
+										className="text-sm font-medium">
 										Password
 									</Label>
 									<Input

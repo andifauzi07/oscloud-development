@@ -75,35 +75,37 @@ function RouteComponent() {
 
 	const columns = useMemo<ColumnDef<Employee, any>[]>(() => {
 		// If settings is empty, use defaultEmployeeColumnSettings
-		const activeSettings = settings.length > 0 
-			? settings 
-			: defaultEmployeeColumnSettings;
+		const activeSettings = settings.length > 0 ? settings : defaultEmployeeColumnSettings;
 
 		return activeSettings
-			.filter((setting) => setting.status === "Active" || setting.status === "shown")
+			.filter((setting) => setting.status === 'Active' || setting.status !== 'Hidden')
 			.sort((a, b) => a.order - b.order)
 			.map((setting) => {
 				// Find the matching default setting
-				const defaultSetting = defaultEmployeeColumnSettings.find(
-					(def) => def.accessorKey === setting.accessorKey
-				);
+				const defaultSetting = defaultEmployeeColumnSettings.find((def) => def.accessorKey === setting.accessorKey);
 
 				return {
 					id: String(setting.accessorKey),
 					accessorKey: setting.accessorKey as string,
 					header: defaultSetting?.header || setting.header || setting.label,
-					cell: defaultSetting?.cell || setting.cell || (({ row }) => {
-						const value = row.getValue(setting.accessorKey as string);
-						return value != null ? String(value) : '-';
-					})
+					cell:
+						defaultSetting?.cell ||
+						setting.cell ||
+						(({ row }) => {
+							const value = row.getValue(setting.accessorKey as string);
+							return value != null ? String(value) : '-';
+						}),
+					type: defaultSetting?.type || setting.type,
 				};
 			});
 	}, [settings]);
 
 	// Add this debug log to help track the column generation
 	useEffect(() => {
-		console.log('Employee Settings after status filter:', 
-			settings.filter(setting => setting.status === "Active" || setting.status === "shown"));
+		console.log(
+			'Employee Settings after status filter:',
+			settings.filter((setting) => setting.status === 'Active' || setting.status !== 'Hidden')
+		);
 	}, [settings]);
 
 	const handleSaveEdits = useSaveEdits<Employee>();
@@ -167,7 +169,7 @@ function RouteComponent() {
 				password: data.password,
 				employeecategoryid: Number(data.employeecategoryid),
 				departmentid: Number(data.departmentid),
-				status: 'Active'
+				status: 'Active',
 				// No need for role field since we're using metadata
 			};
 
@@ -241,7 +243,6 @@ function RouteComponent() {
 						onSave={handleAddRecord}
 						nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
 						selectFields={selectFields}
-						enablePassword={true} // Add this prop
 					/>
 				)}
 

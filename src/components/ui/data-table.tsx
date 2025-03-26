@@ -480,7 +480,7 @@ export function DataTable<TData, TValue>({
 														}}
 														className={cn(
 															'text-xs whitespace-nowrap pl-8 text-left font-bold text-[#0a0a30]',
-															isNumeric && 'text-right',
+															// isNumeric && 'text-right',
 															isAction && 'sticky right-0 bg-gray-100 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]',
 															!isImage && '', // Only add padding if not an image column
 															isImage && '!p-0 !m-0' // Force remove all padding and margin for image columns
@@ -514,7 +514,7 @@ export function DataTable<TData, TValue>({
 															}}
 															className={cn(
 																'text-xs whitespace-nowrap border-b',
-																isNumeric && 'text-right',
+																// isNumeric && 'text-right',
 																isAction && 'sticky right-0 bg-white z-10 w-[100px] shadow-[-4px_0_8px_-6px_rgba(0,0,0,0.2)]',
 																!isImage && !isAction && 'px-4 py-4',
 																isImage && '!p-0 !m-0 w-[60px]' // Force exact width and remove padding/margin
@@ -522,7 +522,7 @@ export function DataTable<TData, TValue>({
 															<div
 																className={cn(
 																	'flex h-full pl-8',
-																	isNumeric && 'justify-end',
+																	// isNumeric && 'justify-end',
 																	isAction && 'justify-center',
 																	!isNumeric && !isAction && 'justify-start',
 																	isImage && '!p-0 !m-0 w-[60px]', // Force exact width and remove padding/margin
