@@ -340,7 +340,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		order: 2,
 		category: '基本情報',
-		cell: ({ row }) => <h1>{row.original.employeeid}</h1>,
+		cell: ({ row }) => <h1>{row.original.employeeid ? row.original.employeeid : '-'}</h1>,
 	},
 	{
 		accessorKey: 'name',
@@ -353,7 +353,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		cell: ({ row }: any) => (
 			<Link
 				to={'/employee/$userId'}
-				params={{ userId: row.original.employeeid.toString() }}
+				params={{ userId: row.original.employeeid?.toString()! }}
 				className="text-blue-600 hover:underline">
 				{row.original.name || '-'}
 			</Link>
@@ -367,7 +367,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		order: 4,
 		category: '基本情報',
-		cell: ({ row }: any) => row.original.employeeCategory?.categoryname || '-',
+		cell: ({ row }: any) => (row.original.employeeCategory.categoryname ? row.original.employeeCategory.categoryname : '-'),
 	},
 	{
 		accessorKey: 'email',
@@ -416,7 +416,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 		status: 'Active',
 		category: '基本情報',
 		order: 8,
-		cell: ({ row }: any) => row.original.statuss || '-',
+		cell: ({ row }: any) => row.original.status || '-',
 	},
 	{
 		accessorKey: 'caterUnitPrice',
@@ -826,7 +826,7 @@ export const defaultEmployeeColumnSettings: BaseColumnSetting<any>[] = [
 				<Link
 					to={'/employee/$userId'}
 					className="sticky"
-					params={{ userId: row.original.employeeid.toString() }}>
+					params={{ userId: row.original.employeeid?.toString()! }}>
 					<Button
 						variant="outline"
 						className="w-20 border-t-0 border-b border-r-0">

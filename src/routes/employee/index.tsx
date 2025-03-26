@@ -7,7 +7,7 @@ import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { useEmployeeCategories, useWorkspaceEmployees } from '@/hooks/useEmployee';
 import { DataTable } from '../../components/ui/data-table';
 import { TitleWrapper } from '@/components/wrapperElement';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AddRecordDialog } from '@/components/AddRecordDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDepartments } from '@/hooks/useDepartment';
@@ -18,6 +18,8 @@ import useDebounce from '@/hooks/useDebounce';
 import { defaultEmployeeColumnSettings } from '@/config/columnSettings';
 import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { useFilter } from '@/hooks/useFilter';
+import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 const field = [
 	{
@@ -58,13 +60,15 @@ interface Props {
 }
 
 function RouteComponent() {
-	const { employees, loading, addEmployee, updateEmployeeData } = useWorkspaceEmployees();
 	const { categories } = useEmployeeCategories();
 	const { departments, loading: loadingDepartments } = useDepartments();
 	const [editable, setEditable] = useState(false);
 	const [employeeCategoryOptions, setEmployeeCategoryOptions] = useState<Array<{ value: string; label: string }>>([]);
 	const [departmentOptions, setDepartmentOptions] = useState<Array<{ value: string; label: string }>>([]);
-	const [updateDataFromChild, setUpdateDataFromChild] = useState(employees);
+	const [statusOptions, setStatusOptions] = useState<Array<{ value: string; label: string }>>([
+		{ value: 'Active', label: 'Active' },
+		{ value: 'Inactive', label: 'Inactive' },
+	]);
 	const [searchQuery, setSearchQuery] = useState<string>('');
 	const { settings, saveSettings, reorderColumns } = useColumnSettings<Employee>({
 		storageKey: 'EmployeeColumnSetting',
@@ -72,6 +76,21 @@ function RouteComponent() {
 	});
 	const { filter: storeFilter } = useFilter();
 	const debounceSearchTerms = useDebounce(searchQuery, 500);
+	const [statusFilter, setStatusFilter] = useState<string>('');
+	// const debounceStatusFilter = useDebounce(statusFilter, 500);
+	const [currentPage, setCurrentPage] = useState(1);
+	const pageSize = 30;
+	const filters = useMemo(
+		() => ({
+			// search: debounceSearchTerms || '',
+			status: statusFilter ? 'Active' : '',
+			page: currentPage,
+			limit: pageSize,
+		}),
+		[statusFilter, currentPage, pageSize, debounceSearchTerms]
+	);
+	const { employees, loading, addEmployee, updateEmployeeData } = useWorkspaceEmployees(filters);
+	const [updateDataFromChild, setUpdateDataFromChild] = useState(employees);
 
 	const columns = useMemo<ColumnDef<Employee, any>[]>(() => {
 		// If settings is empty, use defaultEmployeeColumnSettings
@@ -101,12 +120,12 @@ function RouteComponent() {
 	}, [settings]);
 
 	// Add this debug log to help track the column generation
-	useEffect(() => {
-		console.log(
-			'Employee Settings after status filter:',
-			settings.filter((setting) => setting.status === 'Active' || setting.status !== 'Hidden')
-		);
-	}, [settings]);
+	// useEffect(() => {
+	// 	console.log(
+	// 		'Employee Settings after status filter:',
+	// 		settings.filter((setting) => setting.status === 'Active' || setting.status !== 'Hidden')
+	// 	);
+	// }, [settings]);
 
 	const handleSaveEdits = useSaveEdits<Employee>();
 
@@ -166,28 +185,44 @@ function RouteComponent() {
 			const processedData = {
 				name: data.name,
 				email: data.email,
-				password: data.password,
-				employeecategoryid: Number(data.employeecategoryid),
-				departmentid: Number(data.departmentid),
-				status: 'Active',
+				employeeCategoryId: Number(data.employeecategoryid),
+				departmentId: Number(data.departmentid),
+				status: data.status,
 				// No need for role field since we're using metadata
 			};
 
-			await addEmployee(processedData);
-			console.log('Adding new record:', data);
+			const result = await addEmployee(processedData);
+			toast({
+				title: 'Success',
+				description: 'Record added successfully',
+				duration: 1000,
+			});
+			return result;
 		} catch (error) {
 			console.error('Failed to add record:', error);
+			toast({
+				title: 'Error',
+				description: 'Failed to add record',
+				duration: 1000,
+			});
 		}
 	};
 
 	const selectFields = {
 		employeecategoryid: {
-			options: employeeCategoryOptions,
+			options: categories?.map((category) => ({ value: category.categoryid.toString(), label: category.categoryname })),
 		},
 		departmentid: {
-			options: departmentOptions,
+			options: departments?.map((department) => ({ value: department.departmentid.toString(), label: department.departmentname })),
+		},
+		status: {
+			options: statusOptions,
 		},
 	};
+
+	const handleStatusChange = useCallback((newStatus: string) => {
+		setStatusFilter(newStatus);
+	}, []);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -216,10 +251,18 @@ function RouteComponent() {
 					<div className="flex flex-col space-y-2">
 						<Label>Status</Label>
 						<div className="flex">
-							<Button className="w-20 bg-black rounded-none">Active</Button>
 							<Button
-								variant="outline"
-								className="w-20 rounded-none">
+								size="default"
+								variant={'outline'}
+								className={cn('w-20 rounded-none', statusFilter === 'Active' && 'bg-black text-white')}
+								onClick={() => handleStatusChange('Active')}>
+								Active
+							</Button>
+							<Button
+								size="default"
+								variant={'outline'}
+								className={cn('w-20 rounded-none', statusFilter === '' && 'bg-black text-white')}
+								onClick={() => handleStatusChange('')}>
 								All
 							</Button>
 						</div>
@@ -253,11 +296,17 @@ function RouteComponent() {
 								employees, // Initial Data from the hooks and also rendered on the table component
 								updateDataFromChild, // State to catch an update from the component child (DataTable)
 								'employeeid', // Unique identifier, eg. employeeId, departmentId, catgeoryId etc..
-								['name', 'email', 'employeeCategoryId', 'departmentId'], // Field that want to compare and track update
+								['name', 'email', 'employeecategoryid', 'departmentid'], // Field that want to compare and track update
 								updateEmployeeData // update function from hooks
 							);
+							if (isSucces) {
+								toast({
+									title: 'Success',
+									description: 'Record updated successfully',
+									duration: 1000,
+								});
+							}
 							setEditable(false);
-							console.log(isSucces); // can use this variable to make update on ui
 						}}
 						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
 						SAVE
@@ -280,6 +329,17 @@ function RouteComponent() {
 				setTableData={(updateFunctionOrData) => {
 					const evaluatedData = typeof updateFunctionOrData === 'function' ? updateFunctionOrData([...employees]) : updateFunctionOrData;
 					setUpdateDataFromChild(evaluatedData);
+				}}
+				selectFields={{
+					employeecategoryid: {
+						options: employeeCategoryOptions,
+					},
+					departmentid: {
+						options: departmentOptions,
+					},
+					status: {
+						options: statusOptions,
+					},
 				}}
 			/>
 		</div>

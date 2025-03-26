@@ -3,9 +3,10 @@ export interface Employee {
 	name: string;
 	email: string;
 	profileimage: string;
-	employeeCategoryId: number;
-	departmentId: number;
+	employeecategoryid: number;
+	departmentid: number;
 	workspaceid: number;
+	status: string;
 	employeeCategory: {
 		categoryid: number;
 		categoryname: string;
