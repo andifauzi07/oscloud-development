@@ -89,7 +89,7 @@ export default function AdvancedFilterPopover({ fields }: AdvancedFilterPopoverP
 									<Input
 										type={field.type}
 										name={field.key}
-										enableEmoji={field.type === 'number' ? false : true}
+										enableEmoji={!(field.type === 'number' || field.type === 'email' || field.type === 'boolean')}
 										className="border rounded-none"
 										onChange={(e) => updateFilter({ [field.key]: e.target.value })}
 									/>
