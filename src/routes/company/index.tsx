@@ -269,8 +269,6 @@ function RouteComponent() {
 		setCurrentPage(page);
 	}, []);
 
-	console.log('INI data dari companies: ', filteredCompanies);
-
 	return (
 		<div className="flex flex-col flex-1 h-full">
 			<TitleWrapper>
