@@ -34,8 +34,6 @@ function RouteComponent() {
 			label: company.name,
 		})) || [];
 
-	console.log('ini companyOptions: ', companies);
-
 	const handleAddRecord = async (data: any) => {
 		try {
 			if (!currentUser?.id) {
@@ -174,13 +172,13 @@ function RouteComponent() {
 		{
 			header: '',
 			id: 'actions',
-			cell: ({ row }: any) => (
+			cell: ({ row }) => (
 				<div className="flex justify-end w-full">
 					<Link
 						to={`/company/$companyId/companyPersonnel/$companyPersonnelId`}
 						params={{
-							companyId: row.original.company?.companyid,
-							companyPersonnelId: row.original.id,
+							companyId: row.original.company?.companyid.toString()!,
+							companyPersonnelId: row.original.personnelid?.toString()!,
 						}}>
 						<Button
 							variant="outline"
