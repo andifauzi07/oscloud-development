@@ -16,8 +16,6 @@ import { Company, CreateCompanyRequest, UpdateCompanyRequest, CompanyUpdate } fr
 import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { defaultCompanyColumnSettings } from '@/config/columnSettings';
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
-import { useUserData } from '@/hooks/useUserData';
-import { User } from '@/types/payroll';
 import { AppUser } from '@/types/user';
 
 export const Route = createFileRoute('/company/')({
@@ -32,35 +30,35 @@ const defaultCellRenderer = ({ getValue }: CellContext<Company, any>) => {
 	return <span className="text-xs whitespace-nowrap">{String(value)}</span>;
 };
 
-const field = [
-	{
-		key: 'status',
-		label: 'Status',
-		type: 'toogle',
+// const field = [
+// 	{
+// 		key: 'status',
+// 		label: 'Status',
+// 		type: 'toogle',
 
-		options: ['All', 'Active', 'Inactive'],
-	},
-	{
-		key: 'employeeid',
-		label: 'Employee Id',
-		type: 'number',
-	},
-	{
-		key: 'email',
-		label: 'Email',
-		type: 'email',
-	},
-	{
-		key: 'name',
-		label: 'Name',
-		type: 'text',
-	},
-	{
-		key: 'depertment',
-		label: 'Department',
-		type: 'text',
-	},
-];
+// 		options: ['All', 'Active', 'Inactive'],
+// 	},
+// 	{
+// 		key: 'employeeid',
+// 		label: 'Employee Id',
+// 		type: 'number',
+// 	},
+// 	{
+// 		key: 'email',
+// 		label: 'Email',
+// 		type: 'email',
+// 	},
+// 	{
+// 		key: 'name',
+// 		label: 'Name',
+// 		type: 'text',
+// 	},
+// 	{
+// 		key: 'depertment',
+// 		label: 'Department',
+// 		type: 'text',
+// 	},
+// ];
 
 function RouteComponent() {
 	const [searchKeyword, setSearchKeyword] = useState('');
@@ -86,9 +84,6 @@ function RouteComponent() {
 	// Use filters after it's defined
 	const { companies, loading, addCompany, updateCompany, total } = useCompanies(filters);
 	const [updateDataFromChild, setUpdateDataFromChild] = useState(companies);
-	const { users, getUsers, currentUser } = useUserData();
-	const workspaceId = currentUser?.workspaceid!;
-	console.log(users);
 
 	const handleSaveEdits = useSaveEdits<Company>();
 
@@ -134,6 +129,7 @@ function RouteComponent() {
 			email: company.email,
 			city: company.city,
 			product: company.product,
+			status: company.status,
 			category_group: company.category_group,
 			created_at: company.created_at,
 			managerid: company.manager?.name,
@@ -145,25 +141,12 @@ function RouteComponent() {
 		}));
 	}, [companies]);
 
-	useEffect(() => {
-		const getManager = async () => {
-			try {
-				const manager = await getUsers(workspaceId!);
-				setManager(manager!);
-			} catch (error) {
-				console.error('Failed to fetch manager:', error);
-			}
-		};
-		getManager();
-	}, [getUsers, workspaceId]);
-
 	// Local filtering if needed
 	const filteredCompanies = useMemo(() => {
 		return transformedCompanies.filter((company) => {
 			// Filter by status if specified
-			if (statusFilter && statusFilter !== 'All') {
-				const hasMatchingStatus = company.personnel.some((p: { status: string }) => p.status === statusFilter);
-				if (!hasMatchingStatus) return false;
+			if (statusFilter && statusFilter !== 'All' && company.status !== 'Active') {
+				return false;
 			}
 
 			// Filter by search keyword
@@ -248,7 +231,7 @@ function RouteComponent() {
 				{isEditable ? (
 					<Button
 						onClick={async () => {
-							const result = await handleSaveEdits(filteredCompanies, updateDataFromChild, 'companyid', ['name', 'email', 'city', 'product', 'category_group', 'managerid'], async (id: number, data: Partial<Company>) => {
+							const result = await handleSaveEdits(filteredCompanies, updateDataFromChild, 'companyid', ['name', 'email', 'city', 'product', 'category_group', 'managerid', 'status'], async (id: number, data: Partial<Company>) => {
 								const transformedData = {
 									name: data.name || undefined,
 									email: data.email || undefined,
@@ -257,11 +240,12 @@ function RouteComponent() {
 									categoryGroup: data.category_group || undefined,
 									managerid: data.managerid || undefined,
 									logo: data.logo || undefined,
+									status: data.status || undefined,
 								};
 								await updateCompany(id, transformedData);
 							});
-							setIsEditable(false);
 							console.log(result);
+							setIsEditable(false);
 						}}
 						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
 						SAVE
@@ -284,6 +268,8 @@ function RouteComponent() {
 	const handlePageChange = useCallback((page: number) => {
 		setCurrentPage(page);
 	}, []);
+
+	console.log('INI data dari companies: ', filteredCompanies);
 
 	return (
 		<div className="flex flex-col flex-1 h-full">
@@ -366,6 +352,13 @@ function RouteComponent() {
 								options: [
 									{ value: 'tech', label: 'Technology' },
 									{ value: 'finance', label: 'Finance' },
+								],
+							},
+							status: {
+								options: [
+									{ value: 'Active', label: 'Active' },
+									{ value: 'Inactive', label: 'Inactive' },
+									{ value: 'Blocked', label: 'Blocked' },
 								],
 							},
 						}}

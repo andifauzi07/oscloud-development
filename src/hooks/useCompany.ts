@@ -102,22 +102,12 @@ export function useCompanies(filters: CompanyFilters = {}) {
 	);
 
 	const updateCompanyDetails = useCallback(
-		async (
-			companyid: number,
-			data: {
-				city?: string;
-				product?: string;
-				email?: string;
-				category_group?: string;
-				logo?: string;
-				name?: string;
-			}
-		) => {
+		async (companyId: number, data: any) => {
 			if (!workspaceid) throw new Error('No workspace ID available');
 			return dispatch(
 				updateCompany({
 					workspaceId: Number(workspaceid),
-					companyid,
+					companyId,
 					data,
 				})
 			).unwrap();
