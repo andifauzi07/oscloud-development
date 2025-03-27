@@ -14,36 +14,29 @@ export interface Personnel {
 
 // Lead interface
 export interface Lead {
-	leadId: number;
 	name: string;
+	leadid: number;
 	status: string;
-	contractValue: number;
-	createdAt: string;
 	company: {
-		companyId: number;
-		name: string;
-		logo: string;
 		city: string;
+		logo: string;
+		name: string;
+		email: string;
+		status: string;
 		product: string;
-		email: string;
-		categoryGroup: string | null;
-		createdAt: string | null;
+		companyid: number;
+		managerid: string;
+		created_at: string;
+		workspaceid: number;
+		extra_fields: any | null;
+		category_group: string;
+		company_categoryid: number | null;
 	};
-	personnel: {
-		personnelId: number;
-		name: string;
-		email: string;
-		status: string;
-		description: string;
-		manager: any | null;
-	};
-	projects: {
-		projectId: number;
-		name: string;
-		status: string;
-		startDate: string;
-		endDate: string;
-	}[];
+	companyid: number;
+	created_at: string;
+	personnelid: number;
+	workspaceid: number;
+	contractvalue: number;
 }
 
 export interface ProjectCosts {

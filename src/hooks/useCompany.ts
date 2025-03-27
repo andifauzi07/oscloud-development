@@ -44,7 +44,7 @@ interface UseCompaniesParams {
 	limit?: number;
 }
 
-export function useCompanies(filters: CompanyFilters = {}) {
+export function useCompanies(filters?: CompanyFilters) {
 	const dispatch = useDispatch<AppDispatch>();
 	const { currentUser } = useUserData();
 	const workspaceid = currentUser?.workspaceid;
@@ -58,11 +58,11 @@ export function useCompanies(filters: CompanyFilters = {}) {
 	// Stabilkan filters
 	const stableFilters = useMemo(
 		() => ({
-			search: filters.search,
-			page: filters.page || 1,
-			limit: filters.limit || 10,
+			search: filters?.search,
+			page: filters?.page || 1,
+			limit: filters?.limit || 10,
 		}),
-		[filters.search, filters.page, filters.limit]
+		[filters?.search, filters?.page, filters?.limit]
 	);
 
 	useEffect(() => {
@@ -116,12 +116,12 @@ export function useCompanies(filters: CompanyFilters = {}) {
 	);
 
 	const removeCompany = useCallback(
-		async (companyid: number) => {
+		async (companyId: number) => {
 			if (!workspaceid) throw new Error('No workspace ID available');
 			return dispatch(
 				deleteCompany({
 					workspaceId: Number(workspaceid),
-					companyid,
+					companyId,
 				})
 			).unwrap();
 		},
