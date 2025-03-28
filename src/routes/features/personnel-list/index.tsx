@@ -15,6 +15,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { updatePersonnel, fetchAllPersonnel } from '@/store/slices/personnelSlice';
 import { ColumnDef } from '@tanstack/react-table';
+import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 
 export const Route = createFileRoute('/features/personnel-list/')({
 	component: RouteComponent,
@@ -22,9 +23,10 @@ export const Route = createFileRoute('/features/personnel-list/')({
 
 function RouteComponent() {
 	const dispatch = useDispatch<AppDispatch>();
-	const { personnel, loading, error, fetchAllPersonnel: fetchAllPersonnelHook, addPersonnel } = usePersonnel();
+	const { personnel, loading, error, fetchAllPersonnel: fetchAllPersonnelHook, addPersonnel, updatePersonnel } = usePersonnel();
 	const { currentUser } = useUserData();
 	const { companies } = useCompanies();
+	const [updateDataFromChild, setUpdateDataFromChild] = useState(personnel);
 	const [isEditable, setIsEditable] = useState(false);
 
 	// Create company options for the select field
@@ -56,64 +58,66 @@ function RouteComponent() {
 		}
 	};
 
-	const handleSaveEdits = useCallback(
-		async (updatedData: any[]) => {
-			try {
-				if (!currentUser?.workspaceid) {
-					throw new Error('No workspace ID available');
-				}
+	const handleSaveEdits = useSaveEdits<any>();
 
-				console.log('Starting updates with data:', updatedData); // Debug log
+	// const handleSaveEdits = useCallback(
+	// 	async (updatedData: any[]) => {
+	// 		try {
+	// 			if (!currentUser?.workspaceid) {
+	// 				throw new Error('No workspace ID available');
+	// 			}
 
-				await Promise.all(
-					updatedData.map(async (person) => {
-						if (!person.id) {
-							console.error('Missing personnel ID:', person);
-							return;
-						}
+	// 			console.log('Starting updates with data:', updatedData); // Debug log
 
-						// Create the update payload according API structure
-						const data = {
-							name: person.name,
-							email: person.email,
-							status: person.status,
-							companyid: typeof person.company === 'object' ? person.company?.companyid : person.companyid,
-							description: person.description,
-						};
+	// 			await Promise.all(
+	// 				updatedData.map(async (person) => {
+	// 					if (!person.id) {
+	// 						console.error('Missing personnel ID:', person);
+	// 						return;
+	// 					}
 
-						console.log('Dispatching update with:', {
-							workspaceId: Number(currentUser.workspaceid),
-							personnelId: person.id,
-							data,
-						});
+	// 					// Create the update payload according API structure
+	// 					const data = {
+	// 						name: person.name,
+	// 						email: person.email,
+	// 						status: person.status,
+	// 						companyid: typeof person.company === 'object' ? person.company?.companyid : person.companyid,
+	// 						description: person.description,
+	// 					};
 
-						// Dispatch the update action with the correct parameters
-						await dispatch(
-							updatePersonnel({
-								workspaceId: Number(currentUser.workspaceid),
-								personnelId: person.id,
-								data,
-							})
-						);
-					})
-				);
+	// 					console.log('Dispatching update with:', {
+	// 						workspaceId: Number(currentUser.workspaceid),
+	// 						personnelId: person.id,
+	// 						data,
+	// 					});
 
-				await dispatch(
-					fetchAllPersonnel({
-						workspaceId: Number(currentUser.workspaceid),
-					})
-				);
+	// 					// Dispatch the update action with the correct parameters
+	// 					await dispatch(
+	// 						updatePersonnel({
+	// 							workspaceId: Number(currentUser.workspaceid),
+	// 							personnelId: person.id,
+	// 							data,
+	// 						})
+	// 					);
+	// 				})
+	// 			);
 
-				setIsEditable(false);
-				alert('Changes saved successfully');
-			} catch (error) {
-				console.error('Failed to save updates:', error);
-				alert('Failed to save changes');
-				setIsEditable(true);
-			}
-		},
-		[dispatch, currentUser?.workspaceid]
-	);
+	// 			await dispatch(
+	// 				fetchAllPersonnel({
+	// 					workspaceId: Number(currentUser.workspaceid),
+	// 				})
+	// 			);
+
+	// 			setIsEditable(false);
+	// 			alert('Changes saved successfully');
+	// 		} catch (error) {
+	// 			console.error('Failed to save updates:', error);
+	// 			alert('Failed to save changes');
+	// 			setIsEditable(true);
+	// 		}
+	// 	},
+	// 	[dispatch, currentUser?.workspaceid]
+	// );
 
 	const statusOptions = [
 		{ value: 'Active', label: 'Active' },
@@ -192,37 +196,88 @@ function RouteComponent() {
 		},
 	];
 
-	const addRecordColumns = [
-		{
-			header: 'Personnel Name',
-			accessorKey: 'name',
-			required: true,
-		},
-		{
-			header: 'Email',
-			accessorKey: 'email',
-			required: true,
-		},
-		{
-			header: 'Status',
-			accessorKey: 'status',
-			required: true,
-			type: 'select',
-		},
-		{
-			header: 'Company',
-			accessorKey: 'companyid',
-			required: true,
-			type: 'select',
-		},
-		{
-			header: 'Description',
-			accessorKey: 'description',
-			required: false,
-		},
-	];
+	// const addRecordColumns = [
+	// 	{
+	// 		header: 'Personnel Name',
+	// 		accessorKey: 'name',
+	// 		required: true,
+	// 	},
+	// 	{
+	// 		header: 'Email',
+	// 		accessorKey: 'email',
+	// 		required: true,
+	// 	},
+	// 	{
+	// 		header: 'Status',
+	// 		accessorKey: 'status',
+	// 		required: true,
+	// 		type: 'select',
+	// 	},
+	// 	{
+	// 		header: 'Company',
+	// 		accessorKey: 'companyid',
+	// 		required: true,
+	// 		type: 'select',
+	// 	},
+	// 	{
+	// 		header: 'Description',
+	// 		accessorKey: 'description',
+	// 		required: false,
+	// 	},
+	// ];
 
-	console.log('Personnel: ', personnel);
+	console.log(personnel);
+
+	const editButton = useCallback(() => {
+		return (
+			<>
+				{isEditable ? (
+					<Button
+						onClick={() => {
+							setIsEditable((prev) => !prev);
+						}}
+						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
+						CANCEL
+					</Button>
+				) : (
+					<AddRecordDialog
+						columns={columns}
+						onSave={handleAddRecord}
+						nonEditableColumns={['actions', 'id', 'manager', 'activeLeads', 'closedLeads', 'addedAt']}
+						selectFields={{
+							status: {
+								options: statusOptions,
+							},
+							companyid: {
+								options: companyOptions,
+							},
+						}}
+					/>
+				)}
+
+				{isEditable ? (
+					<Button
+						onClick={async () => {
+							const result = await handleSaveEdits(companies, updateDataFromChild, 'companyid', ['name', 'email', 'city', 'product', 'categoryGroup', 'manager', 'status'], async (id: number, data: Partial<Personnel>) => {
+								const res = await updatePersonnel(data);
+								console.log('ini res: ', res);
+							});
+							console.log(result);
+							setIsEditable(false);
+						}}
+						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
+						SAVE
+					</Button>
+				) : (
+					<Button
+						onClick={() => setIsEditable((prev) => !prev)}
+						className="text-black bg-transparent border-r md:w-20 link border-l-none min-h-10">
+						EDIT
+					</Button>
+				)}
+			</>
+		);
+	}, [isEditable, personnel, updateDataFromChild, updatePersonnel]);
 
 	useEffect(() => {
 		fetchAllPersonnelHook();
@@ -233,34 +288,12 @@ function RouteComponent() {
 			<TitleWrapper>
 				<h2>All Personnel</h2>
 			</TitleWrapper>
-
-			<div className="flex justify-end flex-none w-full bg-white">
-				<AddRecordDialog
-					columns={addRecordColumns}
-					onSave={handleAddRecord}
-					nonEditableColumns={['actions', 'id', 'manager', 'activeLeads', 'closedLeads', 'addedAt']}
-					selectFields={{
-						status: {
-							options: statusOptions,
-						},
-						companyid: {
-							options: companyOptions,
-						},
-					}}
-				/>
-				<Button
-					onClick={() => setIsEditable((prev) => !prev)}
-					className="w-20 h-10 text-black bg-transparent border-t-0 border-b-0 border-r md:w-20 link">
-					{isEditable ? 'CANCEL' : 'EDIT'}
-				</Button>
-			</div>
-
+			<div className="flex justify-end flex-none bg-white">{editButton()}</div>
 			<DataTable
 				columns={columns}
 				data={personnel}
 				loading={loading}
 				isEditable={isEditable}
-				onSave={handleSaveEdits}
 				nonEditableColumns={['actions', 'id', 'manager', 'activeLeads', 'closedLeads', 'addedAt']}
 				selectFields={{
 					status: {
@@ -269,6 +302,14 @@ function RouteComponent() {
 					companyid: {
 						options: companyOptions,
 					},
+				}}
+				setTableData={(updateFunctionOrData) => {
+					if (typeof updateFunctionOrData === 'function') {
+						const newData = updateFunctionOrData(updateDataFromChild);
+						setUpdateDataFromChild(newData);
+					} else {
+						setUpdateDataFromChild(updateFunctionOrData);
+					}
 				}}
 			/>
 		</div>

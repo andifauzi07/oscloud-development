@@ -83,10 +83,14 @@ function RouteComponent() {
 			// Helper function untuk mendapatkan value berdasarkan accessorKey
 			const getValue = () => {
 				switch (setting.accessorKey) {
+					case 'employeeid':
+						return employee?.employeeId || '-';
 					case 'employeecategoryid':
-						return employee?.employeeCategory?.categoryname || '-';
+						const category = categories.find((category) => category.categoryid === employee?.employeeCategory.categoryId);
+						return employee?.employeeCategory?.name || category?.categoryname || '-';
 					case 'departmentid':
-						return employee?.department?.departmentname || '-';
+						const department = departments.find((department) => department.departmentId === employee.department.departmentid);
+						return employee?.department?.departmentname || department?.departmentname || '-';
 					default:
 						return editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-';
 				}
@@ -96,17 +100,17 @@ function RouteComponent() {
 				label: setting.header,
 				value: getValue(),
 				key: setting.accessorKey,
+				type: setting.type,
 			};
 
 			// Tambahkan options untuk field yang memerlukan
 			if (setting.accessorKey === 'employeecategoryid') {
 				return {
 					...baseObject,
-					options:
-						categories?.map((c) => ({
-							value: c.categoryid.toString(),
-							label: c.categoryname,
-						})) || [],
+					options: categories?.map((c) => ({
+						value: c.categoryid.toString()!,
+						label: c.categoryname!,
+					})),
 				};
 			}
 
@@ -130,6 +134,7 @@ function RouteComponent() {
 			label: setting.header,
 			value: setting.category === '単価' ? employee?.unitprice?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
+			type: setting.type,
 		}));
 
 	const sns = settings
@@ -138,6 +143,7 @@ function RouteComponent() {
 			label: setting.header,
 			value: setting.category === 'SNS' ? employee?.sns?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
+			type: setting.type,
 		}));
 
 	const contractRelated = settings
@@ -146,6 +152,7 @@ function RouteComponent() {
 			label: setting.header,
 			value: setting.category === '契約関連' ? employee?.contractrelated?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
+			type: setting.type,
 		}));
 
 	const studySession = settings
@@ -154,6 +161,7 @@ function RouteComponent() {
 			label: setting.header,
 			value: setting.category === '講習会' ? employee?.studySession?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
+			type: setting.type,
 		}));
 
 	const interviewResult = settings
@@ -162,6 +170,7 @@ function RouteComponent() {
 			label: setting.header,
 			value: setting.category === '面談結果' ? employee?.interviewresult?.toString() || '-' : editedEmployee[setting.accessorKey as keyof EditedEmployee] || employee?.[setting.accessorKey as keyof Employee] || '-',
 			key: setting.accessorKey,
+			type: setting.type,
 		}));
 
 	return (
@@ -255,7 +264,7 @@ function RouteComponent() {
 									title="基本情報"
 									isEditing={isEditing}
 									onValueChange={handleValueChange}
-									nonEditableFields={['employeeId']} // Add nonEditableFields prop
+									nonEditableFields={['employeeid']} // Add nonEditableFields prop
 								/>
 								<InfoSection
 									className="border-l-0"

@@ -13,6 +13,7 @@ interface InfoSectionProps {
 		label: string;
 		value: string;
 		key?: string;
+		type?: string;
 		options?: { value: string; label: string }[];
 		nonEditable?: boolean;
 	}[];
@@ -59,6 +60,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({ className, title, item
 										value={item.value}
 										onChange={(e) => onValueChange(item.key!, e.target.value)}
 										className="h-8"
+										enableEmoji={!(item.type === 'number' || item.type === 'email' || item.type === 'boolean')}
 									/>
 								)
 							) : (

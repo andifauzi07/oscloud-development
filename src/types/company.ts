@@ -1,3 +1,5 @@
+import { Manager as ManagerType } from './manager';
+
 // Personnel interface
 export interface Personnel {
 	personnelid: number;
@@ -186,7 +188,7 @@ export interface CompanyResponse {
 	email: string | null;
 	categoryGroup: string | null;
 	createdAt: string;
-	manager: CompanyManager | null;
+	manager: Manager | null | undefined;
 	personnel: CompanyPersonnel[];
 	stats: CompanyStats;
 }
@@ -203,13 +205,12 @@ export interface Company {
 	product: string | null;
 	email: string | null;
 	category_group: string | null;
-	managerid: string | null;
 	fullAddress?: string | null;
 	personnel: CompanyPersonnel[];
 	activeLeads: number;
 	totalContractValue: number;
+	manager: ManagerType | null | undefined;
 	detail?: any;
-	manager?: CompanyManager | null;
 }
 
 export interface CompanyUpdate {
@@ -242,6 +243,7 @@ export interface CreateCompanyRequest {
 	logo: string;
 	city: string;
 	product: string;
+	status: string | null | undefined;
 	email: string;
 	categoryGroup: string;
 	managerid: string; // Keep as required string

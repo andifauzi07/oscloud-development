@@ -80,6 +80,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 6,
+		cell: ({ row }) => row.original.category_group! || '-',
 	},
 	{
 		accessorKey: 'product',
@@ -107,7 +108,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 9,
-		cell: ({ row }: CellContext<Company, any>) => row.original.status || 'Inactive',
+		cell: ({ row }: CellContext<Company, any>) => row.original.status,
 	},
 	{
 		accessorKey: 'fullAddress',
@@ -117,6 +118,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 10,
+		cell: ({ row }) => row.original.fullAddress! || '-',
 	},
 	{
 		accessorKey: 'manager',
@@ -126,6 +128,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 11,
+		cell: ({ row }) => row.original.manager?.name! || '_',
 	},
 	{
 		accessorKey: 'activeLeads',
@@ -144,7 +147,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 13,
-		cell: ({ row }: CellContext<Company, any>) => row.original.created_at.split('T')[0],
+		cell: ({ row }: CellContext<Company, any>) => row.original.created_at?.split('T')[0]!,
 	},
 	{
 		accessorKey: 'detail',
@@ -159,7 +162,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 				<Link
 					to={`/company/$companyId`}
 					params={{
-						companyId: row.original.companyid.toString(),
+						companyId: row.original.companyid?.toString()!,
 					}}>
 					<Button
 						variant="outline"

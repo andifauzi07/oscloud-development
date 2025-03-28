@@ -12,11 +12,12 @@ import AdvancedFilterPopover from '@/components/search/advanced-search';
 import { useCompanies } from '@/hooks/useCompany';
 import useDebounce from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
-import { Company, CreateCompanyRequest, UpdateCompanyRequest, CompanyUpdate } from '@/types/company';
+import { Company, CreateCompanyRequest, CompanyUpdate } from '@/types/company';
 import { useColumnSettings } from '@/hooks/useColumnSettings';
 import { defaultCompanyColumnSettings } from '@/config/columnSettings';
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 import { AppUser } from '@/types/user';
+import { useManagers } from '@/hooks/useManager';
 
 export const Route = createFileRoute('/company/')({
 	component: RouteComponent,
@@ -55,7 +56,7 @@ const defaultCellRenderer = ({ getValue }: CellContext<Company, any>) => {
 // 	},
 // 	{
 // 		key: 'depertment',
-// 		label: 'Department',
+// 		label: 'manager',
 // 		type: 'text',
 // 	},
 // ];
@@ -63,10 +64,12 @@ const defaultCellRenderer = ({ getValue }: CellContext<Company, any>) => {
 function RouteComponent() {
 	const [searchKeyword, setSearchKeyword] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string>('');
-	const [manager, setManager] = useState<AppUser[]>([]);
+	// const [manager, setManager] = useState<AppUser[]>([]);
 	const [isEditable, setIsEditable] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 10;
+	const { manager: companyManager, loading: companyManagerLoading, error } = useManagers();
+	const [companyManagerOptions, setCompanyManagerOptions] = useState<Array<{ value: string; label: string }>>([]);
+	const pageSize = 20;
 
 	const debouncedSearchKeyword = useDebounce(searchKeyword, 500);
 
@@ -85,12 +88,22 @@ function RouteComponent() {
 	const { companies, loading, addCompany, updateCompany, total } = useCompanies(filters);
 	const [updateDataFromChild, setUpdateDataFromChild] = useState(companies);
 
-	const handleSaveEdits = useSaveEdits<Company>();
+	const handleSaveEdits = useSaveEdits<any>();
 
 	const { settings } = useColumnSettings<Company>({
 		storageKey: 'companyColumnSettings',
 		defaultSettings: defaultCompanyColumnSettings,
 	});
+
+	useEffect(() => {
+		if (companyManager) {
+			const options = companyManager.map((manager) => ({
+				value: manager.userid,
+				label: manager.name,
+			}));
+			setCompanyManagerOptions(options);
+		}
+	}, [companyManager]);
 
 	// Modified columns setup
 	const columns = useMemo<ColumnDef<Company, any>[]>(() => {
@@ -130,9 +143,9 @@ function RouteComponent() {
 			city: company.city,
 			product: company.product,
 			status: company.status,
-			category_group: company.category_group,
+			categoryGroup: company.category_group,
 			created_at: company.created_at,
-			managerid: company.manager?.name,
+			manager: company.manager,
 			workspaceid: company.workspaceid,
 			personnel: company.personnel || [],
 			activeLeads: company.activeLeads || 0,
@@ -157,7 +170,7 @@ function RouteComponent() {
 					(company.email?.toLowerCase() || '').includes(searchLower) ||
 					(company.city?.toLowerCase() || '').includes(searchLower) ||
 					(company.product?.toLowerCase() || '').includes(searchLower) ||
-					(company.category_group?.toLowerCase() || '').includes(searchLower)
+					(company.categoryGroup?.toLowerCase() || '').includes(searchLower)
 				);
 			}
 
@@ -171,7 +184,7 @@ function RouteComponent() {
 	}, [filteredCompanies]);
 
 	const handleAddRecord = useCallback(
-		async (data: Partial<Company>) => {
+		async (data: Partial<CompanyUpdate>) => {
 			try {
 				if (!data.name) {
 					throw new Error('Company name is required');
@@ -185,10 +198,11 @@ function RouteComponent() {
 					email: data.email || '',
 					categoryGroup: data.category_group || '',
 					managerid: data.managerid || '',
+					status: data.status,
 					personnel: [],
 				};
-
-				await addCompany(newCompanyRequest);
+				const result = await addCompany(newCompanyRequest);
+				console.log('adding data company: ', result);
 			} catch (error) {
 				console.error('Failed to add record:', error);
 				throw error;
@@ -213,16 +227,23 @@ function RouteComponent() {
 					<AddRecordDialog
 						columns={columns}
 						onSave={handleAddRecord}
-						nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'created_at*', 'detail', 'activeLeads', 'totalContractValue']}
+						nonEditableColumns={['logo', 'companyid', 'actions', 'personnel', 'created_at', 'detail', 'activeLeads', 'totalContractValue']}
 						selectFields={{
-							category_group: {
+							categoryGroup: {
 								options: [
 									{ value: 'tech', label: 'Technology' },
 									{ value: 'finance', label: 'Finance' },
 								],
 							},
-							managerid: {
-								options: manager?.map((m) => ({ value: m.id, label: m.name })),
+							manager: {
+								options: companyManager?.map((m) => ({ value: m.userid, label: m.name })),
+							},
+							status: {
+								options: [
+									{ value: 'Active', label: 'Active' },
+									{ value: 'Inactive', label: 'Inactive' },
+									{ value: 'Blocked', label: 'Blocked' },
+								],
 							},
 						}}
 					/>
@@ -231,18 +252,19 @@ function RouteComponent() {
 				{isEditable ? (
 					<Button
 						onClick={async () => {
-							const result = await handleSaveEdits(filteredCompanies, updateDataFromChild, 'companyid', ['name', 'email', 'city', 'product', 'category_group', 'managerid', 'status'], async (id: number, data: Partial<Company>) => {
+							const result = await handleSaveEdits(companies, updateDataFromChild, 'companyid', ['name', 'email', 'city', 'product', 'categoryGroup', 'manager', 'status'], async (id: number, data: Partial<Company>) => {
 								const transformedData = {
 									name: data.name || undefined,
 									email: data.email || undefined,
-									city: data.city || undefined,
+									city: data.city! || undefined,
 									product: data.product || undefined,
-									categoryGroup: data.category_group || undefined,
-									managerid: data.managerid || undefined,
+									categoryGroup: data.category_group,
+									manager: data.manager || undefined,
 									logo: data.logo || undefined,
 									status: data.status || undefined,
 								};
-								await updateCompany(id, transformedData);
+								const res = await updateCompany(id, transformedData);
+								console.log('ini res: ', res);
 							});
 							console.log(result);
 							setIsEditable(false);
@@ -343,10 +365,10 @@ function RouteComponent() {
 							}
 						}}
 						selectFields={{
-							managerid: {
-								options: manager?.map((m) => ({ value: m.id.toString(), label: m.name })),
+							manager: {
+								options: companyManagerOptions,
 							},
-							category_group: {
+							categoryGroup: {
 								options: [
 									{ value: 'tech', label: 'Technology' },
 									{ value: 'finance', label: 'Finance' },

@@ -68,13 +68,15 @@ export function useCompanies(filters?: CompanyFilters) {
 	useEffect(() => {
 		if (!workspaceid) return;
 
-		dispatch(
-			fetchCompanies({
-				workspaceId: Number(workspaceid),
-				...stableFilters,
-			})
-		);
-	}, [workspaceid, stableFilters]);
+		if (workspaceid && filters && !loading) {
+			dispatch(
+				fetchCompanies({
+					workspaceId: Number(workspaceid),
+					...stableFilters,
+				})
+			);
+		}
+	}, [dispatch, workspaceid, stableFilters, filters]);
 
 	const fetchCompany = useCallback(
 		async (companyId: number) => {

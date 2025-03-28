@@ -12,6 +12,7 @@ import availabilityReducer from './slices/availabilitySlice';
 import personnelReducer from './slices/personnelSlice';
 import filterSlice from './slices/filterSlice';
 import hourlyRateReducer from './slices/hourlyRateSlice';
+import managerSlice from './slices/managerSlice';
 
 export const store = configureStore({
 	reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
 		personnel: personnelReducer,
 		advfilter: filterSlice,
 		hourlyRate: hourlyRateReducer,
+		manager: managerSlice,
 	},
 });
 
