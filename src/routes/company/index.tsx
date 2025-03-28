@@ -69,7 +69,7 @@ function RouteComponent() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const { manager: companyManager, loading: companyManagerLoading, error } = useManagers();
 	const [companyManagerOptions, setCompanyManagerOptions] = useState<Array<{ value: string; label: string }>>([]);
-	const pageSize = 20;
+	const pageSize = 10;
 
 	const debouncedSearchKeyword = useDebounce(searchKeyword, 500);
 
