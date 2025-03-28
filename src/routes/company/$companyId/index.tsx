@@ -10,24 +10,21 @@ import Loading from '@/components/Loading';
 import { cn } from '@/lib/utils';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { InfoSection } from '@/components/wrapperElement';
-import { useUserData } from '@/hooks/useUserData';
 import { toast } from '@/hooks/use-toast';
+import { useManagers } from '@/hooks/useManager';
 export const Route = createFileRoute('/company/$companyId/')({
 	component: CompanyDetail,
 });
 
 function CompanyDetail() {
 	const { companyId } = useParams({ strict: false });
-	const { users } = useUserData();
+	const { manager, loading: managerLoading, error } = useManagers();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedCompany, setEditedCompany] = useState<CompanyUpdate>({});
 	const location = useLocation();
 	const isCurrentPath = location.pathname === `/company/${companyId}`;
 	const [selectedCompany, setSelectedCompany] = useState<Company | undefined>(undefined);
-	const filteredManager = users?.find((user) => user?.id === selectedCompany?.manager?.userId);
 	const { loading, fetchCompany, updateCompany, workspaceid } = useCompanies();
-	console.log('ini filtered manager: ', filteredManager);
-	console.log('ini selected company: ', selectedCompany);
 	const { uploadImage, isUploading } = useImageUpload({
 		bucketName: 'company_logos',
 		folderPath: 'logos',
@@ -50,7 +47,7 @@ function CompanyDetail() {
 					console.error('Error:', error);
 				});
 		}
-	}, [companyId, workspaceid]);
+	}, [companyId, workspaceid, selectedCompany]);
 
 	const handleValueChange = (key: string, value: string) => {
 		setEditedCompany((prev) => ({
@@ -86,8 +83,6 @@ function CompanyDetail() {
 	};
 
 	const handleSave = async () => {
-		console.log('ini edited company: ', editedCompany);
-
 		try {
 			if (!Object.keys(editedCompany).length) {
 				alert('No changes to save');
@@ -107,7 +102,7 @@ function CompanyDetail() {
 				email: editedCompany.email,
 				status: editedCompany.status,
 				categoryGroup: editedCompany.category_group,
-				managerId: editedCompany.managerId,
+				managerId: editedCompany.managerid,
 			};
 
 			// Remove undefined properties
@@ -119,8 +114,6 @@ function CompanyDetail() {
 
 			const result = await updateCompany(selectedCompany.companyId, updatePayload);
 
-			setIsEditing(false);
-			setEditedCompany({});
 			setSelectedCompany((prev) => (prev ? { ...prev, ...result } : undefined));
 			toast({
 				title: 'Success',
@@ -133,77 +126,83 @@ function CompanyDetail() {
 				description: 'Failed to update company',
 				variant: 'destructive',
 			});
+		} finally {
+			setEditedCompany({});
+			setIsEditing(false);
 		}
 	};
+
+	console.log('edited Company => ', editedCompany);
+	console.log('selected Company => ', selectedCompany);
 
 	const tabs = [
 		{ label: 'Profile', path: `/company/${companyId}` },
 		{ label: 'Personnel', path: `/company/${companyId}/companyPersonnel` },
 	];
 
-	if (loading) return <Loading />;
-	if (!selectedCompany) return <div>Company not found</div>;
+	if (loading && !selectedCompany) return <Loading />;
+	if (!selectedCompany && !loading) return <div>Company not found</div>;
 
 	const basicInfo = [
 		{
 			label: 'Company Name',
-			value: editedCompany.name || selectedCompany.name || '',
+			value: editedCompany.name || selectedCompany?.name! || '',
 			key: 'name',
 		},
 		{
 			label: 'Status',
-			value: editedCompany.status || 'Inactive',
+			value: editedCompany.status || selectedCompany?.status! || '-',
 			key: 'status',
 			options: [
-				{ value: 'active', label: 'Active' },
-				{ value: 'inactive', label: 'Inactive' },
-				{ value: 'blocked', label: 'Blocked' },
+				{ value: 'Active', label: 'Active' },
+				{ value: 'Inactive', label: 'Inactive' },
+				{ value: 'Blocked', label: 'Blocked' },
 			],
 		},
 		{
 			label: 'Category',
-			value: editedCompany.category_group || selectedCompany.category_group || '',
+			value: editedCompany.category_group || selectedCompany?.categoryGroup! || '-',
 			key: 'category_group',
 			options: [
-				{ value: 'tech', label: 'Technology' },
-				{ value: 'finance', label: 'Finance' },
-				{ value: 'healthcare', label: 'Healthcare' },
-				{ value: 'retail', label: 'Retail' },
+				{ value: 'Tech', label: 'Technology' },
+				{ value: 'Finance', label: 'Finance' },
+				{ value: 'Healthcare', label: 'Healthcare' },
+				{ value: 'Retail', label: 'Retail' },
 			],
 		},
 		{
 			label: 'Personnel Count',
-			value: (selectedCompany.personnel?.length || 0).toString(),
+			value: (selectedCompany?.personnel?.length || 0).toString(),
 			nonEditable: true,
 		},
 		{
 			label: 'Created Date',
-			value: selectedCompany.createdAt?.split('T')[0] || '',
+			value: selectedCompany?.createdAt?.split('T')[0] || '',
 			nonEditable: true,
 		},
 		{
 			label: 'Contact Email',
-			value: editedCompany.email || selectedCompany.email || '',
+			value: editedCompany.email || selectedCompany?.email || '',
 			key: 'email',
 		},
 		{
 			label: 'City',
-			value: editedCompany.city || selectedCompany.city || '',
+			value: editedCompany.city || selectedCompany?.city || '',
 			key: 'city',
 		},
 		{
 			label: 'Product',
-			value: editedCompany.product || selectedCompany.product || '',
+			value: editedCompany.product || selectedCompany?.product || '',
 			key: 'product',
 		},
 	];
 
 	const managerInfo = [
 		{
-			value: selectedCompany.manager?.userId || 'No assigned',
-			label: selectedCompany.manager?.firstName! + selectedCompany.manager?.lastName || filteredManager?.name! || '-',
+			value: editedCompany.managerId || manager.find((m) => m.userid === selectedCompany?.manager?.userId)?.userid || 'No assigned',
+			label: editedCompany.managerId || manager.find((m) => m.userid === selectedCompany?.manager?.userId)?.name || '-',
 			key: 'managerid',
-			options: users?.map((m) => ({ value: m.id, label: m.name })),
+			options: manager?.map((m) => ({ value: m.userid, label: m.name })),
 		},
 		// {
 		// 	label: 'Role',
@@ -248,7 +247,7 @@ function CompanyDetail() {
 			{isCurrentPath && (
 				<div className="flex flex-col h-full">
 					<div className="flex-none px-8 bg-white border-t border-r">
-						<h2 className="container py-3">{selectedCompany.name}</h2>
+						<h2 className="container py-3">{selectedCompany?.name}</h2>
 					</div>
 
 					<div className="flex-none border-b">

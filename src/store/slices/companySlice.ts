@@ -220,7 +220,7 @@ interface UpdateCompanyRequest {
 	personnel?: { name: string }[];
 }
 
-export const updateCompany = createAsyncThunk('company/update', async ({ workspaceId, companyId, data }: { workspaceId: number; companyId: number; data: UpdateCompanyRequest }) => {
+export const updateCompany = createAsyncThunk('company/update', async ({ workspaceId, companyId, data }: { workspaceId: number; companyId: number; data: any }) => {
 	const response = await apiClient.patch(`/workspaces/${workspaceId}/crm/companies/${companyId}`, data);
 	return response.data;
 });

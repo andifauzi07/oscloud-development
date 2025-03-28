@@ -76,7 +76,7 @@ export function useCompanies(filters?: CompanyFilters) {
 				})
 			);
 		}
-	}, [dispatch, workspaceid, stableFilters, filters]);
+	}, [dispatch, workspaceid, stableFilters, filters, loading]);
 
 	const fetchCompany = useCallback(
 		async (companyId: number) => {
