@@ -199,12 +199,12 @@ export interface Company {
 	name: string;
 	logo: string | null;
 	workspaceid: number;
-	created_at: string;
+	createdAt: string;
 	status?: string;
 	city: string | null;
 	product: string | null;
 	email: string | null;
-	category_group: string | null;
+	categoryGroup: string | null;
 	fullAddress?: string | null;
 	personnel: CompanyPersonnel[];
 	activeLeads: number;

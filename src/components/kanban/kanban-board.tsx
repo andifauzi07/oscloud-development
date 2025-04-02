@@ -10,32 +10,29 @@ import { KanbanCardItem } from './kanban-card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCompanies } from '@/hooks/useCompany';
-import { SelectField } from '@/components/select-field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCompanies, useCompany } from '@/hooks/useCompany';
+import { SelectField, SelectGroup, SelectLabel } from '@/components/select-field';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useManagers } from '@/hooks/useManager';
 
 interface Company {
-    companyid: number;
-    name: string;
+	companyid: number;
+	name: string;
 }
 
 interface Personnel {
-    personnelid: number;
-    name: string;
-    email: string;
+	personnelid: number;
+	name: string;
+	email: string;
 }
 
 interface KanbanBoardProps {
-    columns: KanbanColumnTypes[];
-    onColumnUpdate: (columns: KanbanColumnTypes[]) => Promise<void>;
-    disabled?: boolean;
+	columns: KanbanColumnTypes[];
+	onColumnUpdate: (columns: KanbanColumnTypes[]) => Promise<void>;
+	disabled?: boolean;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({
-    columns: initialColumns,
-    onColumnUpdate,
-    disabled
-}) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columns: initialColumns, onColumnUpdate, disabled }) => {
 	// Column states
 	const [columns, setColumns] = useState<KanbanColumnTypes[]>(initialColumns);
 	const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
@@ -54,7 +51,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 		addedOn: '',
 		manager: '',
 		contractValue: '',
-		status: 'Pending'
+		status: 'Pending',
 	});
 
 	// DnD sensors
@@ -88,11 +85,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 	const handleDragStart = (event: DragStartEvent) => {
 		const { active } = event;
 		setActiveId(active.id as string);
-		
-		const draggedLead = columns
-			.flatMap(col => col.leads)
-			.find(lead => lead.id === active.id);
-			
+
+		const draggedLead = columns.flatMap((col) => col.leads).find((lead) => lead.id === active.id);
+
 		if (draggedLead) {
 			setActiveLead(draggedLead);
 		}
@@ -100,21 +95,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
 	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
-		
+
 		if (!over) return;
 
 		const activeId = active.id;
 		const overId = over.id;
 
-		const sourceColumn = columns.find(col => 
-			col.leads.some(lead => lead.id === activeId)
-		);
+		const sourceColumn = columns.find((col) => col.leads.some((lead) => lead.id === activeId));
 
-		const targetColumn = columns.find(col => col.id === overId);
+		const targetColumn = columns.find((col) => col.id === overId);
 
 		if (!sourceColumn || !targetColumn || sourceColumn.id === targetColumn.id) return;
 
-		const draggedLead = sourceColumn.leads.find(lead => lead.id === activeId);
+		const draggedLead = sourceColumn.leads.find((lead) => lead.id === activeId);
 		if (!draggedLead) return;
 
 		// Create copies of the leads arrays
@@ -124,7 +117,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 		// Update the lead's status to match the new column
 		const updatedLead = {
 			...draggedLead,
-			status: targetColumn.title
+			status: targetColumn.title,
 		};
 
 		// Remove from source column
@@ -135,11 +128,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 		if (validStatuses.includes(targetColumn.title as any)) {
 			targetLeads.push({
 				...updatedLead,
-				status: targetColumn.title as 'Active' | 'Pending' | 'Completed'
+				status: targetColumn.title as 'Active' | 'Pending' | 'Completed',
 			});
 		}
 
-		const updatedColumns = columns.map(col => {
+		const updatedColumns = columns.map((col) => {
 			if (col.id === sourceColumn.id) {
 				return { ...col, leads: sourceLeads };
 			}
@@ -175,22 +168,20 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 		setIsEditMode(false);
 
 		if (!currentCompany || !currentPersonnel) {
-			alert("Company or personnel information not found");
+			alert('Company or personnel information not found');
 			return;
 		}
 
 		setCurrentLead({
 			id: uuidv4(),
-			companyId: currentCompany.companyid,
+			companyId: currentCompany.companyId,
 			company: currentCompany.name,
 			personnel: currentPersonnel.email, // Set default personnel
 			title: '',
 			addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-			manager: currentCompany.manager?.email || '',
+			manager: currentCompany.manager?.name || '',
 			contractValue: '',
-			status: (['Active', 'Pending', 'Completed'].includes(columns.find(col => col.id === columnId)?.title || '') 
-				? columns.find(col => col.id === columnId)?.title as 'Active' | 'Pending' | 'Completed' 
-				: 'Pending')
+			status: ['Active', 'Pending', 'Completed'].includes(columns.find((col) => col.id === columnId)?.title || '') ? (columns.find((col) => col.id === columnId)?.title as 'Active' | 'Pending' | 'Completed') : 'Pending',
 		});
 
 		setIsCardDialogOpen(true);
@@ -198,18 +189,18 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
 	const handleEditCard = (lead: Lead) => {
 		const columnId = columns.find((col) => col.leads.some((l) => l.id === lead.id))?.id || null;
-		
+
 		if (!currentCompany) {
-			alert("Company information not found");
+			alert('Company information not found');
 			return;
 		}
 
 		setCurrentLead({
 			...lead,
-			companyId: currentCompany.companyid,
-			company: currentCompany.name
+			companyId: currentCompany.companyId,
+			company: currentCompany.name,
 		});
-		
+
 		setCurrentColumnId(columnId);
 		setIsEditMode(true);
 		setIsCardDialogOpen(true);
@@ -233,22 +224,23 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
 	const saveCard = async () => {
 		if (!currentColumnId || !currentLead) {
-			alert("Invalid card data");
+			alert('Invalid card data');
 			return;
 		}
 
 		// Get the current company from the URL
-		const currentCompanyId = Number(window.location.pathname.split('/').pop());
-		const currentCompany = companies?.find(c => c.companyid === currentCompanyId);
+		// const currentCompanyId = Number(window.location.pathname.split('/').pop());
+		// const currentCompany = companies?.find((c) => c.companyid === currentCompanyId);
 
 		if (!currentCompany) {
-			alert("Company information not found");
+			alert('Company information not found');
 			return;
 		}
+		console.log(currentLead);
 
 		// Validate required fields
 		if (!currentLead.title) {
-			alert("Please fill in the Title field");
+			alert('Please fill in the Title field');
 			return;
 		}
 
@@ -258,52 +250,58 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 			const validStatuses = ['Active', 'Pending', 'Completed'] as const;
 			const updatedColumns = columns.map((col) => {
 				if (isEditMode) {
-					const hasExistingCard = col.leads.some(lead => lead.id === currentLead.id);
-					
+					const hasExistingCard = col.leads.some((lead) => lead.id === currentLead.id);
+
 					if (hasExistingCard) {
 						if (col.id !== currentColumnId) {
 							return {
 								...col,
-								leads: col.leads.filter(lead => lead.id !== currentLead.id)
+								leads: col.leads.filter((lead) => lead.id !== currentLead.id),
 							};
 						}
 						return {
 							...col,
-							leads: col.leads.map(lead => 
-								lead.id === currentLead.id 
-									? { 
-										...currentLead,
-										status: col.title as 'Active' | 'Pending' | 'Completed',
-										companyId: currentCompany.companyid,
-										company: currentCompany.name
-									}
+							leads: col.leads.map((lead) =>
+								lead.id === currentLead.id
+									? {
+											...currentLead,
+											status: col.title as 'Active' | 'Pending' | 'Completed',
+											companyId: currentCompany.companyId,
+											company: currentCompany.name,
+										}
 									: lead
-							)
+							),
 						};
 					}
-					
+
 					if (col.id === currentColumnId && validStatuses.includes(col.title as any)) {
 						return {
 							...col,
-							leads: [...col.leads, { 
-								...currentLead,
-								status: col.title as 'Active' | 'Pending' | 'Completed',
-								companyId: currentCompany.companyid,
-								company: currentCompany.name
-							}]
+							leads: [
+								...col.leads,
+								{
+									...currentLead,
+									status: col.title as 'Active' | 'Pending' | 'Completed',
+									companyId: currentCompany.companyId,
+									company: currentCompany.name,
+								},
+							],
 						};
 					}
 				} else {
 					if (col.id === currentColumnId && validStatuses.includes(col.title as any)) {
 						return {
 							...col,
-							leads: [...col.leads, { 
-								...currentLead,
-								status: col.title as 'Active' | 'Pending' | 'Completed',
-								addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-								companyId: currentCompany.companyid,
-								company: currentCompany.name
-							}]
+							leads: [
+								...col.leads,
+								{
+									...currentLead,
+									status: col.title as 'Active' | 'Pending' | 'Completed',
+									addedOn: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+									companyId: currentCompany.companyId,
+									company: currentCompany.name,
+								},
+							],
 						};
 					}
 				}
@@ -311,9 +309,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 			});
 
 			await updateColumns(updatedColumns);
-			alert(isEditMode ? "Card updated successfully!" : "New card added successfully!");
+			alert(isEditMode ? 'Card updated successfully!' : 'New card added successfully!');
 			setIsCardDialogOpen(false);
-			
+
 			// Reset states
 			setCurrentLead({
 				id: '',
@@ -324,59 +322,61 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 				addedOn: '',
 				manager: '',
 				contractValue: '',
-				status: 'Pending'
+				status: 'Pending',
 			});
 			setCurrentColumnId(null);
 			setIsEditMode(false);
-
 		} catch (error) {
-			console.error("Error saving card:", error);
-			alert("Failed to save card. Please try again.");
+			console.error('Error saving card:', error);
+			alert('Failed to save card. Please try again.');
 		} finally {
 			setIsSaving(false);
 		}
 	};
 
 	const { companies } = useCompanies();
-	
+	const { manager } = useManagers();
+
 	// Get current company ID and personnel ID from URL
 	const pathSegments = window.location.pathname.split('/');
 	const companyIdIndex = pathSegments.indexOf('company') + 1;
 	const currentCompanyId = Number(pathSegments[companyIdIndex]);
 	const currentPersonnelId = Number(pathSegments[pathSegments.length - 1]);
-	
+	const { company: currentCompany } = useCompany(currentCompanyId);
+
 	// Get current company
-	const currentCompany = useMemo(() => 
-		companies?.find(c => c.companyid === currentCompanyId),
-		[companies, currentCompanyId]
-	);
+	// const currentCompany = useMemo(() => company?.find((c) => c.companyid === currentCompanyId), [company, currentCompanyId]);
 
 	// Get current personnel
-	const currentPersonnel = useMemo(() => 
-		currentCompany?.personnel?.find(p => p.personnelid === currentPersonnelId),
-		[currentCompany, currentPersonnelId]
-	);
+	const currentPersonnel = useMemo(() => currentCompany?.personnel?.find((p) => p.personnelId === currentPersonnelId), [currentCompany, currentPersonnelId]);
+
+	// console.log('kanban board, company: ', currentCompany);
+	// console.log('kanban board, personnel: ', currentPersonnel);
 
 	// Transform companies data for SelectField
-	const companyOptions = useMemo(() => 
-		companies?.map(company => ({
-			value: company.companyid.toString(),
-			label: company.name
-		})) || [], 
-	[companies]);
+	const companyOptions = useMemo(
+		() =>
+			companies?.map((company) => ({
+				value: company.companyid.toString(),
+				label: company.name,
+			})) || [],
+		[companies]
+	);
 
 	// Transform personnel data for the select
-	const personnelOptions = useMemo(() => 
-		currentCompany?.personnel?.map((person) => ({
-			value: person.personnelid.toString(),
-			label: person.name
-		})) || [], 
-	[currentCompany]);
+	const personnelOptions = useMemo(
+		() =>
+			currentCompany?.personnel?.map((person) => ({
+				value: person.personnelId.toString(),
+				label: person.name,
+			})) || [],
+		[currentCompany]
+	);
 
 	const handlePersonnelChange = (value: string) => {
-		setCurrentLead(prev => ({
+		setCurrentLead((prev) => ({
 			...prev,
-			personnel: value
+			personnel: value,
 		}));
 	};
 
@@ -392,13 +392,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 			<DndContext
 				sensors={sensors}
 				onDragStart={handleDragStart}
-				onDragEnd={handleDragEnd}
-			>
+				onDragEnd={handleDragEnd}>
 				<div className="flex h-full gap-4">
 					<SortableContext
-						items={columns.map(col => col.id)}
-						strategy={horizontalListSortingStrategy}
-					>
+						items={columns.map((col) => col.id)}
+						strategy={horizontalListSortingStrategy}>
 						{columns.map((column) => (
 							<KanbanColumnContainer
 								key={column.id}
@@ -473,9 +471,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{isEditMode ? 'Edit Card' : 'Add New Card'}</DialogTitle>
-						<DialogDescription>
-							{isEditMode ? 'Edit the details of this card.' : 'Add a new card to this column.'}
-						</DialogDescription>
+						<DialogDescription>{isEditMode ? 'Edit the details of this card.' : 'Add a new card to this column.'}</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid grid-cols-2 gap-4">
@@ -519,12 +515,29 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 							</div>
 							<div className="grid gap-2">
 								<Label htmlFor="manager">Manager</Label>
-								<Input
+								{/* <Input
 									id="manager"
 									value={currentLead.manager}
 									onChange={(e) => setCurrentLead({ ...currentLead, manager: e.target.value })}
 									disabled={isSaving}
-								/>
+								/> */}
+								<Select>
+									<SelectTrigger className="w-[180px]">
+										<SelectValue placeholder="Select a manager" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											<SelectLabel className="pl-2">{isEditMode ? currentLead.manager : 'Select Manager'}</SelectLabel>
+											{manager.map((m) => (
+												<SelectItem
+													key={m.userid}
+													value={m.userid}>
+													{m.name}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
 							</div>
 						</div>
 						<div className="grid gap-2">
@@ -544,17 +557,18 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 							disabled={isSaving}>
 							Cancel
 						</Button>
-						<Button 
+						<Button
 							onClick={saveCard}
-							disabled={isSaving}
-						>
+							disabled={isSaving}>
 							{isSaving ? (
 								<div className="flex items-center gap-2">
 									<div className="w-4 h-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
 									Saving...
 								</div>
+							) : isEditMode ? (
+								'Save Changes'
 							) : (
-								isEditMode ? 'Save Changes' : 'Add Card'
+								'Add Card'
 							)}
 						</Button>
 					</DialogFooter>
@@ -562,4 +576,4 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 			</Dialog>
 		</div>
 	);
-}
+};

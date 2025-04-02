@@ -76,7 +76,7 @@ export function useCompanies(filters?: CompanyFilters) {
 				})
 			);
 		}
-	}, [dispatch, workspaceid, stableFilters, filters, loading]);
+	}, [dispatch, workspaceid, stableFilters]);
 
 	const fetchCompany = useCallback(
 		async (companyId: number) => {
@@ -147,6 +147,55 @@ export function useCompanies(filters?: CompanyFilters) {
 		fetchCompany,
 	};
 }
+
+export const useCompany = (companyId: number) => {
+	const dispatch = useDispatch<AppDispatch>();
+	const { currentUser } = useUserData();
+	const workspaceid = currentUser?.workspaceid;
+	const { selectedCompany, loading, error } = useSelector((state: RootState) => state.company);
+
+	// const { uploadImage, isUploading: isUploadingProfile } = useImageUpload({
+	// 	bucketName: 'employees',
+	// 	folderPath: 'profile-images',
+	// 	maxSizeInMB: 2, // Different size limit for employee photos
+	// 	allowedFileTypes: ['image/jpeg', 'image/png'],
+	// });
+
+	useEffect(() => {
+		if (workspaceid && companyId) {
+			dispatch(
+				fetchCompanyById({
+					workspaceId: Number(workspaceid),
+					companyId,
+				})
+			);
+		}
+		return () => {
+			dispatch(clearSelectedCompany());
+		};
+	}, [dispatch, workspaceid, companyId]);
+
+	const updateCompanyDetails = useCallback(
+		async (companyId: number, data: any) => {
+			if (!workspaceid) throw new Error('No workspace ID available');
+			return dispatch(
+				updateCompany({
+					workspaceId: Number(workspaceid),
+					companyId,
+					data,
+				})
+			).unwrap();
+		},
+		[workspaceid, dispatch]
+	);
+
+	return {
+		company: selectedCompany,
+		loading,
+		error,
+		updateCompanyDetails,
+	};
+};
 
 export const useLeads = (filters?: LeadFilters) => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -243,9 +292,14 @@ export const useCompanyPersonnel = (companyId?: number) => {
 
 	useEffect(() => {
 		if (workspaceid && companyId) {
-			fetchCompanyPersonnelList();
+			dispatch(
+				fetchCompanyPersonnel({
+					workspaceId: Number(workspaceid),
+					companyId,
+				})
+			).unwrap();
 		}
-	}, [workspaceid, companyId, fetchCompanyPersonnelList]);
+	}, [workspaceid, companyId, dispatch]);
 
 	const fetchPersonnel = useCallback(
 		async (personnelId: number) => {

@@ -336,8 +336,14 @@ const companySlice = createSlice({
 				state.error = null;
 			})
 			.addCase(fetchCompanyById.fulfilled, (state, action) => {
-				state.loading = false;
 				state.selectedCompany = action.payload;
+				const index = state.companies.findIndex((comp) => comp.companyid === action.payload.companyid);
+				if (index !== -1) {
+					state.companies[index] = action.payload;
+				}
+				state.loading = false;
+				state.error = null;
+				// state.selectedCompany = action.payload;
 			})
 			.addCase(fetchCompanyById.rejected, (state, action) => {
 				state.loading = false;
@@ -349,15 +355,18 @@ const companySlice = createSlice({
 			})
 
 			// Update Company
+			.addCase(updateCompany.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
 			.addCase(updateCompany.fulfilled, (state, action) => {
-				const updatedCompany = action.payload as Company;
-				const index = state.companies.findIndex((company) => company.companyid === updatedCompany.companyid);
-				if (index !== -1) {
-					state.companies[index] = updatedCompany;
-				}
-				if (state.selectedCompany?.companyid === updatedCompany.companyid) {
-					state.selectedCompany = updatedCompany;
-				}
+				state.selectedCompany = action.payload;
+				state.loading = false;
+				state.error = null;
+			})
+			.addCase(updateCompany.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.error.message || 'Failed to fetch company';
 			})
 
 			// Delete Company
@@ -473,6 +482,7 @@ const companySlice = createSlice({
 				state.errorPersonnel = null;
 			})
 			.addCase(updatePersonnel.fulfilled, (state, action) => {
+				console.log('Action payload in reducer: ', action.payload);
 				const index = state.personnel.findIndex((p) => p.personnelid === action.payload.personnelId);
 				if (index !== -1) {
 					state.personnel[index] = action.payload;

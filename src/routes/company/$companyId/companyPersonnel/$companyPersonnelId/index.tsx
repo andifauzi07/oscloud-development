@@ -14,13 +14,14 @@ import { KanbanBoard } from '@/components/kanban/kanban-board';
 import { EditedPersonnel, PersonnelLead, PersonnelProject, UpdatePersonnelRequest } from '@/types/personnel';
 import { useCompanies, useCompanyPersonnel, useLeads } from '@/hooks/useCompany';
 import { useProject } from '@/hooks/useProject';
-import { toast } from 'sonner';
 import { useUserData } from '@/hooks/useUserData';
 import ScheduleTable from '@/components/EmployeTimeLine';
 import { InfoSection, TitleWrapper } from '@/components/wrapperElement';
 import { ColumnDef } from '@tanstack/react-table';
+import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { useManagers } from '@/hooks/useManager';
 
 interface ProjectTableData {
 	id: number;
@@ -133,8 +134,7 @@ function CompanyPersonnelDetailsPage() {
 
 	// Change to useCompanyPersonnel
 	const { selectedPersonnel: personnel, loading, error, updatePersonnel, fetchPersonnel } = useCompanyPersonnel(Number(companyId));
-
-	const { company } = useCompanies();
+	const { manager } = useManagers();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedPersonnel, setEditedPersonnel] = useState<EditedPersonnel>({});
 	const [personnelLeads, setPersonnelLeads] = useState<Lead[]>([]);
@@ -269,7 +269,11 @@ function CompanyPersonnelDetailsPage() {
 	const handleProfileSave = async () => {
 		try {
 			if (!Object.keys(editedPersonnel).length) {
-				alert('No changes to save');
+				toast({
+					title: 'No Update',
+					description: 'No changes to save',
+					variant: 'default',
+				});
 				return;
 			}
 
@@ -277,7 +281,7 @@ function CompanyPersonnelDetailsPage() {
 			const updateData = {
 				...editedPersonnel,
 				workspaceId: Number(workspaceid),
-				personnelId: Number(companyPersonnelId),
+				personnelId: Number(companyPersonnelId!),
 			};
 
 			// Only include changed fields
@@ -289,22 +293,34 @@ function CompanyPersonnelDetailsPage() {
 
 			if (Object.keys(updateData).length <= 2) {
 				// Only has workspaceId and personnelId
-				alert('No changes detected');
+				toast({
+					title: 'Failed',
+					description: 'No changes detected',
+					variant: 'destructive',
+				});
 				return;
 			}
 
 			// First update the personnel
-			await updatePersonnel(Number(companyPersonnelId), updateData);
+			await updatePersonnel(Number(companyPersonnelId!), updateData as UpdatePersonnelRequest);
 
 			// Then fetch the updated data
-			await fetchPersonnel(Number(companyPersonnelId));
+			await fetchPersonnel(Number(companyPersonnelId!));
 
 			setIsEditing(false);
 			setEditedPersonnel({});
-			alert('Personnel updated successfully');
+			toast({
+				title: 'Success',
+				description: 'Personnel updated successfully',
+				variant: 'default',
+			});
 		} catch (error: any) {
-			console.error('Error updating personnel:', error);
-			alert(error?.message || 'Failed to update personnel');
+			console.error('Error updating personnel errorrrr:', error);
+			toast({
+				title: 'Failed',
+				description: `${error?.message || 'Failed to update personnel'}`,
+				variant: 'destructive',
+			});
 		}
 	};
 
@@ -314,6 +330,12 @@ function CompanyPersonnelDetailsPage() {
 	};
 
 	const basicInfo = [
+		{
+			label: 'Company',
+			value: personnel?.company?.name || '-',
+			key: 'company',
+			nonEditable: true,
+		},
 		{
 			label: 'Name',
 			value: editedPersonnel.name || personnel?.name || '-',
@@ -332,6 +354,7 @@ function CompanyPersonnelDetailsPage() {
 			options: [
 				{ label: 'Active', value: 'Active' },
 				{ label: 'Inactive', value: 'Inactive' },
+				{ label: 'Blocked', value: 'Blocked' },
 			],
 		},
 		{
@@ -345,13 +368,9 @@ function CompanyPersonnelDetailsPage() {
 	const managerInfo = [
 		{
 			label: 'Manager',
-			value: personnel?.manager?.email || '-',
+			value: personnel?.manager?.userId || '-',
 			key: 'manager',
-		},
-		{
-			label: 'Company',
-			value: personnel?.company?.name || '-',
-			key: 'company',
+			options: manager?.map((m) => ({ value: m.userid, label: m.name })),
 		},
 	];
 
@@ -503,9 +522,9 @@ function CompanyPersonnelDetailsPage() {
 									</Button>
 								</div>
 							</div>
-							<div className="flex flex-col space-y-2 md:p-5 md:m-0">
+							{/* <div className="flex flex-col space-y-2 md:p-5 md:m-0">
 								<AdvancedFilterPopover fields={field} />
-							</div>
+							</div> */}
 						</div>
 
 						<Tabs defaultValue="kanban">

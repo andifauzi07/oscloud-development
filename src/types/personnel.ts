@@ -92,6 +92,7 @@ export interface EditedPersonnel {
 	email?: string;
 	status?: string;
 	description?: string;
+	managerid?: string;
 }
 
 export interface PersonnelData {

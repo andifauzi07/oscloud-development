@@ -80,7 +80,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 6,
-		cell: ({ row }) => row.original.category_group! || '-',
+		cell: ({ row }) => row.original.categoryGroup! || '-',
 	},
 	{
 		accessorKey: 'product',

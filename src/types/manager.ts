@@ -2,7 +2,7 @@ type ManagerStatus = 'Active' | 'Inactive' | 'Blocked';
 type ManagerRole = 'Staff' | 'Admin' | 'Manager';
 
 export interface Manager {
-	userid: string;
+	userId: string;
 	email: string;
 	status: ManagerStatus;
 	role: ManagerRole;
