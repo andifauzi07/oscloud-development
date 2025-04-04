@@ -79,7 +79,7 @@ function RouteComponent() {
 	const [statusFilter, setStatusFilter] = useState<string>('');
 	// const debounceStatusFilter = useDebounce(statusFilter, 500);
 	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 30;
+	const pageSize = 10;
 	const filters = useMemo(
 		() => ({
 			// search: debounceSearchTerms || '',
@@ -89,7 +89,7 @@ function RouteComponent() {
 		}),
 		[statusFilter, currentPage, pageSize, debounceSearchTerms]
 	);
-	const { employees, loading, addEmployee, updateEmployeeData } = useWorkspaceEmployees(filters);
+	const { employees, loading, addEmployee, updateEmployeeData, total } = useWorkspaceEmployees(filters);
 	const [updateDataFromChild, setUpdateDataFromChild] = useState(employees);
 
 	const columns = useMemo<ColumnDef<Employee, any>[]>(() => {
@@ -224,6 +224,10 @@ function RouteComponent() {
 		setStatusFilter(newStatus);
 	}, []);
 
+	const handlePageChange = useCallback((page: number) => {
+		setCurrentPage(page);
+	}, []);
+
 	return (
 		<div className="flex flex-col flex-1 h-full">
 			<TitleWrapper>
@@ -326,6 +330,10 @@ function RouteComponent() {
 				loading={loading}
 				isEditable={editable}
 				nonEditableColumns={['employeeid*', 'actions', 'profileimage']}
+				currentPage={currentPage}
+				pageSize={pageSize}
+				onPageChange={handlePageChange}
+				total={total}
 				setTableData={(updateFunctionOrData) => {
 					const evaluatedData = typeof updateFunctionOrData === 'function' ? updateFunctionOrData([...employees]) : updateFunctionOrData;
 					setUpdateDataFromChild(evaluatedData);
