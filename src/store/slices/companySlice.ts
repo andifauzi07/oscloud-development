@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import apiClient from '@/api/apiClient';
-import { Company, CompaniesResponse } from '@/types/company';
+import { Company, CreateCompanyRequest, CompanyUpdate, CompanyPersonnel } from '@/types/company';
+import { Manager } from '@/types/manager';
 
 interface PersonnelManager {
 	userId: string;
@@ -146,22 +147,15 @@ interface CompanyListItem {
 	workspaceid: number;
 	created_at: string;
 	city: string | null;
-	product: string | null;
-	email: string | null;
-	category_group: string | null;
-	managerid: string | null;
-	personnel: {
-		personnelid: number;
-		companyid: number;
-		name: string;
-		status: string;
-		email: string | null;
-		description: string | null;
-		leadid: number | null;
-		managerid: string | null;
-	}[];
+	product: string;
+	email: string;
+	fullAddress?: string | null;
+	category_group: string;
+	manager: Manager | null | undefined;
+	personnel: CompanyPersonnel[] | null;
 	activeLeads: number;
 	totalContractValue: number;
+	detail: any;
 }
 interface CompaniesResponse {
 	companies: CompanyListItem[];
@@ -200,27 +194,29 @@ export const fetchCompanyById = createAsyncThunk<Company, { workspaceId: number;
 	return response.data;
 });
 
-interface CreateCompanyRequest {
-	name: string;
-	personnel: { name: string }[];
-}
+// interface CreateCompanyRequest {
+// 	name: string;
+// 	personnel: { name: string }[];
+// }
 
 export const createCompany = createAsyncThunk('company/create', async ({ workspaceId, data }: { workspaceId: number; data: CreateCompanyRequest }) => {
 	const response = await apiClient.post(`/workspaces/${workspaceId}/crm/companies`, data);
 	return response.data;
 });
 
-interface UpdateCompanyRequest {
-	city?: string;
-	product?: string;
-	email?: string;
-	categoryGroup?: string;
-	logo?: string;
-	name?: string;
-	personnel?: { name: string }[];
-}
+// interface UpdateCompanyRequest {
+// 	name?: string;
+// 	logo?: string;
+// 	city?: string;
+// 	product?: string;
+// 	email?: string;
+// 	managerId?: string | null; // Changed to string to match the API
+// 	status: string;
+// 	categoryGroup?: string;
+// 	personnel?: { name: string }[];
+// }
 
-export const updateCompany = createAsyncThunk('company/update', async ({ workspaceId, companyId, data }: { workspaceId: number; companyId: number; data: any }) => {
+export const updateCompany = createAsyncThunk('company/update', async ({ workspaceId, companyId, data }: { workspaceId: number; companyId: number; data: Partial<CompanyUpdate> }) => {
 	const response = await apiClient.patch(`/workspaces/${workspaceId}/crm/companies/${companyId}`, data);
 	return response.data;
 });
@@ -350,8 +346,18 @@ const companySlice = createSlice({
 				state.error = action.error.message || 'Failed to fetch company';
 			})
 			// Create Company
+			.addCase(createCompany.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
 			.addCase(createCompany.fulfilled, (state, action) => {
 				state.companies.push(action.payload);
+				state.loading = false;
+				state.error = null;
+			})
+			.addCase(createCompany.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.error.message || 'Failed to create company';
 			})
 
 			// Update Company
@@ -360,9 +366,24 @@ const companySlice = createSlice({
 				state.error = null;
 			})
 			.addCase(updateCompany.fulfilled, (state, action) => {
-				state.selectedCompany = action.payload;
-				state.loading = false;
-				state.error = null;
+				const updatedCompany = action.payload;
+
+				if (!updatedCompany || !updatedCompany.companyid) return;
+
+				// Ganti hanya company yang sesuai
+				state.companies = state.companies.map((company) =>
+					company.companyid === updatedCompany.companyid
+						? { ...company, ...updatedCompany } // merge instead of full replace (optional)
+						: company
+				);
+
+				// Jika yang sedang dipilih adalah yang diupdate, update juga
+				if (state.selectedCompany?.companyid === updatedCompany.companyid) {
+					state.selectedCompany = {
+						...state.selectedCompany,
+						...updatedCompany,
+					};
+				}
 			})
 			.addCase(updateCompany.rejected, (state, action) => {
 				state.loading = false;

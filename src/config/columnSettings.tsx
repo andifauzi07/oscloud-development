@@ -23,7 +23,7 @@ const CompanyLogoCell = memo(({ row }: { row: any }) => (
 ));
 CompanyLogoCell.displayName = 'CompanyLogoCell';
 
-export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
+export const defaultCompanyColumnSettings: BaseColumnSetting<any>[] = [
 	{
 		accessorKey: 'logo',
 		header: '',
@@ -73,14 +73,14 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		order: 5,
 	},
 	{
-		accessorKey: 'categoryGroup',
+		accessorKey: 'category_group',
 		header: 'カテゴリー',
 		label: 'カテゴリー',
 		type: 'dropdown',
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 6,
-		cell: ({ row }) => row.original.categoryGroup! || '-',
+		cell: ({ row }) => row.original.category_group || '-',
 	},
 	{
 		accessorKey: 'product',
@@ -128,7 +128,7 @@ export const defaultCompanyColumnSettings: BaseColumnSetting<Company>[] = [
 		date_created: new Date().toISOString(),
 		status: 'Active',
 		order: 11,
-		cell: ({ row }) => row.original.manager?.name! || '_',
+		cell: ({ row }) => row.original.manager?.name! || '-',
 	},
 	{
 		accessorKey: 'activeLeads',

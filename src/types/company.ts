@@ -188,7 +188,7 @@ export interface CompanyResponse {
 	email: string | null;
 	categoryGroup: string | null;
 	createdAt: string;
-	manager: Manager | null | undefined;
+	manager: ManagerType | null | undefined;
 	personnel: CompanyPersonnel[];
 	stats: CompanyStats;
 }
@@ -199,29 +199,31 @@ export interface Company {
 	name: string;
 	logo: string | null;
 	workspaceid: number;
-	createdAt: string;
+	created_at: string;
+	city: string | null | undefined;
+	product: string;
+	email: string;
 	status?: string;
-	city: string | null;
-	product: string | null;
-	email: string | null;
-	categoryGroup: string | null;
-	fullAddress?: string | null;
-	personnel: CompanyPersonnel[];
+	category_group: string;
+	company_categoryid?: number | null;
+	extra_fields?: any | null;
+	manager: ManagerType | null | undefined;
+	personnel: CompanyPersonnel[] | null;
 	activeLeads: number;
 	totalContractValue: number;
-	manager: ManagerType | null | undefined;
-	detail?: any;
+	fullAddress?: string | null;
+	// detail?: any;
 }
 
 export interface CompanyUpdate {
 	name?: string;
-	logo?: string;
-	city?: string;
+	logo?: string | null;
+	city?: string | null | undefined;
 	product?: string;
 	email?: string;
 	categoryGroup?: string;
-	managerId?: string | null;
-	status?: string | null;
+	managerId?: string | null | undefined;
+	status?: string;
 }
 
 // API Response interfaces
@@ -246,17 +248,26 @@ export interface CreateCompanyRequest {
 	status: string | null | undefined;
 	email: string;
 	categoryGroup: string;
-	managerid: string; // Keep as required string
+	managerId: string; // Keep as required string
 	personnel: never[];
 }
 
 export interface UpdateCompanyRequest {
-	name?: string;
-	logo?: string;
-	city?: string;
-	product?: string;
-	email?: string;
-	category_group?: string;
+	name?: string | null | undefined;
+	logo?: string | null | undefined;
+	city?: string | null | undefined;
+	product?: string | null | undefined;
+	email?: string | null | undefined;
+	categoryGroup?: string | null | undefined;
+	managerId?: string | null | undefined;
+	status?: string | null | undefined;
+	company_categoryid?: number | null | undefined;
+	// extra_fields?: {
+	//   additionalProp1: string,
+	//   additionalProp2: string,
+	//   additionalProp3: string
+	// } | undefined | null,
+	personnel?: [] | undefined | null;
 }
 
 export interface CreateLeadRequest {

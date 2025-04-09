@@ -22,7 +22,7 @@ import {
 } from '@/store/slices/companySlice';
 import { createProjectLead, deleteProjectLead } from '@/store/slices/projectSlice';
 import { useImageUpload } from './useImageUpload';
-import { CreateLeadRequest, UpdateLeadRequest } from '@/types/company';
+import { Company, CompanyUpdate, CreateCompanyRequest, CreateLeadRequest, UpdateCompanyRequest, UpdateLeadRequest } from '@/types/company';
 import { CreatePersonnelRequest, UpdatePersonnelRequest } from '@/types/personnel';
 
 export interface CompanyFilters {
@@ -49,13 +49,8 @@ export function useCompanies(filters?: CompanyFilters) {
 	const { currentUser } = useUserData();
 	const workspaceid = currentUser?.workspaceid;
 
-	// Pisahkan selector untuk menghindari re-render yang tidak perlu
-	const companies = useSelector((state: RootState) => state.company.companies);
-	const loading = useSelector((state: RootState) => state.company.loading);
-	const error = useSelector((state: RootState) => state.company.error);
-	const pagination = useSelector((state: RootState) => state.company.pagination);
+	const { companies, loading, error, pagination } = useSelector((state: RootState) => state.company);
 
-	// Stabilkan filters
 	const stableFilters = useMemo(
 		() => ({
 			search: filters?.search,
@@ -91,30 +86,44 @@ export function useCompanies(filters?: CompanyFilters) {
 	);
 
 	const addCompany = useCallback(
-		async (data: { name: string; personnel: { name: string }[] }) => {
+		async (data: CreateCompanyRequest) => {
 			if (!workspaceid) throw new Error('No workspace ID available');
-			return dispatch(
+			await dispatch(
 				createCompany({
 					workspaceId: Number(workspaceid),
 					data,
 				})
 			).unwrap();
+
+			await dispatch(
+				fetchCompanies({
+					workspaceId: Number(workspaceid),
+					...stableFilters,
+				})
+			);
 		},
 		[workspaceid]
 	);
 
 	const updateCompanyDetails = useCallback(
-		async (companyId: number, data: any) => {
+		async (companyId: number, data: Partial<CompanyUpdate>) => {
 			if (!workspaceid) throw new Error('No workspace ID available');
-			return dispatch(
+			await dispatch(
 				updateCompany({
 					workspaceId: Number(workspaceid),
 					companyId,
 					data,
 				})
 			).unwrap();
+
+			await dispatch(
+				fetchCompanies({
+					workspaceId: Number(workspaceid),
+					...stableFilters,
+				})
+			);
 		},
-		[workspaceid]
+		[workspaceid, dispatch, companies]
 	);
 
 	const removeCompany = useCallback(

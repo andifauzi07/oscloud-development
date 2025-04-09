@@ -18,6 +18,8 @@ import { defaultCompanyColumnSettings } from '@/config/columnSettings';
 import { useSaveEdits } from '@/hooks/handler/useSaveEdit';
 import { AppUser } from '@/types/user';
 import { useManagers } from '@/hooks/useManager';
+import { toast } from '@/hooks/use-toast';
+import { set } from 'date-fns';
 
 export const Route = createFileRoute('/company/')({
 	component: RouteComponent,
@@ -86,9 +88,9 @@ function RouteComponent() {
 
 	// Use filters after it's defined
 	const { companies, loading, addCompany, updateCompany, total } = useCompanies(filters);
-	const [updateDataFromChild, setUpdateDataFromChild] = useState(companies);
+	const [updateDataFromChild, setUpdateDataFromChild] = useState<Company[]>([]);
 
-	const handleSaveEdits = useSaveEdits<any>();
+	// const handleSaveEdits = useSaveEdits<any>();
 
 	const { settings } = useColumnSettings<Company>({
 		storageKey: 'companyColumnSettings',
@@ -128,35 +130,35 @@ function RouteComponent() {
 							const value = row.getValue(setting.accessorKey as string);
 							return value != null ? String(value) : '-';
 						}),
+					type: defaultSetting?.type || setting.type,
 				};
 			});
 	}, [settings]);
 
-	const transformedCompanies = useMemo(() => {
-		if (!companies || !Array.isArray(companies)) return [];
+	// const transformedCompanies = useMemo(() => {
+	// 	if (!companies || !Array.isArray(companies)) return [];
 
-		return companies.map((company) => ({
-			companyid: company.companyid,
-			name: company.name,
-			logo: company.logo,
-			email: company.email,
-			city: company.city,
-			product: company.product,
-			status: company.status,
-			categoryGroup: company.category_group,
-			created_at: company.created_at,
-			manager: company.manager,
-			workspaceid: company.workspaceid,
-			personnel: company.personnel || [],
-			activeLeads: company.activeLeads || 0,
-			totalContractValue: company.totalContractValue || 0,
-			detail: company.detail || {},
-		}));
-	}, [companies]);
+	// 	return companies.map((company) => ({
+	// 		companyid: company.companyid,
+	// 		name: company.name,
+	// 		logo: company.logo,
+	// 		email: company.email,
+	// 		city: company.city,
+	// 		product: company.product,
+	// 		status: company.status,
+	// 		categoryGroup: company.category_group,
+	// 		created_at: company.created_at,
+	// 		manager: company.manager,
+	// 		workspaceid: company.workspaceid,
+	// 		personnel: company.personnel || [],
+	// 		activeLeads: company.activeLeads || 0,
+	// 		totalContractValue: company.totalContractValue || 0,
+	// 	}));
+	// }, [companies]);
 
 	// Local filtering if needed
 	const filteredCompanies = useMemo(() => {
-		return transformedCompanies.filter((company) => {
+		return companies.filter((company) => {
 			// Filter by status if specified
 			if (statusFilter && statusFilter !== 'All' && company.status !== 'Active') {
 				return false;
@@ -170,17 +172,17 @@ function RouteComponent() {
 					(company.email?.toLowerCase() || '').includes(searchLower) ||
 					(company.city?.toLowerCase() || '').includes(searchLower) ||
 					(company.product?.toLowerCase() || '').includes(searchLower) ||
-					(company.categoryGroup?.toLowerCase() || '').includes(searchLower)
+					(company.category_group?.toLowerCase() || '').includes(searchLower)
 				);
 			}
 
 			return true;
 		});
-	}, [transformedCompanies, statusFilter, debouncedSearchKeyword]);
+	}, [companies, statusFilter, debouncedSearchKeyword]);
 
 	// Update local data when filtered companies change
 	useEffect(() => {
-		setUpdateDataFromChild(filteredCompanies);
+		setUpdateDataFromChild(companies);
 	}, [filteredCompanies]);
 
 	const handleAddRecord = useCallback(
@@ -190,14 +192,14 @@ function RouteComponent() {
 					throw new Error('Company name is required');
 				}
 
-				const newCompanyRequest: CreateCompanyRequest = {
+				const newCompanyRequest: any = {
 					name: data.name,
 					logo: data.logo || '',
 					city: data.city || '',
 					product: data.product || '',
 					email: data.email || '',
 					categoryGroup: data.category_group || '',
-					managerid: data.managerid || '',
+					managerId: data.manager || '',
 					status: data.status,
 					personnel: [],
 				};
@@ -212,6 +214,55 @@ function RouteComponent() {
 		[addCompany]
 	);
 
+	const handelEdit = useCallback(async () => {
+		const updateData = updateDataFromChild.find((updatedItem) => {
+			const originalItem = filteredCompanies?.find((company) => company.companyid === updatedItem.companyid);
+
+			if (!originalItem) return false;
+
+			// Bandingkan field satu per satu
+			return (Object.keys(updatedItem) as (keyof typeof updatedItem)[]).some((key) => {
+				return updatedItem[key] !== originalItem[key];
+			});
+		});
+
+		if (!updateData) {
+			toast({
+				title: 'No changes detected',
+				description: 'Please make some changes before saving.',
+				variant: 'destructive',
+			});
+			setIsEditable(false);
+			setUpdateDataFromChild([]);
+			return;
+		}
+
+		const { manager, ...rest } = updateData as Company;
+
+		const transformedData = {
+			managerId: updateData?.manager || null || undefined,
+			...rest,
+		};
+
+		try {
+			await updateCompany(updateData.companyid, transformedData as CompanyUpdate);
+			toast({
+				title: 'Success!',
+				description: 'Data Updated !',
+			});
+		} catch (error) {
+			console.error('Failed to edit record:', error);
+			toast({
+				title: 'Failed!',
+				description: 'No data Updated.',
+				variant: 'destructive',
+			});
+		} finally {
+			setIsEditable(false);
+			setUpdateDataFromChild([]);
+		}
+	}, [companies, updateDataFromChild]);
+
 	const editButton = useCallback(() => {
 		return (
 			<>
@@ -219,6 +270,7 @@ function RouteComponent() {
 					<Button
 						onClick={() => {
 							setIsEditable((prev) => !prev);
+							setUpdateDataFromChild([]);
 						}}
 						className="text-black bg-transparent border-l md:w-20 link border-l-none min-h-10">
 						CANCEL
@@ -236,7 +288,7 @@ function RouteComponent() {
 								],
 							},
 							manager: {
-								options: companyManager?.map((m) => ({ value: m.userid, label: m.name })),
+								options: companyManagerOptions?.map((m) => ({ value: m.value, label: m.label })),
 							},
 							status: {
 								options: [
@@ -251,24 +303,7 @@ function RouteComponent() {
 
 				{isEditable ? (
 					<Button
-						onClick={async () => {
-							const result = await handleSaveEdits(companies, updateDataFromChild, 'companyid', ['name', 'email', 'city', 'product', 'categoryGroup', 'manager', 'status'], async (id: number, data: Partial<Company>) => {
-								const transformedData = {
-									name: data.name || undefined,
-									email: data.email || undefined,
-									city: data.city! || undefined,
-									product: data.product || undefined,
-									categoryGroup: data.category_group,
-									manager: data.manager || undefined,
-									logo: data.logo || undefined,
-									status: data.status || undefined,
-								};
-								const res = await updateCompany(id, transformedData);
-								console.log('ini res: ', res);
-							});
-							console.log(result);
-							setIsEditable(false);
-						}}
+						onClick={handelEdit}
 						className="text-black bg-transparent border-l border-r md:w-20 link border-l-none min-h-10">
 						SAVE
 					</Button>
@@ -281,7 +316,7 @@ function RouteComponent() {
 				)}
 			</>
 		);
-	}, [isEditable, filteredCompanies, updateDataFromChild, updateCompany]);
+	}, [isEditable, filteredCompanies, updateDataFromChild]);
 
 	const handleStatusChange = useCallback((newStatus: string) => {
 		setStatusFilter(newStatus);
@@ -356,13 +391,17 @@ function RouteComponent() {
 						currentPage={currentPage}
 						onPageChange={handlePageChange}
 						pageSize={pageSize}
+						// setTableData={(updateFunctionOrData) => {
+						// 	if (typeof updateFunctionOrData === 'function') {
+						// 		const newData = updateFunctionOrData(updateDataFromChild);
+						// 		setUpdateDataFromChild(newData);
+						// 	} else {
+						// 		setUpdateDataFromChild(updateFunctionOrData);
+						// 	}
+						// }}
 						setTableData={(updateFunctionOrData) => {
-							if (typeof updateFunctionOrData === 'function') {
-								const newData = updateFunctionOrData(updateDataFromChild);
-								setUpdateDataFromChild(newData);
-							} else {
-								setUpdateDataFromChild(updateFunctionOrData);
-							}
+							const evaluatedData = typeof updateFunctionOrData === 'function' ? updateFunctionOrData([...companies]) : updateFunctionOrData;
+							setUpdateDataFromChild(evaluatedData);
 						}}
 						selectFields={{
 							manager: {

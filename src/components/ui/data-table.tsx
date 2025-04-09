@@ -10,6 +10,7 @@ import Loading from '../Loading';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn, debounce } from '@/lib/utils';
 import EmojiPicker from 'emoji-picker-react';
+import { Skeleton } from './skeleton';
 
 const preloadImage = (src: string) => {
 	if (!src) return;
@@ -108,8 +109,10 @@ const EditableCell = memo(
 		}
 
 		if (selectOptions) {
-			const currentValue = initialValue?.toString() || '';
-			const option = selectOptions.find((opt) => opt.value.toString() === initialValue?.toString());
+			//TODO ensure the value is matching the select options and object response
+			const currentValue = initialValue?.userId || initialValue?.toString();
+			// const option = selectOptions.find((opt) => opt.value.toString() === initialValue);
+
 			return (
 				<select
 					value={currentValue}
@@ -528,7 +531,7 @@ export function DataTable<TData, TValue>({
 																	isImage && '!p-0 !m-0 w-[60px]', // Force exact width and remove padding/margin
 																	'items-center'
 																)}>
-																{flexRender(cell.column.columnDef.cell, cell.getContext())}
+																{loading ? <Skeleton className={cn(!isImage && 'my-1 h-[35px] w-full', isImage && 'h-12 w-12 rounded-full')} /> : flexRender(cell.column.columnDef.cell, cell.getContext())}
 															</div>
 														</TableCell>
 													);
