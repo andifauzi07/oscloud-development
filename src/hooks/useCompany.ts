@@ -187,13 +187,20 @@ export const useCompany = (companyId: number) => {
 	const updateCompanyDetails = useCallback(
 		async (companyId: number, data: any) => {
 			if (!workspaceid) throw new Error('No workspace ID available');
-			return dispatch(
+			await dispatch(
 				updateCompany({
 					workspaceId: Number(workspaceid),
 					companyId,
 					data,
 				})
 			).unwrap();
+
+			await dispatch(
+				fetchCompanyById({
+					workspaceId: Number(workspaceid),
+					companyId,
+				})
+			);
 		},
 		[workspaceid, dispatch]
 	);

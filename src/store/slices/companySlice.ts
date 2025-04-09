@@ -384,6 +384,9 @@ const companySlice = createSlice({
 						...updatedCompany,
 					};
 				}
+
+				state.loading = false;
+				state.error = null;
 			})
 			.addCase(updateCompany.rejected, (state, action) => {
 				state.loading = false;
